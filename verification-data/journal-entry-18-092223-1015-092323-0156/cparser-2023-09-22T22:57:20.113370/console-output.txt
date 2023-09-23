@@ -1,0 +1,39 @@
+jenna@ubuntu-2023:~/Desktop/gvc0$ sbt "run -c src/test/resources/case-study-2023/cparser.c0"
+[info] welcome to sbt 1.5.3 (Ubuntu Java 11.0.20.1)
+[info] loading settings for project gvc0-build from plugins.sbt ...
+[info] loading project definition from /home/jenna/Desktop/gvc0/project
+[info] loading settings for project gvc from build.sbt ...
+[info] loading settings for project silicon from build.sbt ...
+[info] loading settings for project silver from build.sbt ...
+[info] set current project to gvc0 (in build file:/home/jenna/Desktop/gvc0/)
+[info] running (fork) gvc.Main -c src/test/resources/case-study-2023/cparser.c0
+[info] Verifying 'src/test/resources/case-study-2023/cparser.c0' and gathering data.
+[info] Outputting collected data to /home/jenna/Desktop/gvc0/cparser-2023-09-22T22:57:20.113370/
+[info] [*] — Fri Sep 22 22:57:20 EDT 2023
+[info] [x] — Errors:
+[info] 2212:18 - Unsupported operator <<
+[info] 2213:18 - Unsupported operator <<
+[info] 2214:18 - Unsupported operator <<
+[info] 2215:18 - Unsupported operator <<
+[info] 2216:18 - Unsupported operator <<
+[info] 2217:18 - Unsupported operator <<
+[info] 2218:18 - Unsupported operator <<
+[info] 2219:18 - Unsupported operator <<
+[info] 2220:18 - Unsupported operator <<
+[info] 2221:18 - Unsupported operator <<
+[info] 2222:18 - Unsupported operator <<
+[info] 2290:21 - Unsupported operator |
+[info] 2292:21 - Unsupported operator |
+[info] 2598:7 - 'println' is not declared
+[info] 2600:7 - 'print' is not declared
+[info] 2611:7 - 'print' is not declared
+[info] 2613:7 - 'println' is not declared
+[info] 2632:7 - 'println' is not declared
+[info] 2634:7 - 'print' is not declared
+[info] 3030:7 - 'print' is not declared
+[info] 3032:7 - 'print' is not declared
+[info] 3038:9 - 'print' is not declared
+[info] 3041:7 - 'println' is not declared
+[error] Nonzero exit code returned from runner: 1
+[error] (Compile / run) Nonzero exit code returned from runner: 1
+[error] Total time: 6 s, completed Sep 22, 2023, 10:57:22 PM

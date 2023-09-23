@@ -1,0 +1,28 @@
+[info] welcome to sbt 1.5.3 (Ubuntu Java 11.0.20.1)
+[info] loading settings for project gvc0-build from plugins.sbt ...
+[info] loading project definition from /home/jenna/Desktop/gvc0/project
+[info] loading settings for project gvc from build.sbt ...
+[info] loading settings for project silicon from build.sbt ...
+[info] loading settings for project silver from build.sbt ...
+[info] set current project to gvc0 (in build file:/home/jenna/Desktop/gvc0/)
+[info] running (fork) gvc.Main -c src/test/resources/case-study-2023/cparser.c0
+[info] Verifying 'src/test/resources/case-study-2023/cparser.c0' and gathering data.
+[info] Outputting collected data to /home/jenna/Desktop/gvc0/cparser-2023-09-22T23:23:36.420020/
+[info] [*] — Fri Sep 22 23:23:36 EDT 2023
+[info] [x] — Errors:
+[info] 2212:18 - Unsupported operator <<
+[info] 2213:18 - Unsupported operator <<
+[info] 2214:18 - Unsupported operator <<
+[info] 2215:18 - Unsupported operator <<
+[info] 2216:18 - Unsupported operator <<
+[info] 2217:18 - Unsupported operator <<
+[info] 2218:18 - Unsupported operator <<
+[info] 2219:18 - Unsupported operator <<
+[info] 2220:18 - Unsupported operator <<
+[info] 2221:18 - Unsupported operator <<
+[info] 2222:18 - Unsupported operator <<
+[info] 2290:21 - Unsupported operator |
+[info] 2292:21 - Unsupported operator |
+[error] Nonzero exit code returned from runner: 1
+[error] (Compile / run) Nonzero exit code returned from runner: 1
+[error] Total time: 7 s, completed Sep 22, 2023, 11:23:39 PM
