@@ -1,0 +1,5888 @@
+field ASTNode$args: Ref
+
+field ASTNode$body: Ref
+
+field ASTNode$cond: Ref
+
+field ASTNode$els: Ref
+
+field ASTNode$func_ty: Ref
+
+field ASTNode$inc: Ref
+
+field ASTNode$init: Ref
+
+field ASTNode$kind: Ref
+
+field ASTNode$lhs: Ref
+
+field ASTNode$next: Ref
+
+field ASTNode$pass_by_stack: Bool
+
+field ASTNode$rhs: Ref
+
+field ASTNode$then: Ref
+
+field ASTNode$tok: Ref
+
+field ASTNode$ty: Ref
+
+field ASTNode$val: Ref
+
+field ASTNode$var: Ref
+
+field CharNode$next: Ref
+
+field CharNode$val: Int
+
+field NodeKind$kind: Int
+
+field Obj$align: Int
+
+field Obj$body: Ref
+
+field Obj$is_definition: Bool
+
+field Obj$is_function: Bool
+
+field Obj$is_local: Bool
+
+field Obj$locals: Ref
+
+field Obj$name: Ref
+
+field Obj$next: Ref
+
+field Obj$offset: Int
+
+field Obj$params: Ref
+
+field Obj$stack_size: Int
+
+field Obj$tok: Ref
+
+field Obj$ty: Ref
+
+field Scope$next: Ref
+
+field Scope$tags: Ref
+
+field Scope$vars: Ref
+
+field StringList$len: Int
+
+field StringList$root: Ref
+
+field TagScopeMap$key: Ref
+
+field TagScopeMap$next: Ref
+
+field TagScopeMap$val: Ref
+
+field Token$kind: Ref
+
+field Token$next: Ref
+
+field Token$str: Ref
+
+field Token$ty: Ref
+
+field TokenKind$kind: Int
+
+field Type$align: Int
+
+field Type$base: Ref
+
+field Type$is_unsigned: Bool
+
+field Type$kind: Ref
+
+field Type$name: Ref
+
+field Type$name_pos: Ref
+
+field Type$next: Ref
+
+field Type$origin: Ref
+
+field Type$params: Ref
+
+field Type$return_ty: Ref
+
+field Type$size: Int
+
+field TypeKind$kind: Int
+
+field VarAttr$align: Int
+
+field VarAttr$is_typedef: Bool
+
+field VarScope$type_def: Ref
+
+field VarScope$var: Ref
+
+field VarScopeMap$key: Ref
+
+field VarScopeMap$next: Ref
+
+field VarScopeMap$val: Ref
+
+field _ptr_struct_Obj_$value: Ref
+
+field _ptr_struct_Scope_$value: Ref
+
+field _ptr_struct_Token_$value: Ref
+
+method add(rest: Ref, tok: Ref, scope: Ref) returns ($result: Ref)
+{
+  var rst: Ref
+  var node: Ref
+  var break_loop: Bool
+  var start: Ref
+  var _: Ref
+  var _1: Bool
+  var _2: Ref
+  var _3: Ref
+  var _4: Bool
+  var _5: Ref
+  var node1: Ref
+  var tok1: Ref
+  tok1 := tok
+  rst := new(_ptr_struct_Token_$value)
+  rst._ptr_struct_Token_$value := tok1
+  node := mul(rst, tok1, scope)
+  tok1 := rst._ptr_struct_Token_$value
+  break_loop := false
+  while (!break_loop)
+    invariant ? && true 
+  {
+    start := tok1
+    _ := str_add()
+    _1 := equal(tok1, _)
+    if (_1) {
+      rst._ptr_struct_Token_$value := tok1
+      _2 := mul(rst, tok1.Token$next, scope)
+      node1 := new_add(node, _2, start)
+      tok1 := rst._ptr_struct_Token_$value
+    } else {
+      _3 := str_sub()
+      _4 := equal(tok1, _3)
+      if (_4) {
+        rst._ptr_struct_Token_$value := tok1
+        _5 := mul(rst, tok1.Token$next, scope)
+        node1 := new_sub(node, _5, start)
+        tok1 := rst._ptr_struct_Token_$value
+      } else {
+        rest._ptr_struct_Token_$value := tok1
+        break_loop := true
+        node1 := node
+      }
+    }
+    node := node1
+  }
+  $result := node
+}
+
+method add_char(s: Ref, c: Int)
+{
+  var end: Ref
+  var cnode: Ref
+  var cnode1: Ref
+  var prev: Ref
+  var r: Ref
+  var cnode2: Ref
+  if (s == null) {
+    stringlist_error()
+  } elseif (s.StringList$root == null) {
+    end := new(CharNode$val, CharNode$next)
+    end.CharNode$val := 0
+    end.CharNode$next := null
+    cnode := new(CharNode$val, CharNode$next)
+    cnode.CharNode$val := c
+    cnode.CharNode$next := end
+    s.StringList$root := cnode
+    s.StringList$len := 1
+  } elseif (s.StringList$root.CharNode$next == null) {
+    cnode1 := new(CharNode$val, CharNode$next)
+    cnode1.CharNode$val := c
+    cnode1.CharNode$next := s.StringList$root
+    s.StringList$root := cnode1
+    s.StringList$len := 1
+  } else {
+    prev := s.StringList$root
+    r := s.StringList$root
+    while (r.CharNode$next != null)
+      invariant ? && true 
+    {
+      prev := r
+      r := r.CharNode$next
+    }
+    cnode2 := new(CharNode$val, CharNode$next)
+    cnode2.CharNode$val := c
+    cnode2.CharNode$next := r
+    prev.CharNode$next := cnode2
+    s.StringList$len := s.StringList$len + 1
+  }
+}
+
+method add_type(node: Ref)
+{
+  var n: Ref
+  var n1: Ref
+  var _: Ref
+  var _1: Bool
+  var _2: Bool
+  var _3: Ref
+  var _4: Ref
+  var ty: Ref
+  var _5: Ref
+  var _6: Bool
+  var stmt: Ref
+  if (node == null || node.ASTNode$ty != null) {
+    
+  } else {
+    add_type(node.ASTNode$lhs)
+    add_type(node.ASTNode$rhs)
+    add_type(node.ASTNode$cond)
+    add_type(node.ASTNode$then)
+    add_type(node.ASTNode$els)
+    add_type(node.ASTNode$init)
+    add_type(node.ASTNode$inc)
+    n := node.ASTNode$body
+    while (n != null)
+      invariant ? && true 
+    {
+      add_type(n)
+      n := n.ASTNode$next
+    }
+    n1 := node.ASTNode$args
+    while (n1 != null)
+      invariant ? && true 
+    {
+      add_type(n1)
+      n1 := n1.ASTNode$next
+    }
+    if (node.ASTNode$kind == null) {
+      node_kind_error()
+    }
+    if (node.ASTNode$kind.NodeKind$kind == 33) {
+      _ := new_ty_int()
+      node.ASTNode$ty := _
+    } elseif (node.ASTNode$kind.NodeKind$kind == 2 || node.ASTNode$kind.NodeKind$kind == 3 || node.ASTNode$kind.NodeKind$kind == 4 || node.ASTNode$kind.NodeKind$kind == 5 || node.ASTNode$kind.NodeKind$kind == 7 || node.ASTNode$kind.NodeKind$kind == 8 || node.ASTNode$kind.NodeKind$kind == 9 || node.ASTNode$kind.NodeKind$kind == 10) {
+      _1 := same_typekind(node.ASTNode$lhs.ASTNode$ty, node.ASTNode$rhs.ASTNode$ty)
+      if (_1) {
+        node.ASTNode$ty := node.ASTNode$lhs.ASTNode$ty
+      } else {
+        node_binop_error()
+      }
+    } elseif (node.ASTNode$kind.NodeKind$kind == 6) {
+      _2 := is_INT(node.ASTNode$lhs.ASTNode$ty)
+      if (_2) {
+        node.ASTNode$ty := node.ASTNode$lhs.ASTNode$ty
+      } else {
+        node_neg_error()
+      }
+    } elseif (node.ASTNode$kind.NodeKind$kind == 17) {
+      node.ASTNode$ty := node.ASTNode$lhs.ASTNode$ty
+    } elseif (node.ASTNode$kind.NodeKind$kind == 13 || node.ASTNode$kind.NodeKind$kind == 14 || node.ASTNode$kind.NodeKind$kind == 15 || node.ASTNode$kind.NodeKind$kind == 16) {
+      _3 := new_ty_int()
+      node.ASTNode$ty := _3
+    } elseif (node.ASTNode$kind.NodeKind$kind == 29) {
+      node.ASTNode$ty := node.ASTNode$func_ty.Type$return_ty
+    } elseif (node.ASTNode$kind.NodeKind$kind == 21 || node.ASTNode$kind.NodeKind$kind == 24 || node.ASTNode$kind.NodeKind$kind == 23) {
+      _4 := new_ty_int()
+      node.ASTNode$ty := _4
+    } elseif (node.ASTNode$kind.NodeKind$kind == 22 || node.ASTNode$kind.NodeKind$kind == 11 || node.ASTNode$kind.NodeKind$kind == 12) {
+      node.ASTNode$ty := node.ASTNode$lhs.ASTNode$ty
+    } elseif (node.ASTNode$kind.NodeKind$kind == 32) {
+      node.ASTNode$ty := node.ASTNode$var.Obj$ty
+    } elseif (node.ASTNode$kind.NodeKind$kind == 18) {
+      node.ASTNode$ty := node.ASTNode$rhs.ASTNode$ty
+    } elseif (node.ASTNode$kind.NodeKind$kind == 19) {
+      ty := node.ASTNode$lhs.ASTNode$ty
+      _5 := pointer_to(ty)
+      node.ASTNode$ty := _5
+    } elseif (node.ASTNode$kind.NodeKind$kind == 20) {
+      if (node.ASTNode$lhs.ASTNode$ty.Type$base == null) {
+        node_deref_error(true)
+      }
+      _6 := is_VOID(node.ASTNode$lhs.ASTNode$ty.Type$base)
+      if (_6) {
+        node_deref_error(false)
+      }
+      node.ASTNode$ty := node.ASTNode$lhs.ASTNode$ty.Type$base
+    } elseif (node.ASTNode$kind.NodeKind$kind == 31) {
+      if (node.ASTNode$body != null) {
+        stmt := node.ASTNode$body
+        while (stmt.ASTNode$next != null)
+          invariant ? && true 
+        {
+          stmt := stmt.ASTNode$next
+        }
+        if (stmt.ASTNode$kind == null) {
+          node_kind_error()
+        }
+        if (stmt.ASTNode$kind.NodeKind$kind == 30) {
+          node.ASTNode$ty := stmt.ASTNode$lhs.ASTNode$ty
+        }
+      } else {
+        node_stmt_error()
+      }
+    }
+  }
+}
+
+method assign(rest: Ref, tok: Ref, scope: Ref) returns ($result: Ref)
+{
+  var rst: Ref
+  var node: Ref
+  var _: Ref
+  var _1: Bool
+  var _2: Ref
+  var _3: Ref
+  var _4: Ref
+  var tok1: Ref
+  tok1 := tok
+  rst := new(_ptr_struct_Token_$value)
+  rst._ptr_struct_Token_$value := tok1
+  node := logor(rst, tok1, scope)
+  tok1 := rst._ptr_struct_Token_$value
+  _ := str_eq()
+  _1 := equal(tok1, _)
+  if (_1) {
+    _2 := new_ND_ASSIGN()
+    _3 := assign(rest, tok1.Token$next, scope)
+    _4 := new_binary(_2, node, _3, tok1)
+    $result := _4
+  } else {
+    rest._ptr_struct_Token_$value := tok1
+    $result := node
+  }
+}
+
+method bitand(rest: Ref, tok: Ref, scope: Ref) returns ($result: Ref)
+{
+  var rst: Ref
+  var node: Ref
+  var _: Ref
+  var _1: Bool
+  var start: Ref
+  var _2: Ref
+  var _3: Ref
+  var node1: Ref
+  var tok1: Ref
+  tok1 := tok
+  rst := new(_ptr_struct_Token_$value)
+  rst._ptr_struct_Token_$value := tok1
+  node := equality(rst, tok1, scope)
+  tok1 := rst._ptr_struct_Token_$value
+  _ := str_bitand()
+  _1 := equal(tok1, _)
+  while (_1)
+    invariant ? && true 
+  {
+    start := tok1
+    rst._ptr_struct_Token_$value := tok1
+    _2 := new_ND_BITAND()
+    _3 := equality(rst, tok1.Token$next, scope)
+    node1 := new_binary(_2, node, _3, start)
+    tok1 := rst._ptr_struct_Token_$value
+    _ := str_bitand()
+    _1 := equal(tok1, _)
+    node := node1
+  }
+  rest._ptr_struct_Token_$value := tok1
+  $result := node
+}
+
+method bitor(rest: Ref, tok: Ref, scope: Ref) returns ($result: Ref)
+{
+  var rst: Ref
+  var node: Ref
+  var _: Ref
+  var _1: Bool
+  var start: Ref
+  var _2: Ref
+  var _3: Ref
+  var node1: Ref
+  var tok1: Ref
+  tok1 := tok
+  rst := new(_ptr_struct_Token_$value)
+  rst._ptr_struct_Token_$value := tok1
+  node := bitxor(rst, tok1, scope)
+  tok1 := rst._ptr_struct_Token_$value
+  _ := str_bitor()
+  _1 := equal(tok1, _)
+  while (_1)
+    invariant ? && true 
+  {
+    start := tok1
+    rst._ptr_struct_Token_$value := tok1
+    _2 := new_ND_BITOR()
+    _3 := bitxor(rst, tok1.Token$next, scope)
+    node1 := new_binary(_2, node, _3, start)
+    tok1 := rst._ptr_struct_Token_$value
+    _ := str_bitor()
+    _1 := equal(tok1, _)
+    node := node1
+  }
+  rest._ptr_struct_Token_$value := tok1
+  $result := node
+}
+
+method bitxor(rest: Ref, tok: Ref, scope: Ref) returns ($result: Ref)
+{
+  var rst: Ref
+  var node: Ref
+  var _: Ref
+  var _1: Bool
+  var start: Ref
+  var _2: Ref
+  var _3: Ref
+  var node1: Ref
+  var tok1: Ref
+  tok1 := tok
+  rst := new(_ptr_struct_Token_$value)
+  rst._ptr_struct_Token_$value := tok1
+  node := bitand(rst, tok1, scope)
+  tok1 := rst._ptr_struct_Token_$value
+  _ := str_bitxor()
+  _1 := equal(tok1, _)
+  while (_1)
+    invariant ? && true 
+  {
+    start := tok1
+    rst._ptr_struct_Token_$value := tok1
+    _2 := new_ND_BITXOR()
+    _3 := bitand(rst, tok1.Token$next, scope)
+    node1 := new_binary(_2, node, _3, start)
+    tok1 := rst._ptr_struct_Token_$value
+    _ := str_bitxor()
+    _1 := equal(tok1, _)
+    node := node1
+  }
+  rest._ptr_struct_Token_$value := tok1
+  $result := node
+}
+
+method bools(tlist: Ref) returns ($result: Ref)
+{
+  var stmt1: Ref
+  var stmt2: Ref
+  var stmt3: Ref
+  var stmt4: Ref
+  var stmt5: Ref
+  var stmt6: Ref
+  var stmt7: Ref
+  var stmt8: Ref
+  var stmt9: Ref
+  var stmt10: Ref
+  var end: Ref
+  var _: Ref
+  var _1: Ref
+  var _2: Ref
+  var _3: Ref
+  var _4: Ref
+  var _5: Ref
+  var _6: Ref
+  var _7: Ref
+  var _8: Ref
+  var _9: Ref
+  var _10: Ref
+  var _11: Ref
+  var _12: Ref
+  var _13: Ref
+  var _14: Ref
+  var _15: Ref
+  var _16: Ref
+  var _17: Ref
+  var _18: Ref
+  var _19: Ref
+  var _20: Ref
+  var _21: Ref
+  var _22: Ref
+  var _23: Ref
+  var _24: Ref
+  var _25: Ref
+  var _26: Ref
+  var _27: Ref
+  var _28: Ref
+  var _29: Ref
+  var _30: Ref
+  var _31: Ref
+  var _32: Ref
+  var _33: Ref
+  var _34: Ref
+  var _35: Ref
+  var _36: Ref
+  var _37: Ref
+  var _38: Ref
+  var _39: Ref
+  var _40: Ref
+  var _41: Ref
+  var _42: Ref
+  var _43: Ref
+  var _44: Ref
+  var _45: Ref
+  var _46: Ref
+  var _47: Ref
+  var _48: Ref
+  var _49: Ref
+  var _50: Ref
+  var _51: Ref
+  var _52: Ref
+  var _53: Ref
+  var _54: Ref
+  var _55: Ref
+  var _56: Ref
+  var _57: Ref
+  var _58: Ref
+  var _59: Ref
+  var _60: Ref
+  var _61: Ref
+  var _62: Ref
+  var _63: Ref
+  var _64: Ref
+  var _65: Ref
+  var _66: Ref
+  var _67: Ref
+  var _68: Ref
+  var _69: Ref
+  var _70: Ref
+  var _71: Ref
+  var _72: Ref
+  var _73: Ref
+  var _74: Ref
+  var _75: Ref
+  var _76: Ref
+  var _77: Ref
+  var _78: Ref
+  var _79: Ref
+  var _80: Ref
+  var _81: Ref
+  var _82: Ref
+  var _83: Ref
+  var _84: Ref
+  var _85: Ref
+  var _86: Ref
+  var _87: Ref
+  var _88: Ref
+  var _89: Ref
+  var _90: Ref
+  var _91: Ref
+  var _92: Ref
+  var _93: Ref
+  var _94: Ref
+  var _95: Ref
+  var _96: Ref
+  var _97: Ref
+  var _98: Ref
+  var _99: Ref
+  var _100: Ref
+  var _101: Ref
+  var _102: Ref
+  var _103: Ref
+  var _104: Ref
+  var _105: Ref
+  var _106: Ref
+  var _107: Ref
+  var _108: Ref
+  var _109: Ref
+  var _110: Ref
+  var _111: Ref
+  var _112: Ref
+  var _113: Ref
+  var _114: Ref
+  var _115: Ref
+  _ := new_TK_KEYWORD()
+  _1 := str_bool()
+  _2 := new_token(_, _1)
+  tlist.Token$next := _2
+  _3 := tok_ident(98)
+  tlist.Token$next.Token$next := _3
+  _4 := new_TK_PUNCT()
+  _5 := str_semicolon()
+  _6 := new_token(_4, _5)
+  tlist.Token$next.Token$next.Token$next := _6
+  stmt1 := tlist.Token$next.Token$next.Token$next
+  _7 := new_TK_KEYWORD()
+  _8 := str_bool()
+  _9 := new_token(_7, _8)
+  stmt1.Token$next := _9
+  _10 := tok_ident(99)
+  stmt1.Token$next.Token$next := _10
+  _11 := new_TK_PUNCT()
+  _12 := str_semicolon()
+  _13 := new_token(_11, _12)
+  stmt1.Token$next.Token$next.Token$next := _13
+  stmt2 := stmt1.Token$next.Token$next.Token$next
+  _14 := new_TK_KEYWORD()
+  _15 := str_bool()
+  _16 := new_token(_14, _15)
+  stmt2.Token$next := _16
+  _17 := tok_ident(100)
+  stmt2.Token$next.Token$next := _17
+  _18 := new_TK_PUNCT()
+  _19 := str_semicolon()
+  _20 := new_token(_18, _19)
+  stmt2.Token$next.Token$next.Token$next := _20
+  stmt3 := stmt2.Token$next.Token$next.Token$next
+  _21 := tok_ident(98)
+  stmt3.Token$next := _21
+  _22 := new_TK_PUNCT()
+  _23 := str_eq()
+  _24 := new_token(_22, _23)
+  stmt3.Token$next.Token$next := _24
+  _25 := tok_ident(99)
+  stmt3.Token$next.Token$next.Token$next := _25
+  _26 := new_TK_PUNCT()
+  _27 := str_logeq()
+  _28 := new_token(_26, _27)
+  stmt3.Token$next.Token$next.Token$next.Token$next := _28
+  _29 := tok_ident(100)
+  stmt3.Token$next.Token$next.Token$next.Token$next.Token$next := _29
+  _30 := new_TK_PUNCT()
+  _31 := str_semicolon()
+  _32 := new_token(_30, _31)
+  stmt3.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next := _32
+  stmt4 := stmt3.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next
+  _33 := tok_ident(98)
+  stmt4.Token$next := _33
+  _34 := new_TK_PUNCT()
+  _35 := str_eq()
+  _36 := new_token(_34, _35)
+  stmt4.Token$next.Token$next := _36
+  _37 := tok_ident(99)
+  stmt4.Token$next.Token$next.Token$next := _37
+  _38 := new_TK_PUNCT()
+  _39 := str_le()
+  _40 := new_token(_38, _39)
+  stmt4.Token$next.Token$next.Token$next.Token$next := _40
+  _41 := tok_ident(100)
+  stmt4.Token$next.Token$next.Token$next.Token$next.Token$next := _41
+  _42 := new_TK_PUNCT()
+  _43 := str_semicolon()
+  _44 := new_token(_42, _43)
+  stmt4.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next := _44
+  stmt5 := stmt4.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next
+  _45 := tok_ident(98)
+  stmt5.Token$next := _45
+  _46 := new_TK_PUNCT()
+  _47 := str_eq()
+  _48 := new_token(_46, _47)
+  stmt5.Token$next.Token$next := _48
+  _49 := tok_ident(99)
+  stmt5.Token$next.Token$next.Token$next := _49
+  _50 := new_TK_PUNCT()
+  _51 := str_lt()
+  _52 := new_token(_50, _51)
+  stmt5.Token$next.Token$next.Token$next.Token$next := _52
+  _53 := tok_ident(100)
+  stmt5.Token$next.Token$next.Token$next.Token$next.Token$next := _53
+  _54 := new_TK_PUNCT()
+  _55 := str_semicolon()
+  _56 := new_token(_54, _55)
+  stmt5.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next := _56
+  stmt6 := stmt5.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next
+  _57 := tok_ident(98)
+  stmt6.Token$next := _57
+  _58 := new_TK_PUNCT()
+  _59 := str_eq()
+  _60 := new_token(_58, _59)
+  stmt6.Token$next.Token$next := _60
+  _61 := tok_ident(99)
+  stmt6.Token$next.Token$next.Token$next := _61
+  _62 := new_TK_PUNCT()
+  _63 := str_ge()
+  _64 := new_token(_62, _63)
+  stmt6.Token$next.Token$next.Token$next.Token$next := _64
+  _65 := tok_ident(100)
+  stmt6.Token$next.Token$next.Token$next.Token$next.Token$next := _65
+  _66 := new_TK_PUNCT()
+  _67 := str_semicolon()
+  _68 := new_token(_66, _67)
+  stmt6.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next := _68
+  stmt7 := stmt6.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next
+  _69 := tok_ident(98)
+  stmt7.Token$next := _69
+  _70 := new_TK_PUNCT()
+  _71 := str_eq()
+  _72 := new_token(_70, _71)
+  stmt7.Token$next.Token$next := _72
+  _73 := tok_ident(99)
+  stmt7.Token$next.Token$next.Token$next := _73
+  _74 := new_TK_PUNCT()
+  _75 := str_gt()
+  _76 := new_token(_74, _75)
+  stmt7.Token$next.Token$next.Token$next.Token$next := _76
+  _77 := tok_ident(100)
+  stmt7.Token$next.Token$next.Token$next.Token$next.Token$next := _77
+  _78 := new_TK_PUNCT()
+  _79 := str_semicolon()
+  _80 := new_token(_78, _79)
+  stmt7.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next := _80
+  stmt8 := stmt7.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next
+  _81 := tok_ident(98)
+  stmt8.Token$next := _81
+  _82 := new_TK_PUNCT()
+  _83 := str_eq()
+  _84 := new_token(_82, _83)
+  stmt8.Token$next.Token$next := _84
+  _85 := tok_ident(99)
+  stmt8.Token$next.Token$next.Token$next := _85
+  _86 := new_TK_PUNCT()
+  _87 := str_logand()
+  _88 := new_token(_86, _87)
+  stmt8.Token$next.Token$next.Token$next.Token$next := _88
+  _89 := tok_ident(100)
+  stmt8.Token$next.Token$next.Token$next.Token$next.Token$next := _89
+  _90 := new_TK_PUNCT()
+  _91 := str_semicolon()
+  _92 := new_token(_90, _91)
+  stmt8.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next := _92
+  stmt9 := stmt8.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next
+  _93 := tok_ident(98)
+  stmt9.Token$next := _93
+  _94 := new_TK_PUNCT()
+  _95 := str_eq()
+  _96 := new_token(_94, _95)
+  stmt9.Token$next.Token$next := _96
+  _97 := new_TK_PUNCT()
+  _98 := str_lognot()
+  _99 := new_token(_97, _98)
+  stmt9.Token$next.Token$next.Token$next := _99
+  _100 := tok_ident(99)
+  stmt9.Token$next.Token$next.Token$next.Token$next := _100
+  _101 := new_TK_PUNCT()
+  _102 := str_semicolon()
+  _103 := new_token(_101, _102)
+  stmt9.Token$next.Token$next.Token$next.Token$next.Token$next := _103
+  stmt10 := stmt9.Token$next.Token$next.Token$next.Token$next.Token$next
+  _104 := tok_ident(98)
+  stmt10.Token$next := _104
+  _105 := new_TK_PUNCT()
+  _106 := str_eq()
+  _107 := new_token(_105, _106)
+  stmt10.Token$next.Token$next := _107
+  _108 := tok_ident(99)
+  stmt10.Token$next.Token$next.Token$next := _108
+  _109 := new_TK_PUNCT()
+  _110 := str_logneq()
+  _111 := new_token(_109, _110)
+  stmt10.Token$next.Token$next.Token$next.Token$next := _111
+  _112 := tok_ident(100)
+  stmt10.Token$next.Token$next.Token$next.Token$next.Token$next := _112
+  _113 := new_TK_PUNCT()
+  _114 := str_semicolon()
+  _115 := new_token(_113, _114)
+  stmt10.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next := _115
+  end := stmt10.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next
+  $result := end
+}
+
+method compound_stmt(rest: Ref, tok: Ref, scope: Ref, globals: Ref, locals: Ref) returns ($result: Ref)
+{
+  var node: Ref
+  var head: Ref
+  var cur: Ref
+  var rst: Ref
+  var continue_loop: Bool
+  var _: Ref
+  var _1: Ref
+  var _2: Bool
+  var _3: Bool
+  var _4: Ref
+  var _5: Bool
+  var attr: Ref
+  var basety: Ref
+  var _6: Bool
+  var _7: Ref
+  var _8: Ref
+  var tok1: Ref
+  var tok2: Ref
+  tok2 := tok
+  _ := new_ND_BLOCK()
+  node := new_node(_, tok2)
+  head := empty_node()
+  cur := head
+  rst := new(_ptr_struct_Token_$value)
+  enter_scope(scope)
+  continue_loop := false
+  _1 := str_cbracket()
+  _2 := equal(tok2, _1)
+  while (!_2)
+    invariant ? && true 
+  {
+    continue_loop := false
+    _3 := is_typename(tok2, scope._ptr_struct_Scope_$value)
+    if (_3) {
+      _4 := str_colon()
+      _5 := equal(tok2.Token$next, _4)
+    }
+    if (_3 && !_5) {
+      attr := new_attr()
+      rst._ptr_struct_Token_$value := tok2
+      basety := declspec(rst, tok2, attr, scope._ptr_struct_Scope_$value)
+      tok2 := rst._ptr_struct_Token_$value
+      if (attr.VarAttr$is_typedef) {
+        tok1 := parse_typedef(tok2, basety, scope._ptr_struct_Scope_$value)
+        continue_loop := true
+      } else {
+        _6 := is_function(tok2, scope._ptr_struct_Scope_$value)
+        if (_6) {
+          tok1 := function(tok2, basety, attr, scope, globals)
+          continue_loop := true
+        } else {
+          rst._ptr_struct_Token_$value := tok2
+          _7 := declaration(rst, tok2, basety, attr, scope, locals)
+          cur.ASTNode$next := _7
+          tok1 := rst._ptr_struct_Token_$value
+          cur := cur.ASTNode$next
+        }
+      }
+    } else {
+      rst._ptr_struct_Token_$value := tok2
+      _8 := stmt(rst, tok2, scope, globals, locals)
+      cur.ASTNode$next := _8
+      tok1 := rst._ptr_struct_Token_$value
+      cur := cur.ASTNode$next
+    }
+    if (!continue_loop) {
+      add_type(cur)
+    }
+    _1 := str_cbracket()
+    _2 := equal(tok1, _1)
+    tok2 := tok1
+  }
+  leave_scope(scope)
+  node.ASTNode$body := head.ASTNode$next
+  rest._ptr_struct_Token_$value := tok2.Token$next
+  $result := node
+}
+
+method consume(rest: Ref, tok: Ref, str: Ref) returns ($result: Bool)
+{
+  var _: Bool
+  _ := equal(tok, str)
+  if (_) {
+    rest._ptr_struct_Token_$value := tok.Token$next
+    $result := true
+  }
+  rest._ptr_struct_Token_$value := tok
+  $result := false
+}
+
+method copy_type(ty: Ref) returns ($result: Ref)
+{
+  var ret: Ref
+  ret := new(Type$kind, Type$size, Type$align, Type$is_unsigned, Type$origin, Type$base, Type$name, Type$name_pos, Type$return_ty, Type$params, Type$next)
+  ret.Type$kind := ty.Type$kind
+  ret.Type$size := ty.Type$size
+  ret.Type$align := ty.Type$align
+  ret.Type$is_unsigned := ty.Type$is_unsigned
+  ret.Type$origin := ty
+  ret.Type$base := ty.Type$base
+  ret.Type$name := ty.Type$name
+  ret.Type$name_pos := ty.Type$name_pos
+  ret.Type$return_ty := ty.Type$return_ty
+  ret.Type$params := ty.Type$params
+  ret.Type$next := ty.Type$next
+  $result := ret
+}
+
+method create_param_lvars(scope: Ref, locals: Ref, param: Ref)
+{
+  var _: Ref
+  var _1: Ref
+  var $result_0: Ref
+  if (param != null) {
+    create_param_lvars(scope, locals, param.Type$next)
+    _ := ty_name(param)
+    if (_ == null) {
+      param_name_error()
+    }
+    _1 := ty_name(param)
+    $result_0 := new_lvar(scope, locals, _1, param)
+  }
+}
+
+method declaration(rest: Ref, tok: Ref, basety: Ref, attr: Ref, scope: Ref, locals: Ref) returns ($result: Ref)
+{
+  var rst: Ref
+  var i: Int
+  var node: Ref
+  var _: Ref
+  var _1: Bool
+  var ty: Ref
+  var _2: Ref
+  var _3: Bool
+  var _4: Ref
+  var var: Ref
+  var _5: Ref
+  var _6: Bool
+  var _7: Ref
+  var tok1: Ref
+  var tok2: Ref
+  tok2 := tok
+  rst := new(_ptr_struct_Token_$value)
+  i := 0
+  _ := str_semicolon()
+  _1 := equal(tok2, _)
+  while (!_1)
+    invariant ? && true 
+  {
+    if (i > 0) {
+      _2 := str_comma()
+      tok1 := skip(tok2, _2)
+    } else {
+      tok1 := tok2
+    }
+    i := i + 1
+    rst._ptr_struct_Token_$value := tok1
+    ty := declarator(rst, tok1, basety, scope._ptr_struct_Scope_$value)
+    tok1 := rst._ptr_struct_Token_$value
+    _3 := is_VOID(ty)
+    if (_3) {
+      var_decl_void_error()
+    } else {
+      _4 := ty_name(ty)
+      if (_4 == null) {
+        var_name_error()
+      } else {
+        _5 := ty_name(ty)
+        var := new_lvar(scope._ptr_struct_Scope_$value, locals, _5, ty)
+        if (attr != null && attr.VarAttr$align > 0) {
+          var.Obj$align := attr.VarAttr$align
+        }
+        if (var.Obj$ty.Type$size < 0) {
+          var_type_error()
+        }
+        _6 := is_VOID(var.Obj$ty)
+        if (_6) {
+          var_decl_void_error()
+        }
+      }
+    }
+    _ := str_semicolon()
+    _1 := equal(tok1, _)
+    tok2 := tok1
+  }
+  _7 := new_ND_BLOCK()
+  node := new_node(_7, tok2)
+  rest._ptr_struct_Token_$value := tok2.Token$next
+  $result := node
+}
+
+method declarator(rest: Ref, tok: Ref, ty: Ref, scope: Ref) returns ($result: Ref)
+{
+  var rst: Ref
+  var name: Ref
+  var name_pos: Ref
+  var _: Ref
+  var _1: Bool
+  var start: Ref
+  var dummy: Ref
+  var res_ty: Ref
+  var _2: Ref
+  var _3: Bool
+  var ty1: Ref
+  var tok1: Ref
+  var ty11: Ref
+  var ty111: Ref
+  var tok2: Ref
+  var $result_0: Ref
+  tok2 := tok
+  rst := new(_ptr_struct_Token_$value)
+  rst._ptr_struct_Token_$value := tok2
+  ty1 := pointers(rst, tok2, ty)
+  tok2 := rst._ptr_struct_Token_$value
+  _ := str_oparen()
+  _1 := equal(tok2, _)
+  if (_1) {
+    start := tok2
+    dummy := empty_type()
+    $result_0 := declarator(rst, start.Token$next, dummy, scope)
+    tok2 := rst._ptr_struct_Token_$value
+    _2 := str_cparen()
+    tok1 := skip(tok2, _2)
+    ty11 := type_suffix(rest, tok1, ty1, scope)
+    rst._ptr_struct_Token_$value := tok1
+    res_ty := declarator(rst, start.Token$next, ty11, scope)
+    tok1 := rst._ptr_struct_Token_$value
+    $result := res_ty
+  } else {
+    tok1 := tok2
+    ty11 := ty1
+  }
+  name := null
+  name_pos := tok1
+  _3 := is_IDENT(tok1)
+  if (_3) {
+    name := tok1
+    tok1 := tok1.Token$next
+  }
+  ty111 := type_suffix(rest, tok1, ty11, scope)
+  ty111.Type$name := name
+  ty111.Type$name_pos := name_pos
+  $result := ty111
+}
+
+method declspec(rest: Ref, tok: Ref, attr: Ref, scope: Ref) returns ($result: Ref)
+{
+  var VOID: Int
+  var BOOL: Int
+  var CHAR: Int
+  var SHORT: Int
+  var INT: Int
+  var LONG: Int
+  var FLOAT: Int
+  var DOUBLE: Int
+  var OTHER: Int
+  var SIGNED: Int
+  var UNSIGNED: Int
+  var ty: Ref
+  var counter: Int
+  var break_loop: Bool
+  var _: Bool
+  var _1: Ref
+  var _2: Bool
+  var _3: Ref
+  var _4: Bool
+  var _5: Ref
+  var _6: Bool
+  var _7: Ref
+  var _8: Bool
+  var _9: Ref
+  var _10: Bool
+  var _11: Ref
+  var _12: Bool
+  var _13: Ref
+  var _14: Bool
+  var _15: Ref
+  var _16: Bool
+  var _17: Ref
+  var _18: Bool
+  var _19: Ref
+  var _20: Bool
+  var _21: Ref
+  var _22: Bool
+  var _23: Ref
+  var _24: Bool
+  var ty2: Ref
+  var _25: Ref
+  var _26: Bool
+  var _27: Ref
+  var _28: Bool
+  var rst: Ref
+  var _29: Ref
+  var _30: Bool
+  var _31: Ref
+  var _32: Bool
+  var signed_other: Int
+  var unsigned_other: Int
+  var _33: Ref
+  var _34: Bool
+  var _35: Ref
+  var _36: Bool
+  var _37: Ref
+  var _38: Bool
+  var _39: Ref
+  var _40: Bool
+  var _41: Ref
+  var _42: Bool
+  var _43: Ref
+  var _44: Bool
+  var _45: Ref
+  var _46: Bool
+  var _47: Ref
+  var _48: Bool
+  var _49: Ref
+  var _50: Bool
+  var _51: Ref
+  var _52: Bool
+  var tok1: Ref
+  tok1 := tok
+  VOID := 0
+  BOOL := 0
+  CHAR := 0
+  SHORT := 0
+  INT := 0
+  LONG := 0
+  FLOAT := 0
+  DOUBLE := 0
+  OTHER := 0
+  SIGNED := 0
+  UNSIGNED := 0
+  ty := new_ty_int()
+  counter := 0
+  break_loop := false
+  if (!break_loop) {
+    _ := is_typename(tok1, scope)
+  }
+  while (!break_loop && _)
+    invariant ? && true 
+  {
+    _1 := str_typedef()
+    _2 := equal(tok1, _1)
+    if (!_2) {
+      _3 := str_static()
+      _4 := equal(tok1, _3)
+    }
+    if (!(_2 || _4)) {
+      _5 := str_extern()
+      _6 := equal(tok1, _5)
+    }
+    if (!(_2 || _4 || _6)) {
+      _7 := str_inline()
+      _8 := equal(tok1, _7)
+    }
+    if (_2 || _4 || _6 || _8) {
+      if (attr == null) {
+        storage_type_error()
+      }
+      _9 := str_typedef()
+      _10 := equal(tok1, _9)
+      if (_10) {
+        attr.VarAttr$is_typedef := true
+      } else {
+        _11 := str_static()
+        _12 := equal(tok1, _11)
+        if (_12) {
+          storage_type_unsupported_error()
+        } else {
+          _13 := str_extern()
+          _14 := equal(tok1, _13)
+          if (_14) {
+            storage_type_unsupported_error()
+          } else {
+            storage_type_unsupported_error()
+          }
+        }
+      }
+      tok1 := tok1.Token$next
+    } else {
+      _15 := str_const()
+      _16 := equal(tok1, _15)
+      if (!_16) {
+        _17 := str_volatile()
+        _18 := equal(tok1, _17)
+      }
+      if (!(_16 || _18)) {
+        _19 := str_auto()
+        _20 := equal(tok1, _19)
+      }
+      if (!(_16 || _18 || _20)) {
+        _21 := str_register()
+        _22 := equal(tok1, _21)
+      }
+      if (!(_16 || _18 || _20 || _22)) {
+        _23 := str_restrict()
+        _24 := equal(tok1, _23)
+      }
+      if (_16 || _18 || _20 || _22 || _24) {
+        tok1 := tok1.Token$next
+      } else {
+        ty2 := find_typedef(tok1, scope)
+        _25 := str_struct()
+        _26 := equal(tok1, _25)
+        if (!_26) {
+          _27 := str_enum()
+          _28 := equal(tok1, _27)
+        }
+        if (_26 || _28 || ty2 != null) {
+          if (counter > 0) {
+            break_loop := true
+          } else {
+            rst := new(_ptr_struct_Token_$value)
+            rst._ptr_struct_Token_$value := tok1
+            _29 := str_struct()
+            _30 := equal(tok1, _29)
+            if (_30) {
+              structs_enums_unsupported_error()
+            } else {
+              _31 := str_enum()
+              _32 := equal(tok1, _31)
+              if (_32) {
+                structs_enums_unsupported_error()
+              } else {
+                ty := ty2
+                tok1 := tok1.Token$next
+              }
+            }
+            OTHER := OTHER + 1
+            counter := counter + 1
+          }
+        } else {
+          _33 := str_void()
+          _34 := equal(tok1, _33)
+          if (_34) {
+            VOID := VOID + 1
+            counter := counter + 1
+          } else {
+            _35 := str_bool()
+            _36 := equal(tok1, _35)
+            if (_36) {
+              BOOL := BOOL + 1
+              counter := counter + 1
+            } else {
+              _37 := str_char()
+              _38 := equal(tok1, _37)
+              if (_38) {
+                CHAR := CHAR + 1
+                counter := counter + 1
+              } else {
+                _39 := str_short()
+                _40 := equal(tok1, _39)
+                if (_40) {
+                  SHORT := SHORT + 1
+                  counter := counter + 1
+                } else {
+                  _41 := str_int()
+                  _42 := equal(tok1, _41)
+                  if (_42) {
+                    INT := INT + 1
+                    counter := counter + 1
+                  } else {
+                    _43 := str_long()
+                    _44 := equal(tok1, _43)
+                    if (_44) {
+                      LONG := LONG + 1
+                      counter := counter + 1
+                    } else {
+                      _45 := str_float()
+                      _46 := equal(tok1, _45)
+                      if (_46) {
+                        FLOAT := FLOAT + 1
+                        counter := counter + 1
+                      } else {
+                        _47 := str_double()
+                        _48 := equal(tok1, _47)
+                        if (_48) {
+                          DOUBLE := DOUBLE + 1
+                          counter := counter + 1
+                        } else {
+                          _49 := str_signed()
+                          _50 := equal(tok1, _49)
+                          if (_50) {
+                            SIGNED := SIGNED + 1
+                            counter := counter + 1
+                          } else {
+                            _51 := str_unsigned()
+                            _52 := equal(tok1, _51)
+                            if (_52) {
+                              UNSIGNED := UNSIGNED + 1
+                              counter := counter + 1
+                            } else {
+                              unreachable()
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+          signed_other := VOID + BOOL + CHAR + SHORT + INT + LONG + FLOAT + DOUBLE + OTHER + UNSIGNED
+          unsigned_other := VOID + BOOL + CHAR + SHORT + INT + LONG + FLOAT + DOUBLE + OTHER + SIGNED
+          if (counter == 1 && VOID == 1) {
+            ty := new_ty_void()
+          } elseif (counter == 1 && BOOL == 1) {
+            ty := new_ty_bool()
+          } elseif (counter == 1 && CHAR == 1 || signed_other == 1 && SIGNED > 0 && CHAR == 1) {
+            ty := new_ty_char()
+          } elseif (unsigned_other == 1 && UNSIGNED > 0 && CHAR == 1) {
+            ty := new_ty_uchar()
+          } elseif (counter == 1 && SHORT == 1 || counter == 2 && SHORT == 1 && INT == 1 || signed_other == 1 && SIGNED > 0 && SHORT == 1 || signed_other == 2 && SIGNED > 0 && SHORT == 1 && INT == 1) {
+            ty := new_ty_short()
+          } elseif (unsigned_other == 1 && UNSIGNED > 0 && SHORT == 1 || unsigned_other == 2 && UNSIGNED > 0 && SHORT == 1 && INT == 1) {
+            ty := new_ty_ushort()
+          } elseif (counter == 1 && INT == 1 || signed_other == 0 && SIGNED > 0 || signed_other == 1 && SIGNED > 0 && INT == 1) {
+            ty := new_ty_int()
+          } elseif (unsigned_other == 0 && UNSIGNED > 0 || unsigned_other == 1 && UNSIGNED > 0 && INT == 1) {
+            ty := new_ty_uint()
+          } elseif (counter == 1 && LONG == 1 || counter == 2 && LONG == 1 && INT == 1 || counter == 2 && LONG == 2 || counter == 3 && LONG == 2 && INT == 1 || signed_other == 1 && SIGNED > 0 && LONG == 1 || signed_other == 2 && SIGNED > 0 && LONG == 1 && INT == 1 || signed_other == 2 && SIGNED > 0 && LONG == 2 || signed_other == 3 && SIGNED > 0 && LONG == 2 && INT == 1) {
+            ty := new_ty_long()
+          } elseif (unsigned_other == 1 && UNSIGNED > 0 && LONG == 1 || unsigned_other == 2 && UNSIGNED > 0 && LONG == 1 && INT == 1 || unsigned_other == 2 && UNSIGNED > 0 && LONG == 2 || unsigned_other == 3 && UNSIGNED > 0 && LONG == 2 && INT == 1) {
+            ty := new_ty_ulong()
+          } elseif (counter == 1 && FLOAT == 1) {
+            ty := new_ty_float()
+          } elseif (counter == 1 && DOUBLE == 1) {
+            ty := new_ty_double()
+          } elseif (counter == 2 && LONG == 1 && DOUBLE == 1) {
+            ty := new_ty_ldouble()
+          } else {
+            type_error()
+          }
+          tok1 := tok1.Token$next
+        }
+      }
+    }
+    if (!break_loop) {
+      _ := is_typename(tok1, scope)
+    }
+  }
+  rest._ptr_struct_Token_$value := tok1
+  $result := ty
+}
+
+method empty_node() returns ($result: Ref)
+{
+  var node: Ref
+  node := new(ASTNode$kind, ASTNode$next, ASTNode$ty, ASTNode$tok, ASTNode$lhs, ASTNode$rhs, ASTNode$cond, ASTNode$then, ASTNode$els, ASTNode$init, ASTNode$inc, ASTNode$body, ASTNode$func_ty, ASTNode$args, ASTNode$pass_by_stack, ASTNode$var, ASTNode$val)
+  $result := node
+}
+
+method empty_type() returns ($result: Ref)
+{
+  var ty: Ref
+  ty := new(Type$kind, Type$size, Type$align, Type$is_unsigned, Type$origin, Type$base, Type$name, Type$name_pos, Type$return_ty, Type$params, Type$next)
+  $result := ty
+}
+
+method enter_scope(scope: Ref)
+{
+  var sc: Ref
+  sc := new_scope()
+  sc.Scope$next := scope._ptr_struct_Scope_$value
+  scope._ptr_struct_Scope_$value := sc
+}
+
+method enum_type() returns ($result: Ref)
+{
+  var _: Ref
+  var _1: Ref
+  _ := new_TY_ENUM()
+  _1 := new_type(_, 4, 4)
+  $result := _1
+}
+
+method equal(tok: Ref, op: Ref) returns ($result: Bool)
+{
+  var _: Bool
+  _ := equals(tok.Token$str, op)
+  $result := _
+}
+
+method equality(rest: Ref, tok: Ref, scope: Ref) returns ($result: Ref)
+{
+  var rst: Ref
+  var node: Ref
+  var break_loop: Bool
+  var start: Ref
+  var _: Ref
+  var _1: Bool
+  var _2: Ref
+  var _3: Ref
+  var _4: Ref
+  var _5: Bool
+  var _6: Ref
+  var _7: Ref
+  var node1: Ref
+  var tok1: Ref
+  tok1 := tok
+  rst := new(_ptr_struct_Token_$value)
+  rst._ptr_struct_Token_$value := tok1
+  node := relational(rst, tok1, scope)
+  tok1 := rst._ptr_struct_Token_$value
+  break_loop := false
+  while (!break_loop)
+    invariant ? && true 
+  {
+    start := tok1
+    _ := str_logeq()
+    _1 := equal(tok1, _)
+    if (_1) {
+      rst._ptr_struct_Token_$value := tok1
+      _2 := new_ND_EQ()
+      _3 := relational(rst, tok1.Token$next, scope)
+      node1 := new_binary(_2, node, _3, start)
+      tok1 := rst._ptr_struct_Token_$value
+    } else {
+      _4 := str_logneq()
+      _5 := equal(tok1, _4)
+      if (_5) {
+        rst._ptr_struct_Token_$value := tok1
+        _6 := new_ND_NE()
+        _7 := relational(rst, tok1.Token$next, scope)
+        node1 := new_binary(_6, node, _7, start)
+        tok1 := rst._ptr_struct_Token_$value
+      } else {
+        rest._ptr_struct_Token_$value := tok1
+        break_loop := true
+        node1 := node
+      }
+    }
+    node := node1
+  }
+  $result := node
+}
+
+method equals(s1: Ref, s2: Ref) returns ($result: Bool)
+{
+  var ln: Int
+  var i: Int
+  var c1: Ref
+  var c2: Ref
+  var eq: Bool
+  if (s1 != null && s2 != null && s1.StringList$root != null && s2.StringList$root != null && s1.StringList$len == s2.StringList$len) {
+    ln := s2.StringList$len
+    c1 := s1.StringList$root
+    c2 := s2.StringList$root
+    eq := true
+    i := 0
+    while (i < ln)
+      invariant ? && true 
+    {
+      eq := eq && c1.CharNode$val == c2.CharNode$val
+      c1 := c1.CharNode$next
+      c2 := c2.CharNode$next
+      i := i + 1
+    }
+    eq := eq && c1.CharNode$val == 0 && c2.CharNode$val == 0
+    $result := eq
+  }
+  $result := false
+}
+
+method expr(rest: Ref, tok: Ref, scope: Ref) returns ($result: Ref)
+{
+  var rst: Ref
+  var node: Ref
+  var _: Ref
+  var _1: Bool
+  var _2: Ref
+  var _3: Ref
+  var _4: Ref
+  var tok1: Ref
+  tok1 := tok
+  rst := new(_ptr_struct_Token_$value)
+  rst._ptr_struct_Token_$value := tok1
+  node := assign(rst, tok1, scope)
+  tok1 := rst._ptr_struct_Token_$value
+  _ := str_comma()
+  _1 := equal(tok1, _)
+  if (_1) {
+    _2 := new_ND_COMMA()
+    _3 := expr(rest, tok1.Token$next, scope)
+    _4 := new_binary(_2, node, _3, tok1)
+    $result := _4
+  } else {
+    rest._ptr_struct_Token_$value := tok1
+    $result := node
+  }
+}
+
+method expr_stmt(rest: Ref, tok: Ref, scope: Ref) returns ($result: Ref)
+{
+  var _: Ref
+  var _1: Bool
+  var _2: Ref
+  var _3: Ref
+  var node: Ref
+  var rst: Ref
+  var _4: Ref
+  var _5: Ref
+  var _6: Ref
+  var _7: Ref
+  var tok1: Ref
+  tok1 := tok
+  _ := str_semicolon()
+  _1 := equal(tok1, _)
+  if (_1) {
+    rest._ptr_struct_Token_$value := tok1.Token$next
+    _2 := new_ND_BLOCK()
+    _3 := new_node(_2, tok1)
+    $result := _3
+  } else {
+    _4 := new_ND_EXPR_STMT()
+    node := new_node(_4, tok1)
+    rst := new(_ptr_struct_Token_$value)
+    rst._ptr_struct_Token_$value := tok1
+    _5 := expr(rst, tok1, scope)
+    node.ASTNode$lhs := _5
+    tok1 := rst._ptr_struct_Token_$value
+    _6 := str_semicolon()
+    _7 := skip(tok1, _6)
+    rest._ptr_struct_Token_$value := _7
+    $result := node
+  }
+}
+
+method find_func(scope: Ref, name: Ref) returns ($result: Ref)
+{
+  var sc: Ref
+  var sc2: Ref
+  sc := scope
+  while (sc.Scope$next != null)
+    invariant ? && true 
+  {
+    sc := sc.Scope$next
+  }
+  sc2 := varscopemap_get(sc.Scope$vars, name)
+  if (sc2 != null && sc2.VarScope$var != null && sc2.VarScope$var.Obj$is_function) {
+    $result := sc2.VarScope$var
+  }
+  $result := null
+}
+
+method find_tag(tok: Ref, scope: Ref) returns ($result: Ref)
+{
+  var sc: Ref
+  var ty: Ref
+  var _: Ref
+  sc := scope
+  while (sc != null)
+    invariant ? && true 
+  {
+    _ := name(tok)
+    ty := tagscopemap_get(sc.Scope$tags, _)
+    if (ty != null) {
+      $result := ty
+    }
+    sc := sc.Scope$next
+  }
+  $result := null
+}
+
+method find_typedef(tok: Ref, scope: Ref) returns ($result: Ref)
+{
+  var _: Bool
+  var sc: Ref
+  _ := is_IDENT(tok)
+  if (_) {
+    sc := find_var(tok, scope)
+    if (sc != null) {
+      $result := sc.VarScope$type_def
+    }
+  }
+  $result := null
+}
+
+method find_var(tok: Ref, scope: Ref) returns ($result: Ref)
+{
+  var sc: Ref
+  var sc2: Ref
+  var _: Ref
+  sc := scope
+  while (sc != null)
+    invariant ? && true 
+  {
+    _ := name(tok)
+    sc2 := varscopemap_get(sc.Scope$vars, _)
+    if (sc2 != null) {
+      $result := sc2
+    }
+    sc := sc.Scope$next
+  }
+  $result := null
+}
+
+method func_params(rest: Ref, tok: Ref, ty: Ref, scope: Ref) returns ($result: Ref)
+{
+  var head: Ref
+  var cur: Ref
+  var rst: Ref
+  var _: Ref
+  var _1: Bool
+  var _2: Ref
+  var _3: Bool
+  var _4: Ref
+  var _5: Ref
+  var _6: Bool
+  var ty2: Ref
+  var _7: Ref
+  var _8: Bool
+  var _9: Ref
+  var tok1: Ref
+  var ty21: Ref
+  var ty1: Ref
+  var tok2: Ref
+  tok2 := tok
+  _ := str_void()
+  _1 := equal(tok2, _)
+  if (_1) {
+    _2 := str_cparen()
+    _3 := equal(tok2.Token$next, _2)
+  }
+  if (_1 && _3) {
+    rest._ptr_struct_Token_$value := tok2.Token$next.Token$next
+    _4 := func_type(ty)
+    $result := _4
+  }
+  head := empty_type()
+  cur := head
+  rst := new(_ptr_struct_Token_$value)
+  _5 := str_cparen()
+  _6 := equal(tok2, _5)
+  while (!_6)
+    invariant ? && true 
+  {
+    if (cur != head) {
+      _7 := str_comma()
+      tok1 := skip(tok2, _7)
+    } else {
+      tok1 := tok2
+    }
+    rst._ptr_struct_Token_$value := tok1
+    ty2 := declspec(rst, tok1, null, scope)
+    tok1 := rst._ptr_struct_Token_$value
+    ty21 := declarator(rst, tok1, ty2, scope)
+    tok1 := rst._ptr_struct_Token_$value
+    _8 := is_FUNC(ty21)
+    if (_8) {
+      func_as_arg_error()
+    }
+    _9 := copy_type(ty21)
+    cur.Type$next := _9
+    cur := cur.Type$next
+    _5 := str_cparen()
+    _6 := equal(tok1, _5)
+    tok2 := tok1
+    ty2 := ty21
+  }
+  ty1 := func_type(ty)
+  ty1.Type$params := head.Type$next
+  rest._ptr_struct_Token_$value := tok2.Token$next
+  $result := ty1
+}
+
+method func_type(return_ty: Ref) returns ($result: Ref)
+{
+  var ty: Ref
+  var _: Ref
+  _ := new_TY_FUNC()
+  ty := new_type(_, 1, 1)
+  ty.Type$return_ty := return_ty
+  $result := ty
+}
+
+method funcall(rest: Ref, tok: Ref, fn: Ref, scope: Ref) returns ($result: Ref)
+{
+  var ty: Ref
+  var param_ty: Ref
+  var head: Ref
+  var cur: Ref
+  var rst: Ref
+  var node: Ref
+  var _: Bool
+  var _1: Bool
+  var _2: Bool
+  var _3: Bool
+  var _4: Ref
+  var _5: Bool
+  var arg: Ref
+  var _6: Ref
+  var _7: Ref
+  var _8: Ref
+  var _9: Ref
+  var tok1: Ref
+  var tok2: Ref
+  tok2 := tok
+  add_type(fn)
+  _ := is_FUNC(fn.ASTNode$ty)
+  if (!_) {
+    _1 := is_PTR(fn.ASTNode$ty)
+  }
+  if (!_ && !!_1) {
+    _2 := is_FUNC(fn.ASTNode$ty.Type$base)
+  }
+  if (!_ && (!_1 || !_2)) {
+    func_error()
+  }
+  ty := null
+  _3 := is_FUNC(fn.ASTNode$ty)
+  if (_3) {
+    ty := fn.ASTNode$ty
+  } else {
+    ty := fn.ASTNode$ty.Type$base
+  }
+  param_ty := ty.Type$params
+  head := empty_node()
+  cur := head
+  rst := new(_ptr_struct_Token_$value)
+  _4 := str_cparen()
+  _5 := equal(tok2, _4)
+  while (!_5)
+    invariant ? && true 
+  {
+    if (cur != head) {
+      _6 := str_comma()
+      tok1 := skip(tok2, _6)
+    } else {
+      tok1 := tok2
+    }
+    rst._ptr_struct_Token_$value := tok1
+    arg := assign(rst, tok1, scope)
+    tok1 := rst._ptr_struct_Token_$value
+    add_type(arg)
+    if (param_ty != null) {
+      param_ty := param_ty.Type$next
+    } else {
+      func_args_error(true)
+    }
+    cur.ASTNode$next := arg
+    cur := cur.ASTNode$next
+    _4 := str_cparen()
+    _5 := equal(tok1, _4)
+    tok2 := tok1
+  }
+  if (param_ty != null) {
+    func_args_error(false)
+  }
+  _7 := str_cparen()
+  _8 := skip(tok2, _7)
+  rest._ptr_struct_Token_$value := _8
+  _9 := new_ND_FUNCALL()
+  node := new_unary(_9, fn, tok2)
+  node.ASTNode$func_ty := ty
+  node.ASTNode$ty := ty.Type$return_ty
+  node.ASTNode$args := head.ASTNode$next
+  $result := node
+}
+
+method function(tok: Ref, basety: Ref, attr: Ref, scope: Ref, globals: Ref) returns ($result: Ref)
+{
+  var rst: Ref
+  var ty: Ref
+  var name_str: Ref
+  var fn: Ref
+  var rest: Ref
+  var locals: Ref
+  var _: Ref
+  var _1: Ref
+  var _2: Bool
+  var _3: Ref
+  var _4: Bool
+  var _5: Ref
+  var _6: Bool
+  var _7: Ref
+  var _8: Bool
+  var _9: Ref
+  var _10: Ref
+  var tok1: Ref
+  var tok2: Ref
+  tok2 := tok
+  rst := new(_ptr_struct_Token_$value)
+  rst._ptr_struct_Token_$value := tok2
+  ty := declarator(rst, tok2, basety, scope._ptr_struct_Scope_$value)
+  tok2 := rst._ptr_struct_Token_$value
+  _ := ty_name(ty)
+  if (_ == null) {
+    func_name_error()
+  }
+  name_str := ty_name(ty)
+  fn := find_func(scope._ptr_struct_Scope_$value, name_str)
+  if (fn != null) {
+    if (!fn.Obj$is_function) {
+      func_redecl_error()
+    }
+    if (fn.Obj$is_definition) {
+      _1 := str_obracket()
+      _2 := equal(tok2, _1)
+    }
+    if (fn.Obj$is_definition && _2) {
+      func_redef_error()
+    }
+    if (!fn.Obj$is_definition) {
+      _3 := str_obracket()
+      _4 := equal(tok2, _3)
+    }
+    fn.Obj$is_definition := fn.Obj$is_definition || _4
+  } else {
+    fn := new_gvar(scope._ptr_struct_Scope_$value, globals, name_str, ty)
+    fn.Obj$is_function := true
+    _5 := str_obracket()
+    _6 := equal(tok2, _5)
+    fn.Obj$is_definition := _6
+  }
+  rest := new(_ptr_struct_Token_$value)
+  rest._ptr_struct_Token_$value := tok2
+  _7 := str_semicolon()
+  _8 := consume(rest, tok2, _7)
+  if (_8) {
+    tok2 := rest._ptr_struct_Token_$value
+    $result := tok2
+  }
+  tok2 := rest._ptr_struct_Token_$value
+  locals := new(_ptr_struct_Obj_$value)
+  locals._ptr_struct_Obj_$value := null
+  enter_scope(scope)
+  create_param_lvars(scope._ptr_struct_Scope_$value, locals, ty.Type$params)
+  fn.Obj$params := locals._ptr_struct_Obj_$value
+  _9 := str_obracket()
+  tok1 := skip(tok2, _9)
+  rest._ptr_struct_Token_$value := tok1
+  _10 := compound_stmt(rest, tok1, scope, globals, locals)
+  fn.Obj$body := _10
+  tok1 := rest._ptr_struct_Token_$value
+  fn.Obj$locals := locals._ptr_struct_Obj_$value
+  leave_scope(scope)
+  $result := tok1
+}
+
+method functions(tlist: Ref) returns ($result: Ref)
+{
+  var tmp: Ref
+  var _: Ref
+  var _1: Ref
+  var _2: Ref
+  var _3: Ref
+  var _4: Ref
+  var _5: Ref
+  var _6: Ref
+  var _7: Ref
+  var _8: Ref
+  var _9: Ref
+  var _10: Ref
+  var _11: Ref
+  var _12: Ref
+  var _13: Ref
+  var _14: Ref
+  var _15: Ref
+  var _16: Ref
+  var _17: Ref
+  var _18: Ref
+  var _19: Ref
+  var tmp1: Ref
+  var tmp11: Ref
+  var tmp111: Ref
+  _ := new_TK_KEYWORD()
+  _1 := str_int()
+  _2 := new_token(_, _1)
+  tlist.Token$next := _2
+  _3 := tok_ident(102)
+  tlist.Token$next.Token$next := _3
+  _4 := new_TK_PUNCT()
+  _5 := str_oparen()
+  _6 := new_token(_4, _5)
+  tlist.Token$next.Token$next.Token$next := _6
+  _7 := new_TK_KEYWORD()
+  _8 := str_int()
+  _9 := new_token(_7, _8)
+  tlist.Token$next.Token$next.Token$next.Token$next := _9
+  _10 := tok_ident(112)
+  tlist.Token$next.Token$next.Token$next.Token$next.Token$next := _10
+  _11 := new_TK_PUNCT()
+  _12 := str_cparen()
+  _13 := new_token(_11, _12)
+  tlist.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next := _13
+  _14 := new_TK_PUNCT()
+  _15 := str_obracket()
+  _16 := new_token(_14, _15)
+  tlist.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next := _16
+  tmp := tlist.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next
+  tmp1 := nums(tmp)
+  tmp11 := pointerss(tmp1)
+  tmp111 := ifstmt(tmp11)
+  _17 := new_TK_PUNCT()
+  _18 := str_cbracket()
+  _19 := new_token(_17, _18)
+  tmp111.Token$next := _19
+  $result := tmp111.Token$next
+}
+
+method get_len(s: Ref) returns ($result: Int)
+{
+  $result := (s != null ? s.StringList$len : -1)
+}
+
+method ifstmt(tlist: Ref) returns ($result: Ref)
+{
+  var one: Ref
+  var two: Ref
+  var tmp: Ref
+  var elsee: Ref
+  var ret2: Ref
+  var retp: Ref
+  var end: Ref
+  var _: Ref
+  var _1: Ref
+  var _2: Ref
+  var _3: Ref
+  var _4: Ref
+  var _5: Ref
+  var _6: Ref
+  var _7: Ref
+  var _8: Ref
+  var _9: Ref
+  var _10: Ref
+  var _11: Ref
+  var _12: Ref
+  var _13: Ref
+  var _14: Ref
+  var _15: Ref
+  var _16: Ref
+  var _17: Ref
+  var _18: Ref
+  var _19: Ref
+  var _20: Ref
+  var _21: Ref
+  var _22: Ref
+  var _23: Ref
+  var _24: Ref
+  var _25: Ref
+  var _26: Ref
+  var _27: Ref
+  var _28: Ref
+  var _29: Ref
+  var _30: Ref
+  var _31: Ref
+  var _32: Ref
+  var _33: Ref
+  var _34: Ref
+  var _35: Ref
+  var _36: Ref
+  var _37: Ref
+  var _38: Ref
+  var _39: Ref
+  var _40: Ref
+  var _41: Ref
+  var _42: Ref
+  var _43: Ref
+  var _44: Ref
+  var _45: Ref
+  var _46: Ref
+  var _47: Ref
+  var _48: Ref
+  var _49: Ref
+  var _50: Ref
+  var _51: Ref
+  var _52: Ref
+  var _53: Ref
+  var _54: Ref
+  var _55: Ref
+  var _56: Ref
+  var _57: Ref
+  var _58: Ref
+  var _59: Ref
+  var _60: Ref
+  var _61: Ref
+  var _62: Ref
+  var _63: Ref
+  var _64: Ref
+  var _65: Ref
+  var _66: Ref
+  var _67: Ref
+  var _68: Ref
+  var _69: Ref
+  var _70: Ref
+  var _71: Ref
+  var _72: Ref
+  var _73: Ref
+  var _74: Ref
+  var _75: Ref
+  var _76: Ref
+  var tmp1: Ref
+  one := new_stringlist()
+  add_char(one, 49)
+  two := new_stringlist()
+  add_char(two, 50)
+  _ := new_TK_KEYWORD()
+  _1 := str_if()
+  _2 := new_token(_, _1)
+  tlist.Token$next := _2
+  _3 := new_TK_PUNCT()
+  _4 := str_oparen()
+  _5 := new_token(_3, _4)
+  tlist.Token$next.Token$next := _5
+  _6 := tok_ident(112)
+  tlist.Token$next.Token$next.Token$next := _6
+  _7 := new_TK_PUNCT()
+  _8 := str_le()
+  _9 := new_token(_7, _8)
+  tlist.Token$next.Token$next.Token$next.Token$next := _9
+  _10 := new_TK_NUM()
+  _11 := new_token(_10, one)
+  tlist.Token$next.Token$next.Token$next.Token$next.Token$next := _11
+  _12 := new_ty_int()
+  tlist.Token$next.Token$next.Token$next.Token$next.Token$next.Token$ty := _12
+  _13 := new_TK_PUNCT()
+  _14 := str_cparen()
+  _15 := new_token(_13, _14)
+  tlist.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next := _15
+  _16 := new_TK_PUNCT()
+  _17 := str_obracket()
+  _18 := new_token(_16, _17)
+  tlist.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next := _18
+  tmp := tlist.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next
+  tmp1 := whiles(tmp)
+  _19 := new_TK_KEYWORD()
+  _20 := str_return()
+  _21 := new_token(_19, _20)
+  tmp1.Token$next := _21
+  _22 := new_TK_NUM()
+  _23 := new_token(_22, one)
+  tmp1.Token$next.Token$next := _23
+  _24 := new_ty_int()
+  tmp1.Token$next.Token$next.Token$ty := _24
+  _25 := new_TK_PUNCT()
+  _26 := str_semicolon()
+  _27 := new_token(_25, _26)
+  tmp1.Token$next.Token$next.Token$next := _27
+  elsee := tmp1.Token$next.Token$next.Token$next
+  _28 := new_TK_PUNCT()
+  _29 := str_cbracket()
+  _30 := new_token(_28, _29)
+  elsee.Token$next := _30
+  _31 := new_TK_KEYWORD()
+  _32 := str_else()
+  _33 := new_token(_31, _32)
+  elsee.Token$next.Token$next := _33
+  _34 := new_TK_PUNCT()
+  _35 := str_obracket()
+  _36 := new_token(_34, _35)
+  elsee.Token$next.Token$next.Token$next := _36
+  ret2 := elsee.Token$next.Token$next.Token$next
+  _37 := new_TK_KEYWORD()
+  _38 := str_return()
+  _39 := new_token(_37, _38)
+  ret2.Token$next := _39
+  _40 := tok_ident(102)
+  ret2.Token$next.Token$next := _40
+  _41 := new_TK_PUNCT()
+  _42 := str_oparen()
+  _43 := new_token(_41, _42)
+  ret2.Token$next.Token$next.Token$next := _43
+  _44 := tok_ident(112)
+  ret2.Token$next.Token$next.Token$next.Token$next := _44
+  _45 := new_TK_PUNCT()
+  _46 := str_sub()
+  _47 := new_token(_45, _46)
+  ret2.Token$next.Token$next.Token$next.Token$next.Token$next := _47
+  _48 := new_TK_NUM()
+  _49 := new_token(_48, one)
+  ret2.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next := _49
+  _50 := new_ty_int()
+  ret2.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next.Token$ty := _50
+  _51 := new_TK_PUNCT()
+  _52 := str_cparen()
+  _53 := new_token(_51, _52)
+  ret2.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next := _53
+  retp := ret2.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next
+  _54 := new_TK_PUNCT()
+  _55 := str_add()
+  _56 := new_token(_54, _55)
+  retp.Token$next := _56
+  _57 := tok_ident(102)
+  retp.Token$next.Token$next := _57
+  _58 := new_TK_PUNCT()
+  _59 := str_oparen()
+  _60 := new_token(_58, _59)
+  retp.Token$next.Token$next.Token$next := _60
+  _61 := tok_ident(112)
+  retp.Token$next.Token$next.Token$next.Token$next := _61
+  _62 := new_TK_PUNCT()
+  _63 := str_sub()
+  _64 := new_token(_62, _63)
+  retp.Token$next.Token$next.Token$next.Token$next.Token$next := _64
+  _65 := new_TK_NUM()
+  _66 := new_token(_65, two)
+  retp.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next := _66
+  _67 := new_ty_int()
+  retp.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next.Token$ty := _67
+  _68 := new_TK_PUNCT()
+  _69 := str_cparen()
+  _70 := new_token(_68, _69)
+  retp.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next := _70
+  _71 := new_TK_PUNCT()
+  _72 := str_semicolon()
+  _73 := new_token(_71, _72)
+  retp.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next := _73
+  end := retp.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next
+  _74 := new_TK_PUNCT()
+  _75 := str_cbracket()
+  _76 := new_token(_74, _75)
+  end.Token$next := _76
+  $result := end.Token$next
+}
+
+method is_BOOL(ty: Ref) returns ($result: Bool)
+{
+  if (ty != null && ty.Type$kind != null) {
+    $result := ty.Type$kind.TypeKind$kind == 2
+  } else {
+    $result := false
+  }
+}
+
+method is_CHAR(ty: Ref) returns ($result: Bool)
+{
+  if (ty != null && ty.Type$kind != null) {
+    $result := ty.Type$kind.TypeKind$kind == 3
+  } else {
+    $result := false
+  }
+}
+
+method is_DOUBLE(ty: Ref) returns ($result: Bool)
+{
+  if (ty != null && ty.Type$kind != null) {
+    $result := ty.Type$kind.TypeKind$kind == 8
+  } else {
+    $result := false
+  }
+}
+
+method is_ENUM(ty: Ref) returns ($result: Bool)
+{
+  if (ty != null && ty.Type$kind != null) {
+    $result := ty.Type$kind.TypeKind$kind == 10
+  } else {
+    $result := false
+  }
+}
+
+method is_EOF(t: Ref) returns ($result: Bool)
+{
+  if (t != null && t.Token$kind != null) {
+    $result := t.Token$kind.TokenKind$kind == 7
+  } else {
+    $result := false
+  }
+}
+
+method is_FLOAT(ty: Ref) returns ($result: Bool)
+{
+  if (ty != null && ty.Type$kind != null) {
+    $result := ty.Type$kind.TypeKind$kind == 7
+  } else {
+    $result := false
+  }
+}
+
+method is_FUNC(ty: Ref) returns ($result: Bool)
+{
+  if (ty != null && ty.Type$kind != null) {
+    $result := ty.Type$kind.TypeKind$kind == 12
+  } else {
+    $result := false
+  }
+}
+
+method is_IDENT(t: Ref) returns ($result: Bool)
+{
+  if (t != null && t.Token$kind != null) {
+    $result := t.Token$kind.TokenKind$kind == 1
+  } else {
+    $result := false
+  }
+}
+
+method is_INT(ty: Ref) returns ($result: Bool)
+{
+  if (ty != null && ty.Type$kind != null) {
+    $result := ty.Type$kind.TypeKind$kind == 5
+  } else {
+    $result := false
+  }
+}
+
+method is_KEYWORD(t: Ref) returns ($result: Bool)
+{
+  if (t != null && t.Token$kind != null) {
+    $result := t.Token$kind.TokenKind$kind == 3
+  } else {
+    $result := false
+  }
+}
+
+method is_LDOUBLE(ty: Ref) returns ($result: Bool)
+{
+  if (ty != null && ty.Type$kind != null) {
+    $result := ty.Type$kind.TypeKind$kind == 9
+  } else {
+    $result := false
+  }
+}
+
+method is_LONG(ty: Ref) returns ($result: Bool)
+{
+  if (ty != null && ty.Type$kind != null) {
+    $result := ty.Type$kind.TypeKind$kind == 6
+  } else {
+    $result := false
+  }
+}
+
+method is_NUM(t: Ref) returns ($result: Bool)
+{
+  if (t != null && t.Token$kind != null) {
+    $result := t.Token$kind.TokenKind$kind == 5
+  } else {
+    $result := false
+  }
+}
+
+method is_PP_NUM(t: Ref) returns ($result: Bool)
+{
+  if (t != null && t.Token$kind != null) {
+    $result := t.Token$kind.TokenKind$kind == 6
+  } else {
+    $result := false
+  }
+}
+
+method is_PTR(ty: Ref) returns ($result: Bool)
+{
+  if (ty != null && ty.Type$kind != null) {
+    $result := ty.Type$kind.TypeKind$kind == 11
+  } else {
+    $result := false
+  }
+}
+
+method is_PUNCT(t: Ref) returns ($result: Bool)
+{
+  if (t != null && t.Token$kind != null) {
+    $result := t.Token$kind.TokenKind$kind == 2
+  } else {
+    $result := false
+  }
+}
+
+method is_SHORT(ty: Ref) returns ($result: Bool)
+{
+  if (ty != null && ty.Type$kind != null) {
+    $result := ty.Type$kind.TypeKind$kind == 4
+  } else {
+    $result := false
+  }
+}
+
+method is_STR(t: Ref) returns ($result: Bool)
+{
+  if (t != null && t.Token$kind != null) {
+    $result := t.Token$kind.TokenKind$kind == 4
+  } else {
+    $result := false
+  }
+}
+
+method is_STRUCT(ty: Ref) returns ($result: Bool)
+{
+  if (ty != null && ty.Type$kind != null) {
+    $result := ty.Type$kind.TypeKind$kind == 13
+  } else {
+    $result := false
+  }
+}
+
+method is_VOID(ty: Ref) returns ($result: Bool)
+{
+  if (ty != null && ty.Type$kind != null) {
+    $result := ty.Type$kind.TypeKind$kind == 1
+  } else {
+    $result := false
+  }
+}
+
+method is_function(tok: Ref, scope: Ref) returns ($result: Bool)
+{
+  var dummy: Ref
+  var rest: Ref
+  var ty: Ref
+  var _: Ref
+  var _1: Bool
+  var _2: Bool
+  _ := str_semicolon()
+  _1 := equal(tok, _)
+  if (_1) {
+    $result := false
+  }
+  dummy := empty_type()
+  rest := new(_ptr_struct_Token_$value)
+  rest._ptr_struct_Token_$value := tok
+  ty := declarator(rest, tok, dummy, scope)
+  _2 := is_FUNC(ty)
+  $result := _2
+}
+
+method is_numeric(ty: Ref) returns ($result: Bool)
+{
+  var _: Bool
+  var _1: Bool
+  var _2: Bool
+  var _3: Bool
+  var _4: Bool
+  var _5: Bool
+  var _6: Bool
+  var _7: Bool
+  var _8: Bool
+  _ := is_INT(ty)
+  if (!_) {
+    _1 := is_BOOL(ty)
+  }
+  if (!(_ || _1)) {
+    _2 := is_CHAR(ty)
+  }
+  if (!(_ || _1 || _2)) {
+    _3 := is_SHORT(ty)
+  }
+  if (!(_ || _1 || _2 || _3)) {
+    _4 := is_LONG(ty)
+  }
+  if (!(_ || _1 || _2 || _3 || _4)) {
+    _5 := is_ENUM(ty)
+  }
+  if (!(_ || _1 || _2 || _3 || _4 || _5)) {
+    _6 := is_FLOAT(ty)
+  }
+  if (!(_ || _1 || _2 || _3 || _4 || _5 || _6)) {
+    _7 := is_DOUBLE(ty)
+  }
+  if (!(_ || _1 || _2 || _3 || _4 || _5 || _6 || _7)) {
+    _8 := is_LDOUBLE(ty)
+  }
+  $result := _ || _1 || _2 || _3 || _4 || _5 || _6 || _7 || _8
+}
+
+method is_typename(tok: Ref, scope: Ref) returns ($result: Bool)
+{
+  var res: Bool
+  var _: Ref
+  var _1: Bool
+  var _2: Ref
+  var _3: Bool
+  var _4: Ref
+  var _5: Bool
+  var _6: Ref
+  var _7: Bool
+  var _8: Ref
+  var _9: Bool
+  var _10: Ref
+  var _11: Bool
+  var _12: Ref
+  var _13: Bool
+  var _14: Ref
+  var _15: Bool
+  var _16: Ref
+  var _17: Bool
+  var _18: Ref
+  var _19: Bool
+  var _20: Ref
+  var _21: Bool
+  var _22: Ref
+  var _23: Bool
+  var _24: Ref
+  var _25: Bool
+  var _26: Ref
+  var _27: Bool
+  var _28: Ref
+  var _29: Bool
+  var _30: Ref
+  var _31: Bool
+  var _32: Ref
+  var _33: Bool
+  var _34: Ref
+  var _35: Bool
+  var _36: Ref
+  var _37: Bool
+  var _38: Ref
+  var _39: Bool
+  var _40: Ref
+  var _41: Bool
+  var _42: Ref
+  var _43: Bool
+  var _44: Ref
+  res := false
+  _ := str_void()
+  _1 := equal(tok, _)
+  if (!_1) {
+    _2 := str_bool()
+    _3 := equal(tok, _2)
+  }
+  if (!(_1 || _3)) {
+    _4 := str_char()
+    _5 := equal(tok, _4)
+  }
+  if (!(_1 || _3 || _5)) {
+    _6 := str_short()
+    _7 := equal(tok, _6)
+  }
+  if (!(_1 || _3 || _5 || _7)) {
+    _8 := str_int()
+    _9 := equal(tok, _8)
+  }
+  if (!(_1 || _3 || _5 || _7 || _9)) {
+    _10 := str_long()
+    _11 := equal(tok, _10)
+  }
+  if (!(_1 || _3 || _5 || _7 || _9 || _11)) {
+    _12 := str_struct()
+    _13 := equal(tok, _12)
+  }
+  if (!(_1 || _3 || _5 || _7 || _9 || _11 || _13)) {
+    _14 := str_typedef()
+    _15 := equal(tok, _14)
+  }
+  if (!(_1 || _3 || _5 || _7 || _9 || _11 || _13 || _15)) {
+    _16 := str_enum()
+    _17 := equal(tok, _16)
+  }
+  if (!(_1 || _3 || _5 || _7 || _9 || _11 || _13 || _15 || _17)) {
+    _18 := str_static()
+    _19 := equal(tok, _18)
+  }
+  if (!(_1 || _3 || _5 || _7 || _9 || _11 || _13 || _15 || _17 || _19)) {
+    _20 := str_extern()
+    _21 := equal(tok, _20)
+  }
+  if (!(_1 || _3 || _5 || _7 || _9 || _11 || _13 || _15 || _17 || _19 || _21)) {
+    _22 := str_signed()
+    _23 := equal(tok, _22)
+  }
+  if (!(_1 || _3 || _5 || _7 || _9 || _11 || _13 || _15 || _17 || _19 || _21 || _23)) {
+    _24 := str_const()
+    _25 := equal(tok, _24)
+  }
+  if (!(_1 || _3 || _5 || _7 || _9 || _11 || _13 || _15 || _17 || _19 || _21 || _23 || _25)) {
+    _26 := str_volatile()
+    _27 := equal(tok, _26)
+  }
+  if (!(_1 || _3 || _5 || _7 || _9 || _11 || _13 || _15 || _17 || _19 || _21 || _23 || _25 || _27)) {
+    _28 := str_auto()
+    _29 := equal(tok, _28)
+  }
+  if (!(_1 || _3 || _5 || _7 || _9 || _11 || _13 || _15 || _17 || _19 || _21 || _23 || _25 || _27 || _29)) {
+    _30 := str_register()
+    _31 := equal(tok, _30)
+  }
+  if (!(_1 || _3 || _5 || _7 || _9 || _11 || _13 || _15 || _17 || _19 || _21 || _23 || _25 || _27 || _29 || _31)) {
+    _32 := str_restrict()
+    _33 := equal(tok, _32)
+  }
+  if (!(_1 || _3 || _5 || _7 || _9 || _11 || _13 || _15 || _17 || _19 || _21 || _23 || _25 || _27 || _29 || _31 || _33)) {
+    _34 := str_float()
+    _35 := equal(tok, _34)
+  }
+  if (!(_1 || _3 || _5 || _7 || _9 || _11 || _13 || _15 || _17 || _19 || _21 || _23 || _25 || _27 || _29 || _31 || _33 || _35)) {
+    _36 := str_double()
+    _37 := equal(tok, _36)
+  }
+  if (!(_1 || _3 || _5 || _7 || _9 || _11 || _13 || _15 || _17 || _19 || _21 || _23 || _25 || _27 || _29 || _31 || _33 || _35 || _37)) {
+    _38 := str_typedef()
+    _39 := equal(tok, _38)
+  }
+  if (!(_1 || _3 || _5 || _7 || _9 || _11 || _13 || _15 || _17 || _19 || _21 || _23 || _25 || _27 || _29 || _31 || _33 || _35 || _37 || _39)) {
+    _40 := str_inline()
+    _41 := equal(tok, _40)
+  }
+  if (!(_1 || _3 || _5 || _7 || _9 || _11 || _13 || _15 || _17 || _19 || _21 || _23 || _25 || _27 || _29 || _31 || _33 || _35 || _37 || _39 || _41)) {
+    _42 := str_unsigned()
+    _43 := equal(tok, _42)
+  }
+  if (!(_1 || _3 || _5 || _7 || _9 || _11 || _13 || _15 || _17 || _19 || _21 || _23 || _25 || _27 || _29 || _31 || _33 || _35 || _37 || _39 || _41 || _43)) {
+    _44 := find_typedef(tok, scope)
+  }
+  if (_1 || _3 || _5 || _7 || _9 || _11 || _13 || _15 || _17 || _19 || _21 || _23 || _25 || _27 || _29 || _31 || _33 || _35 || _37 || _39 || _41 || _43 || _44 != null) {
+    res := true
+  }
+  $result := res
+}
+
+method leave_scope(scope: Ref)
+{
+  scope._ptr_struct_Scope_$value := scope._ptr_struct_Scope_$value.Scope$next
+}
+
+method logand(rest: Ref, tok: Ref, scope: Ref) returns ($result: Ref)
+{
+  var rst: Ref
+  var node: Ref
+  var _: Ref
+  var _1: Bool
+  var start: Ref
+  var _2: Ref
+  var _3: Ref
+  var node1: Ref
+  var tok1: Ref
+  tok1 := tok
+  rst := new(_ptr_struct_Token_$value)
+  rst._ptr_struct_Token_$value := tok1
+  node := bitor(rst, tok1, scope)
+  tok1 := rst._ptr_struct_Token_$value
+  _ := str_logand()
+  _1 := equal(tok1, _)
+  while (_1)
+    invariant ? && true 
+  {
+    start := tok1
+    rst._ptr_struct_Token_$value := tok1
+    _2 := new_ND_LOGAND()
+    _3 := bitor(rst, tok1.Token$next, scope)
+    node1 := new_binary(_2, node, _3, start)
+    tok1 := rst._ptr_struct_Token_$value
+    _ := str_logand()
+    _1 := equal(tok1, _)
+    node := node1
+  }
+  rest._ptr_struct_Token_$value := tok1
+  $result := node
+}
+
+method logor(rest: Ref, tok: Ref, scope: Ref) returns ($result: Ref)
+{
+  var rst: Ref
+  var node: Ref
+  var _: Ref
+  var _1: Bool
+  var start: Ref
+  var _2: Ref
+  var _3: Ref
+  var node1: Ref
+  var tok1: Ref
+  tok1 := tok
+  rst := new(_ptr_struct_Token_$value)
+  rst._ptr_struct_Token_$value := tok1
+  node := logand(rst, tok1, scope)
+  tok1 := rst._ptr_struct_Token_$value
+  _ := str_logor()
+  _1 := equal(tok1, _)
+  while (_1)
+    invariant ? && true 
+  {
+    start := tok1
+    rst._ptr_struct_Token_$value := tok1
+    _2 := new_ND_LOGOR()
+    _3 := logand(rst, tok1.Token$next, scope)
+    node1 := new_binary(_2, node, _3, start)
+    tok1 := rst._ptr_struct_Token_$value
+    _ := str_logor()
+    _1 := equal(tok1, _)
+    node := node1
+  }
+  rest._ptr_struct_Token_$value := tok1
+  $result := node
+}
+
+method main() returns ($result: Int)
+{
+  var start: Ref
+  var tmp: Ref
+  var globals: Ref
+  var _: Ref
+  var _1: Ref
+  var _2: Ref
+  var _3: Ref
+  var _4: Ref
+  var _5: Ref
+  var _6: Ref
+  var _7: Ref
+  var _8: Ref
+  var _9: Ref
+  var _10: Ref
+  var params: Ref
+  _ := new_TK_KEYWORD()
+  _1 := str_typedef()
+  start := new_token(_, _1)
+  _2 := new_TK_KEYWORD()
+  _3 := str_int()
+  _4 := new_token(_2, _3)
+  start.Token$next := _4
+  _5 := tok_ident(116)
+  start.Token$next.Token$next := _5
+  _6 := new_TK_PUNCT()
+  _7 := str_semicolon()
+  _8 := new_token(_6, _7)
+  start.Token$next.Token$next.Token$next := _8
+  tmp := functions(start.Token$next.Token$next.Token$next)
+  _9 := new_TK_EOF()
+  _10 := new_token(_9, null)
+  tmp.Token$next := _10
+  print_tokens(start)
+  globals := parse(start)
+  while (globals != null)
+    invariant ? && true 
+  {
+    if (globals.Obj$is_function) {
+      printchar(102)
+      printchar(117)
+      printchar(110)
+      printchar(99)
+      printchar(58)
+      printchar(32)
+      print_str_list(globals.Obj$name)
+      printchar(32)
+      printchar(119)
+      printchar(47)
+      printchar(32)
+      printchar(112)
+      printchar(97)
+      printchar(114)
+      printchar(97)
+      printchar(109)
+      printchar(115)
+      printchar(58)
+      printchar(32)
+      params := globals.Obj$params
+      while (params != null)
+        invariant ? && true 
+      {
+        if (params.Obj$ty == null) {
+          param_type_error()
+        }
+        print_str_list(params.Obj$name)
+        printchar(32)
+        params := params.Obj$next
+      }
+      printchar(10)
+      print_nodes(globals.Obj$body, true)
+    }
+    globals := globals.Obj$next
+  }
+  $result := 0
+}
+
+method mul(rest: Ref, tok: Ref, scope: Ref) returns ($result: Ref)
+{
+  var rst: Ref
+  var node: Ref
+  var break_loop: Bool
+  var start: Ref
+  var _: Ref
+  var _1: Bool
+  var _2: Ref
+  var _3: Ref
+  var _4: Ref
+  var _5: Bool
+  var _6: Ref
+  var _7: Ref
+  var _8: Ref
+  var _9: Bool
+  var _10: Ref
+  var _11: Ref
+  var node1: Ref
+  var tok1: Ref
+  tok1 := tok
+  rst := new(_ptr_struct_Token_$value)
+  rst._ptr_struct_Token_$value := tok1
+  node := unary(rst, tok1, scope)
+  tok1 := rst._ptr_struct_Token_$value
+  break_loop := false
+  while (!break_loop)
+    invariant ? && true 
+  {
+    start := tok1
+    _ := str_mul()
+    _1 := equal(tok1, _)
+    if (_1) {
+      rst._ptr_struct_Token_$value := tok1
+      _2 := new_ND_MUL()
+      _3 := unary(rst, tok1.Token$next, scope)
+      node1 := new_binary(_2, node, _3, start)
+      tok1 := rst._ptr_struct_Token_$value
+    } else {
+      _4 := str_div()
+      _5 := equal(tok1, _4)
+      if (_5) {
+        rst._ptr_struct_Token_$value := tok1
+        _6 := new_ND_DIV()
+        _7 := unary(rst, tok1.Token$next, scope)
+        node1 := new_binary(_6, node, _7, start)
+        tok1 := rst._ptr_struct_Token_$value
+      } else {
+        _8 := str_mod()
+        _9 := equal(tok1, _8)
+        if (_9) {
+          rst._ptr_struct_Token_$value := tok1
+          _10 := new_ND_MOD()
+          _11 := unary(rst, tok1.Token$next, scope)
+          node1 := new_binary(_10, node, _11, start)
+          tok1 := rst._ptr_struct_Token_$value
+        } else {
+          rest._ptr_struct_Token_$value := tok1
+          break_loop := true
+          node1 := node
+        }
+      }
+    }
+    node := node1
+  }
+  $result := node
+}
+
+method name(tok: Ref) returns ($result: Ref)
+{
+  if (tok == null) {
+    $result := null
+  } else {
+    $result := tok.Token$str
+  }
+}
+
+method new_ND_ADD() returns ($result: Ref)
+{
+  var knd: Ref
+  knd := new(NodeKind$kind)
+  knd.NodeKind$kind := 2
+  $result := knd
+}
+
+method new_ND_ADDR() returns ($result: Ref)
+{
+  var knd: Ref
+  knd := new(NodeKind$kind)
+  knd.NodeKind$kind := 19
+  $result := knd
+}
+
+method new_ND_ASSIGN() returns ($result: Ref)
+{
+  var knd: Ref
+  knd := new(NodeKind$kind)
+  knd.NodeKind$kind := 17
+  $result := knd
+}
+
+method new_ND_BITAND() returns ($result: Ref)
+{
+  var knd: Ref
+  knd := new(NodeKind$kind)
+  knd.NodeKind$kind := 8
+  $result := knd
+}
+
+method new_ND_BITNOT() returns ($result: Ref)
+{
+  var knd: Ref
+  knd := new(NodeKind$kind)
+  knd.NodeKind$kind := 22
+  $result := knd
+}
+
+method new_ND_BITOR() returns ($result: Ref)
+{
+  var knd: Ref
+  knd := new(NodeKind$kind)
+  knd.NodeKind$kind := 9
+  $result := knd
+}
+
+method new_ND_BITXOR() returns ($result: Ref)
+{
+  var knd: Ref
+  knd := new(NodeKind$kind)
+  knd.NodeKind$kind := 10
+  $result := knd
+}
+
+method new_ND_BLOCK() returns ($result: Ref)
+{
+  var knd: Ref
+  knd := new(NodeKind$kind)
+  knd.NodeKind$kind := 28
+  $result := knd
+}
+
+method new_ND_COMMA() returns ($result: Ref)
+{
+  var knd: Ref
+  knd := new(NodeKind$kind)
+  knd.NodeKind$kind := 18
+  $result := knd
+}
+
+method new_ND_DEREF() returns ($result: Ref)
+{
+  var knd: Ref
+  knd := new(NodeKind$kind)
+  knd.NodeKind$kind := 20
+  $result := knd
+}
+
+method new_ND_DIV() returns ($result: Ref)
+{
+  var knd: Ref
+  knd := new(NodeKind$kind)
+  knd.NodeKind$kind := 5
+  $result := knd
+}
+
+method new_ND_EQ() returns ($result: Ref)
+{
+  var knd: Ref
+  knd := new(NodeKind$kind)
+  knd.NodeKind$kind := 13
+  $result := knd
+}
+
+method new_ND_EXPR_STMT() returns ($result: Ref)
+{
+  var knd: Ref
+  knd := new(NodeKind$kind)
+  knd.NodeKind$kind := 30
+  $result := knd
+}
+
+method new_ND_FOR() returns ($result: Ref)
+{
+  var knd: Ref
+  knd := new(NodeKind$kind)
+  knd.NodeKind$kind := 27
+  $result := knd
+}
+
+method new_ND_FUNCALL() returns ($result: Ref)
+{
+  var knd: Ref
+  knd := new(NodeKind$kind)
+  knd.NodeKind$kind := 29
+  $result := knd
+}
+
+method new_ND_IF() returns ($result: Ref)
+{
+  var knd: Ref
+  knd := new(NodeKind$kind)
+  knd.NodeKind$kind := 26
+  $result := knd
+}
+
+method new_ND_LE() returns ($result: Ref)
+{
+  var knd: Ref
+  knd := new(NodeKind$kind)
+  knd.NodeKind$kind := 16
+  $result := knd
+}
+
+method new_ND_LOGAND() returns ($result: Ref)
+{
+  var knd: Ref
+  knd := new(NodeKind$kind)
+  knd.NodeKind$kind := 23
+  $result := knd
+}
+
+method new_ND_LOGOR() returns ($result: Ref)
+{
+  var knd: Ref
+  knd := new(NodeKind$kind)
+  knd.NodeKind$kind := 24
+  $result := knd
+}
+
+method new_ND_LT() returns ($result: Ref)
+{
+  var knd: Ref
+  knd := new(NodeKind$kind)
+  knd.NodeKind$kind := 15
+  $result := knd
+}
+
+method new_ND_MEMZERO() returns ($result: Ref)
+{
+  var knd: Ref
+  knd := new(NodeKind$kind)
+  knd.NodeKind$kind := 34
+  $result := knd
+}
+
+method new_ND_MOD() returns ($result: Ref)
+{
+  var knd: Ref
+  knd := new(NodeKind$kind)
+  knd.NodeKind$kind := 7
+  $result := knd
+}
+
+method new_ND_MUL() returns ($result: Ref)
+{
+  var knd: Ref
+  knd := new(NodeKind$kind)
+  knd.NodeKind$kind := 4
+  $result := knd
+}
+
+method new_ND_NE() returns ($result: Ref)
+{
+  var knd: Ref
+  knd := new(NodeKind$kind)
+  knd.NodeKind$kind := 14
+  $result := knd
+}
+
+method new_ND_NEG() returns ($result: Ref)
+{
+  var knd: Ref
+  knd := new(NodeKind$kind)
+  knd.NodeKind$kind := 6
+  $result := knd
+}
+
+method new_ND_NOT() returns ($result: Ref)
+{
+  var knd: Ref
+  knd := new(NodeKind$kind)
+  knd.NodeKind$kind := 21
+  $result := knd
+}
+
+method new_ND_NULL_EXPR() returns ($result: Ref)
+{
+  var knd: Ref
+  knd := new(NodeKind$kind)
+  knd.NodeKind$kind := 1
+  $result := knd
+}
+
+method new_ND_NUM() returns ($result: Ref)
+{
+  var knd: Ref
+  knd := new(NodeKind$kind)
+  knd.NodeKind$kind := 33
+  $result := knd
+}
+
+method new_ND_RETURN() returns ($result: Ref)
+{
+  var knd: Ref
+  knd := new(NodeKind$kind)
+  knd.NodeKind$kind := 25
+  $result := knd
+}
+
+method new_ND_SHL() returns ($result: Ref)
+{
+  var knd: Ref
+  knd := new(NodeKind$kind)
+  knd.NodeKind$kind := 11
+  $result := knd
+}
+
+method new_ND_SHR() returns ($result: Ref)
+{
+  var knd: Ref
+  knd := new(NodeKind$kind)
+  knd.NodeKind$kind := 12
+  $result := knd
+}
+
+method new_ND_STMT_EXPR() returns ($result: Ref)
+{
+  var knd: Ref
+  knd := new(NodeKind$kind)
+  knd.NodeKind$kind := 31
+  $result := knd
+}
+
+method new_ND_SUB() returns ($result: Ref)
+{
+  var knd: Ref
+  knd := new(NodeKind$kind)
+  knd.NodeKind$kind := 3
+  $result := knd
+}
+
+method new_ND_VAR() returns ($result: Ref)
+{
+  var knd: Ref
+  knd := new(NodeKind$kind)
+  knd.NodeKind$kind := 32
+  $result := knd
+}
+
+method new_TK_EOF() returns ($result: Ref)
+{
+  var tk: Ref
+  tk := new(TokenKind$kind)
+  tk.TokenKind$kind := 7
+  $result := tk
+}
+
+method new_TK_IDENT() returns ($result: Ref)
+{
+  var tk: Ref
+  tk := new(TokenKind$kind)
+  tk.TokenKind$kind := 1
+  $result := tk
+}
+
+method new_TK_KEYWORD() returns ($result: Ref)
+{
+  var tk: Ref
+  tk := new(TokenKind$kind)
+  tk.TokenKind$kind := 3
+  $result := tk
+}
+
+method new_TK_NUM() returns ($result: Ref)
+{
+  var tk: Ref
+  tk := new(TokenKind$kind)
+  tk.TokenKind$kind := 5
+  $result := tk
+}
+
+method new_TK_PP_NUM() returns ($result: Ref)
+{
+  var tk: Ref
+  tk := new(TokenKind$kind)
+  tk.TokenKind$kind := 6
+  $result := tk
+}
+
+method new_TK_PUNCT() returns ($result: Ref)
+{
+  var tk: Ref
+  tk := new(TokenKind$kind)
+  tk.TokenKind$kind := 2
+  $result := tk
+}
+
+method new_TK_STR() returns ($result: Ref)
+{
+  var tk: Ref
+  tk := new(TokenKind$kind)
+  tk.TokenKind$kind := 4
+  $result := tk
+}
+
+method new_TY_BOOL() returns ($result: Ref)
+{
+  var ty: Ref
+  ty := new(TypeKind$kind)
+  ty.TypeKind$kind := 2
+  $result := ty
+}
+
+method new_TY_CHAR() returns ($result: Ref)
+{
+  var ty: Ref
+  ty := new(TypeKind$kind)
+  ty.TypeKind$kind := 3
+  $result := ty
+}
+
+method new_TY_DOUBLE() returns ($result: Ref)
+{
+  var ty: Ref
+  ty := new(TypeKind$kind)
+  ty.TypeKind$kind := 8
+  $result := ty
+}
+
+method new_TY_ENUM() returns ($result: Ref)
+{
+  var ty: Ref
+  ty := new(TypeKind$kind)
+  ty.TypeKind$kind := 10
+  $result := ty
+}
+
+method new_TY_FLOAT() returns ($result: Ref)
+{
+  var ty: Ref
+  ty := new(TypeKind$kind)
+  ty.TypeKind$kind := 7
+  $result := ty
+}
+
+method new_TY_FUNC() returns ($result: Ref)
+{
+  var ty: Ref
+  ty := new(TypeKind$kind)
+  ty.TypeKind$kind := 12
+  $result := ty
+}
+
+method new_TY_INT() returns ($result: Ref)
+{
+  var ty: Ref
+  ty := new(TypeKind$kind)
+  ty.TypeKind$kind := 5
+  $result := ty
+}
+
+method new_TY_LDOUBLE() returns ($result: Ref)
+{
+  var ty: Ref
+  ty := new(TypeKind$kind)
+  ty.TypeKind$kind := 9
+  $result := ty
+}
+
+method new_TY_LONG() returns ($result: Ref)
+{
+  var ty: Ref
+  ty := new(TypeKind$kind)
+  ty.TypeKind$kind := 6
+  $result := ty
+}
+
+method new_TY_PTR() returns ($result: Ref)
+{
+  var ty: Ref
+  ty := new(TypeKind$kind)
+  ty.TypeKind$kind := 11
+  $result := ty
+}
+
+method new_TY_SHORT() returns ($result: Ref)
+{
+  var ty: Ref
+  ty := new(TypeKind$kind)
+  ty.TypeKind$kind := 4
+  $result := ty
+}
+
+method new_TY_STRUCT() returns ($result: Ref)
+{
+  var ty: Ref
+  ty := new(TypeKind$kind)
+  ty.TypeKind$kind := 13
+  $result := ty
+}
+
+method new_TY_VOID() returns ($result: Ref)
+{
+  var ty: Ref
+  ty := new(TypeKind$kind)
+  ty.TypeKind$kind := 1
+  $result := ty
+}
+
+method new_add(lhs: Ref, rhs: Ref, tok: Ref) returns ($result: Ref)
+{
+  var _: Bool
+  var _1: Bool
+  var _2: Ref
+  var _3: Ref
+  add_type(lhs)
+  add_type(rhs)
+  _ := is_numeric(lhs.ASTNode$ty)
+  if (_) {
+    _1 := is_numeric(rhs.ASTNode$ty)
+  }
+  if (_ && _1) {
+    _2 := new_ND_ADD()
+    _3 := new_binary(_2, lhs, rhs, tok)
+    $result := _3
+  } else {
+    num_op_error()
+    $result := null
+  }
+}
+
+method new_attr() returns ($result: Ref)
+{
+  var attr: Ref
+  attr := new(VarAttr$is_typedef, VarAttr$align)
+  attr.VarAttr$is_typedef := false
+  attr.VarAttr$align := 0
+  $result := attr
+}
+
+method new_binary(kind: Ref, lhs: Ref, rhs: Ref, tok: Ref) returns ($result: Ref)
+{
+  var node: Ref
+  node := new_node(kind, tok)
+  node.ASTNode$lhs := lhs
+  node.ASTNode$rhs := rhs
+  $result := node
+}
+
+method new_gvar(scope: Ref, globals: Ref, name: Ref, ty: Ref) returns ($result: Ref)
+{
+  var var: Ref
+  var := new_var(scope, name, ty)
+  var.Obj$next := globals._ptr_struct_Obj_$value
+  var.Obj$is_definition := true
+  globals._ptr_struct_Obj_$value := var
+  $result := var
+}
+
+method new_lvar(scope: Ref, locals: Ref, name: Ref, ty: Ref) returns ($result: Ref)
+{
+  var var: Ref
+  var := new_var(scope, name, ty)
+  var.Obj$is_local := true
+  var.Obj$next := locals._ptr_struct_Obj_$value
+  locals._ptr_struct_Obj_$value := var
+  $result := var
+}
+
+method new_node(kind: Ref, tok: Ref) returns ($result: Ref)
+{
+  var node: Ref
+  node := new(ASTNode$kind, ASTNode$next, ASTNode$ty, ASTNode$tok, ASTNode$lhs, ASTNode$rhs, ASTNode$cond, ASTNode$then, ASTNode$els, ASTNode$init, ASTNode$inc, ASTNode$body, ASTNode$func_ty, ASTNode$args, ASTNode$pass_by_stack, ASTNode$var, ASTNode$val)
+  node.ASTNode$kind := kind
+  node.ASTNode$tok := tok
+  $result := node
+}
+
+method new_scope() returns ($result: Ref)
+{
+  var scope: Ref
+  var _: Ref
+  var _1: Ref
+  scope := new(Scope$next, Scope$vars, Scope$tags)
+  scope.Scope$next := null
+  _ := new_varscopemap()
+  scope.Scope$vars := _
+  _1 := new_tagscopemap()
+  scope.Scope$tags := _1
+  $result := scope
+}
+
+method new_stringlist() returns ($result: Ref)
+{
+  var s: Ref
+  var r: Ref
+  s := new(StringList$root, StringList$len)
+  r := new(CharNode$val, CharNode$next)
+  r.CharNode$val := 0
+  r.CharNode$next := null
+  s.StringList$root := r
+  s.StringList$len := 0
+  $result := s
+}
+
+method new_sub(lhs: Ref, rhs: Ref, tok: Ref) returns ($result: Ref)
+{
+  var _: Bool
+  var _1: Bool
+  var _2: Ref
+  var _3: Ref
+  add_type(lhs)
+  add_type(rhs)
+  _ := is_numeric(lhs.ASTNode$ty)
+  if (_) {
+    _1 := is_numeric(rhs.ASTNode$ty)
+  }
+  if (_ && _1) {
+    _2 := new_ND_SUB()
+    _3 := new_binary(_2, lhs, rhs, tok)
+    $result := _3
+  } else {
+    num_op_error()
+    $result := null
+  }
+}
+
+method new_tagscopemap() returns ($result: Ref)
+{
+  var tsm: Ref
+  tsm := new(TagScopeMap$key, TagScopeMap$val, TagScopeMap$next)
+  tsm.TagScopeMap$key := null
+  tsm.TagScopeMap$val := null
+  tsm.TagScopeMap$next := null
+  $result := tsm
+}
+
+method new_token(kind: Ref, contents: Ref) returns ($result: Ref)
+{
+  var tok: Ref
+  tok := new(Token$kind, Token$next, Token$ty, Token$str)
+  tok.Token$kind := kind
+  tok.Token$str := contents
+  $result := tok
+}
+
+method new_ty_bool() returns ($result: Ref)
+{
+  var _: Ref
+  var _1: Ref
+  _ := new_TY_BOOL()
+  _1 := new_type(_, 1, 1)
+  $result := _1
+}
+
+method new_ty_char() returns ($result: Ref)
+{
+  var _: Ref
+  var _1: Ref
+  _ := new_TY_CHAR()
+  _1 := new_type(_, 1, 1)
+  $result := _1
+}
+
+method new_ty_double() returns ($result: Ref)
+{
+  var _: Ref
+  var _1: Ref
+  _ := new_TY_DOUBLE()
+  _1 := new_type(_, 8, 8)
+  $result := _1
+}
+
+method new_ty_float() returns ($result: Ref)
+{
+  var _: Ref
+  var _1: Ref
+  _ := new_TY_FLOAT()
+  _1 := new_type(_, 4, 4)
+  $result := _1
+}
+
+method new_ty_int() returns ($result: Ref)
+{
+  var _: Ref
+  var _1: Ref
+  _ := new_TY_INT()
+  _1 := new_type(_, 4, 4)
+  $result := _1
+}
+
+method new_ty_ldouble() returns ($result: Ref)
+{
+  var _: Ref
+  var _1: Ref
+  _ := new_TY_LDOUBLE()
+  _1 := new_type(_, 16, 16)
+  $result := _1
+}
+
+method new_ty_long() returns ($result: Ref)
+{
+  var _: Ref
+  var _1: Ref
+  _ := new_TY_LONG()
+  _1 := new_type(_, 8, 8)
+  $result := _1
+}
+
+method new_ty_short() returns ($result: Ref)
+{
+  var _: Ref
+  var _1: Ref
+  _ := new_TY_SHORT()
+  _1 := new_type(_, 2, 2)
+  $result := _1
+}
+
+method new_ty_uchar() returns ($result: Ref)
+{
+  var ty: Ref
+  var _: Ref
+  _ := new_TY_CHAR()
+  ty := new_type(_, 1, 1)
+  ty.Type$is_unsigned := true
+  $result := ty
+}
+
+method new_ty_uint() returns ($result: Ref)
+{
+  var ty: Ref
+  var _: Ref
+  _ := new_TY_INT()
+  ty := new_type(_, 4, 4)
+  ty.Type$is_unsigned := true
+  $result := ty
+}
+
+method new_ty_ulong() returns ($result: Ref)
+{
+  var ty: Ref
+  var _: Ref
+  _ := new_TY_LONG()
+  ty := new_type(_, 8, 8)
+  ty.Type$is_unsigned := true
+  $result := ty
+}
+
+method new_ty_ushort() returns ($result: Ref)
+{
+  var ty: Ref
+  var _: Ref
+  _ := new_TY_SHORT()
+  ty := new_type(_, 2, 2)
+  ty.Type$is_unsigned := true
+  $result := ty
+}
+
+method new_ty_void() returns ($result: Ref)
+{
+  var _: Ref
+  var _1: Ref
+  _ := new_TY_VOID()
+  _1 := new_type(_, 1, 1)
+  $result := _1
+}
+
+method new_type(kind: Ref, size: Int, align: Int) returns ($result: Ref)
+{
+  var ty: Ref
+  ty := new(Type$kind, Type$size, Type$align, Type$is_unsigned, Type$origin, Type$base, Type$name, Type$name_pos, Type$return_ty, Type$params, Type$next)
+  ty.Type$kind := kind
+  ty.Type$size := size
+  ty.Type$align := align
+  $result := ty
+}
+
+method new_unary(kind: Ref, expr: Ref, tok: Ref) returns ($result: Ref)
+{
+  var node: Ref
+  node := new_node(kind, tok)
+  node.ASTNode$lhs := expr
+  $result := node
+}
+
+method new_var(scope: Ref, name: Ref, ty: Ref) returns ($result: Ref)
+{
+  var var: Ref
+  var tmp: Ref
+  var := new(Obj$next, Obj$name, Obj$ty, Obj$tok, Obj$is_local, Obj$align, Obj$offset, Obj$is_function, Obj$is_definition, Obj$params, Obj$body, Obj$locals, Obj$stack_size)
+  var.Obj$name := name
+  var.Obj$ty := ty
+  var.Obj$align := ty.Type$align
+  tmp := push_scope(scope, name)
+  tmp.VarScope$var := var
+  $result := var
+}
+
+method new_varscopemap() returns ($result: Ref)
+{
+  var vsm: Ref
+  vsm := new(VarScopeMap$key, VarScopeMap$val, VarScopeMap$next)
+  vsm.VarScopeMap$key := null
+  vsm.VarScopeMap$val := null
+  vsm.VarScopeMap$next := null
+  $result := vsm
+}
+
+method nums(tlist: Ref) returns ($result: Ref)
+{
+  var n1: Ref
+  var n2: Ref
+  var f1: Ref
+  var f2: Ref
+  var stmt1: Ref
+  var stmt2: Ref
+  var stmt3: Ref
+  var stmt4: Ref
+  var stmt5: Ref
+  var stmt6: Ref
+  var stmt7: Ref
+  var stmt8: Ref
+  var stmt9: Ref
+  var stmt10: Ref
+  var stmt11: Ref
+  var end: Ref
+  var _: Ref
+  var _1: Ref
+  var _2: Ref
+  var _3: Ref
+  var _4: Ref
+  var _5: Ref
+  var _6: Ref
+  var _7: Ref
+  var _8: Ref
+  var _9: Ref
+  var _10: Ref
+  var _11: Ref
+  var _12: Ref
+  var _13: Ref
+  var _14: Ref
+  var _15: Ref
+  var _16: Ref
+  var _17: Ref
+  var _18: Ref
+  var _19: Ref
+  var _20: Ref
+  var _21: Ref
+  var _22: Ref
+  var _23: Ref
+  var _24: Ref
+  var _25: Ref
+  var _26: Ref
+  var _27: Ref
+  var _28: Ref
+  var _29: Ref
+  var _30: Ref
+  var _31: Ref
+  var _32: Ref
+  var _33: Ref
+  var _34: Ref
+  var _35: Ref
+  var _36: Ref
+  var _37: Ref
+  var _38: Ref
+  var _39: Ref
+  var _40: Ref
+  var _41: Ref
+  var _42: Ref
+  var _43: Ref
+  var _44: Ref
+  var _45: Ref
+  var _46: Ref
+  var _47: Ref
+  var _48: Ref
+  var _49: Ref
+  var _50: Ref
+  var _51: Ref
+  var _52: Ref
+  var _53: Ref
+  var _54: Ref
+  var _55: Ref
+  var _56: Ref
+  var _57: Ref
+  var _58: Ref
+  var _59: Ref
+  var _60: Ref
+  var _61: Ref
+  var _62: Ref
+  var _63: Ref
+  var _64: Ref
+  var _65: Ref
+  var _66: Ref
+  var _67: Ref
+  var _68: Ref
+  var _69: Ref
+  var _70: Ref
+  var _71: Ref
+  var _72: Ref
+  var _73: Ref
+  var _74: Ref
+  var _75: Ref
+  var _76: Ref
+  var _77: Ref
+  var _78: Ref
+  var _79: Ref
+  var _80: Ref
+  var _81: Ref
+  var _82: Ref
+  var _83: Ref
+  var _84: Ref
+  var _85: Ref
+  var _86: Ref
+  var _87: Ref
+  var _88: Ref
+  var _89: Ref
+  var _90: Ref
+  var _91: Ref
+  var _92: Ref
+  var _93: Ref
+  var _94: Ref
+  var _95: Ref
+  var _96: Ref
+  var _97: Ref
+  var _98: Ref
+  var _99: Ref
+  var _100: Ref
+  var _101: Ref
+  var _102: Ref
+  var _103: Ref
+  var _104: Ref
+  var _105: Ref
+  var _106: Ref
+  var _107: Ref
+  var _108: Ref
+  var _109: Ref
+  var _110: Ref
+  var _111: Ref
+  var _112: Ref
+  var _113: Ref
+  var _114: Ref
+  var _115: Ref
+  var _116: Ref
+  var _117: Ref
+  var _118: Ref
+  var _119: Ref
+  var _120: Ref
+  var _121: Ref
+  var _122: Ref
+  var _123: Ref
+  var _124: Ref
+  var _125: Ref
+  var _126: Ref
+  var _127: Ref
+  var _128: Ref
+  var _129: Ref
+  var _130: Ref
+  var _131: Ref
+  var _132: Ref
+  var _133: Ref
+  var _134: Ref
+  var _135: Ref
+  var _136: Ref
+  var _137: Ref
+  var _138: Ref
+  var _139: Ref
+  var _140: Ref
+  var _141: Ref
+  var _142: Ref
+  var _143: Ref
+  var _144: Ref
+  var _145: Ref
+  var _146: Ref
+  var _147: Ref
+  var _148: Ref
+  var _149: Ref
+  var _150: Ref
+  var _151: Ref
+  var _152: Ref
+  var _153: Ref
+  var _154: Ref
+  var _155: Ref
+  var _156: Ref
+  var _157: Ref
+  var _158: Ref
+  var _159: Ref
+  var _160: Ref
+  var _161: Ref
+  var _162: Ref
+  var _163: Ref
+  var _164: Ref
+  var _165: Ref
+  var _166: Ref
+  var _167: Ref
+  var _168: Ref
+  var _169: Ref
+  var _170: Ref
+  n1 := new_stringlist()
+  add_char(n1, 52)
+  add_char(n1, 50)
+  n2 := new_stringlist()
+  add_char(n2, 50)
+  add_char(n2, 51)
+  add_char(n2, 57)
+  f1 := new_stringlist()
+  add_char(f1, 50)
+  add_char(f1, 46)
+  add_char(f1, 56)
+  add_char(f1, 52)
+  f2 := new_stringlist()
+  add_char(f2, 48)
+  add_char(f2, 46)
+  add_char(f2, 48)
+  add_char(f2, 48)
+  add_char(f2, 48)
+  _ := new_TK_KEYWORD()
+  _1 := str_int()
+  _2 := new_token(_, _1)
+  tlist.Token$next := _2
+  _3 := tok_ident(120)
+  tlist.Token$next.Token$next := _3
+  _4 := new_TK_PUNCT()
+  _5 := str_comma()
+  _6 := new_token(_4, _5)
+  tlist.Token$next.Token$next.Token$next := _6
+  _7 := tok_ident(121)
+  tlist.Token$next.Token$next.Token$next.Token$next := _7
+  _8 := new_TK_PUNCT()
+  _9 := str_semicolon()
+  _10 := new_token(_8, _9)
+  tlist.Token$next.Token$next.Token$next.Token$next.Token$next := _10
+  stmt1 := tlist.Token$next.Token$next.Token$next.Token$next.Token$next
+  _11 := tok_ident(121)
+  stmt1.Token$next := _11
+  _12 := new_TK_PUNCT()
+  _13 := str_eq()
+  _14 := new_token(_12, _13)
+  stmt1.Token$next.Token$next := _14
+  _15 := new_TK_NUM()
+  _16 := new_token(_15, n1)
+  stmt1.Token$next.Token$next.Token$next := _16
+  _17 := new_ty_int()
+  stmt1.Token$next.Token$next.Token$next.Token$ty := _17
+  _18 := new_TK_PUNCT()
+  _19 := str_semicolon()
+  _20 := new_token(_18, _19)
+  stmt1.Token$next.Token$next.Token$next.Token$next := _20
+  stmt2 := stmt1.Token$next.Token$next.Token$next.Token$next
+  _21 := tok_ident(120)
+  stmt2.Token$next := _21
+  _22 := new_TK_PUNCT()
+  _23 := str_eq()
+  _24 := new_token(_22, _23)
+  stmt2.Token$next.Token$next := _24
+  _25 := tok_ident(121)
+  stmt2.Token$next.Token$next.Token$next := _25
+  _26 := new_TK_PUNCT()
+  _27 := str_semicolon()
+  _28 := new_token(_26, _27)
+  stmt2.Token$next.Token$next.Token$next.Token$next := _28
+  stmt3 := stmt2.Token$next.Token$next.Token$next.Token$next
+  _29 := tok_ident(120)
+  stmt3.Token$next := _29
+  _30 := new_TK_PUNCT()
+  _31 := str_eq()
+  _32 := new_token(_30, _31)
+  stmt3.Token$next.Token$next := _32
+  _33 := new_TK_NUM()
+  _34 := new_token(_33, n1)
+  stmt3.Token$next.Token$next.Token$next := _34
+  _35 := new_ty_int()
+  stmt3.Token$next.Token$next.Token$next.Token$ty := _35
+  _36 := new_TK_PUNCT()
+  _37 := str_add()
+  _38 := new_token(_36, _37)
+  stmt3.Token$next.Token$next.Token$next.Token$next := _38
+  _39 := new_TK_NUM()
+  _40 := new_token(_39, n2)
+  stmt3.Token$next.Token$next.Token$next.Token$next.Token$next := _40
+  _41 := new_ty_int()
+  stmt3.Token$next.Token$next.Token$next.Token$next.Token$next.Token$ty := _41
+  _42 := new_TK_PUNCT()
+  _43 := str_sub()
+  _44 := new_token(_42, _43)
+  stmt3.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next := _44
+  _45 := tok_ident(121)
+  stmt3.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next := _45
+  _46 := new_TK_PUNCT()
+  _47 := str_semicolon()
+  _48 := new_token(_46, _47)
+  stmt3.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next := _48
+  stmt4 := stmt3.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next
+  _49 := tok_ident(121)
+  stmt4.Token$next := _49
+  _50 := new_TK_PUNCT()
+  _51 := str_eq()
+  _52 := new_token(_50, _51)
+  stmt4.Token$next.Token$next := _52
+  _53 := new_TK_PUNCT()
+  _54 := str_sub()
+  _55 := new_token(_53, _54)
+  stmt4.Token$next.Token$next.Token$next := _55
+  _56 := tok_ident(120)
+  stmt4.Token$next.Token$next.Token$next.Token$next := _56
+  _57 := new_TK_PUNCT()
+  _58 := str_semicolon()
+  _59 := new_token(_57, _58)
+  stmt4.Token$next.Token$next.Token$next.Token$next.Token$next := _59
+  stmt5 := stmt4.Token$next.Token$next.Token$next.Token$next.Token$next
+  _60 := tok_ident(121)
+  stmt5.Token$next := _60
+  _61 := new_TK_PUNCT()
+  _62 := str_eq()
+  _63 := new_token(_61, _62)
+  stmt5.Token$next.Token$next := _63
+  _64 := tok_ident(120)
+  stmt5.Token$next.Token$next.Token$next := _64
+  _65 := new_TK_PUNCT()
+  _66 := str_bitshl()
+  _67 := new_token(_65, _66)
+  stmt5.Token$next.Token$next.Token$next.Token$next := _67
+  _68 := new_TK_NUM()
+  _69 := new_token(_68, n1)
+  stmt5.Token$next.Token$next.Token$next.Token$next.Token$next := _69
+  _70 := new_ty_int()
+  stmt5.Token$next.Token$next.Token$next.Token$next.Token$next.Token$ty := _70
+  _71 := new_TK_PUNCT()
+  _72 := str_semicolon()
+  _73 := new_token(_71, _72)
+  stmt5.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next := _73
+  stmt6 := stmt5.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next
+  _74 := tok_ident(121)
+  stmt6.Token$next := _74
+  _75 := new_TK_PUNCT()
+  _76 := str_eq()
+  _77 := new_token(_75, _76)
+  stmt6.Token$next.Token$next := _77
+  _78 := tok_ident(120)
+  stmt6.Token$next.Token$next.Token$next := _78
+  _79 := new_TK_PUNCT()
+  _80 := str_bitshr()
+  _81 := new_token(_79, _80)
+  stmt6.Token$next.Token$next.Token$next.Token$next := _81
+  _82 := new_TK_PUNCT()
+  _83 := str_sub()
+  _84 := new_token(_82, _83)
+  stmt6.Token$next.Token$next.Token$next.Token$next.Token$next := _84
+  _85 := new_TK_NUM()
+  _86 := new_token(_85, n2)
+  stmt6.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next := _86
+  _87 := new_ty_int()
+  stmt6.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next.Token$ty := _87
+  _88 := new_TK_PUNCT()
+  _89 := str_semicolon()
+  _90 := new_token(_88, _89)
+  stmt6.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next := _90
+  stmt7 := stmt6.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next
+  _91 := tok_ident(120)
+  stmt7.Token$next := _91
+  _92 := new_TK_PUNCT()
+  _93 := str_eq()
+  _94 := new_token(_92, _93)
+  stmt7.Token$next.Token$next := _94
+  _95 := new_TK_PUNCT()
+  _96 := str_bitnot()
+  _97 := new_token(_95, _96)
+  stmt7.Token$next.Token$next.Token$next := _97
+  _98 := new_TK_PUNCT()
+  _99 := str_oparen()
+  _100 := new_token(_98, _99)
+  stmt7.Token$next.Token$next.Token$next.Token$next := _100
+  _101 := tok_ident(121)
+  stmt7.Token$next.Token$next.Token$next.Token$next.Token$next := _101
+  _102 := new_TK_PUNCT()
+  _103 := str_bitand()
+  _104 := new_token(_102, _103)
+  stmt7.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next := _104
+  _105 := tok_ident(120)
+  stmt7.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next := _105
+  _106 := new_TK_PUNCT()
+  _107 := str_cparen()
+  _108 := new_token(_106, _107)
+  stmt7.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next := _108
+  _109 := new_TK_PUNCT()
+  _110 := str_semicolon()
+  _111 := new_token(_109, _110)
+  stmt7.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next := _111
+  stmt8 := stmt7.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next
+  _112 := new_TK_KEYWORD()
+  _113 := str_float()
+  _114 := new_token(_112, _113)
+  stmt8.Token$next := _114
+  _115 := tok_ident(97)
+  stmt8.Token$next.Token$next := _115
+  _116 := new_TK_PUNCT()
+  _117 := str_comma()
+  _118 := new_token(_116, _117)
+  stmt8.Token$next.Token$next.Token$next := _118
+  _119 := tok_ident(98)
+  stmt8.Token$next.Token$next.Token$next.Token$next := _119
+  _120 := new_TK_PUNCT()
+  _121 := str_comma()
+  _122 := new_token(_120, _121)
+  stmt8.Token$next.Token$next.Token$next.Token$next.Token$next := _122
+  _123 := tok_ident(99)
+  stmt8.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next := _123
+  _124 := new_TK_PUNCT()
+  _125 := str_semicolon()
+  _126 := new_token(_124, _125)
+  stmt8.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next := _126
+  stmt9 := stmt8.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next
+  _127 := tok_ident(98)
+  stmt9.Token$next := _127
+  _128 := new_TK_PUNCT()
+  _129 := str_eq()
+  _130 := new_token(_128, _129)
+  stmt9.Token$next.Token$next := _130
+  _131 := new_TK_NUM()
+  _132 := new_token(_131, f1)
+  stmt9.Token$next.Token$next.Token$next := _132
+  _133 := new_ty_double()
+  stmt9.Token$next.Token$next.Token$next.Token$ty := _133
+  _134 := new_TK_PUNCT()
+  _135 := str_mul()
+  _136 := new_token(_134, _135)
+  stmt9.Token$next.Token$next.Token$next.Token$next := _136
+  _137 := new_TK_NUM()
+  _138 := new_token(_137, f2)
+  stmt9.Token$next.Token$next.Token$next.Token$next.Token$next := _138
+  _139 := new_ty_double()
+  stmt9.Token$next.Token$next.Token$next.Token$next.Token$next.Token$ty := _139
+  _140 := new_TK_PUNCT()
+  _141 := str_semicolon()
+  _142 := new_token(_140, _141)
+  stmt9.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next := _142
+  stmt10 := stmt9.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next
+  _143 := tok_ident(99)
+  stmt10.Token$next := _143
+  _144 := new_TK_PUNCT()
+  _145 := str_eq()
+  _146 := new_token(_144, _145)
+  stmt10.Token$next.Token$next := _146
+  _147 := new_TK_NUM()
+  _148 := new_token(_147, f1)
+  stmt10.Token$next.Token$next.Token$next := _148
+  _149 := new_ty_double()
+  stmt10.Token$next.Token$next.Token$next.Token$ty := _149
+  _150 := new_TK_PUNCT()
+  _151 := str_mod()
+  _152 := new_token(_150, _151)
+  stmt10.Token$next.Token$next.Token$next.Token$next := _152
+  _153 := new_TK_NUM()
+  _154 := new_token(_153, f2)
+  stmt10.Token$next.Token$next.Token$next.Token$next.Token$next := _154
+  _155 := new_ty_double()
+  stmt10.Token$next.Token$next.Token$next.Token$next.Token$next.Token$ty := _155
+  _156 := new_TK_PUNCT()
+  _157 := str_semicolon()
+  _158 := new_token(_156, _157)
+  stmt10.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next := _158
+  stmt11 := stmt10.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next
+  _159 := tok_ident(97)
+  stmt11.Token$next := _159
+  _160 := new_TK_PUNCT()
+  _161 := str_eq()
+  _162 := new_token(_160, _161)
+  stmt11.Token$next.Token$next := _162
+  _163 := tok_ident(98)
+  stmt11.Token$next.Token$next.Token$next := _163
+  _164 := new_TK_PUNCT()
+  _165 := str_div()
+  _166 := new_token(_164, _165)
+  stmt11.Token$next.Token$next.Token$next.Token$next := _166
+  _167 := tok_ident(99)
+  stmt11.Token$next.Token$next.Token$next.Token$next.Token$next := _167
+  _168 := new_TK_PUNCT()
+  _169 := str_semicolon()
+  _170 := new_token(_168, _169)
+  stmt11.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next := _170
+  end := stmt11.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next
+  $result := end
+}
+
+method parse(tok: Ref) returns ($result: Ref)
+{
+  var scope: Ref
+  var scptr: Ref
+  var gblsptr: Ref
+  var _: Bool
+  var attr: Ref
+  var rest: Ref
+  var basety: Ref
+  var _1: Bool
+  var tok1: Ref
+  var tok2: Ref
+  tok2 := tok
+  scope := new_scope()
+  scptr := new(_ptr_struct_Scope_$value)
+  scptr._ptr_struct_Scope_$value := scope
+  gblsptr := new(_ptr_struct_Obj_$value)
+  gblsptr._ptr_struct_Obj_$value := null
+  _ := is_EOF(tok2)
+  while (!_)
+    invariant ? && true 
+  {
+    attr := new_attr()
+    rest := new(_ptr_struct_Token_$value)
+    rest._ptr_struct_Token_$value := tok2
+    basety := declspec(rest, tok2, attr, scptr._ptr_struct_Scope_$value)
+    tok2 := rest._ptr_struct_Token_$value
+    if (attr.VarAttr$is_typedef) {
+      tok1 := parse_typedef(tok2, basety, scptr._ptr_struct_Scope_$value)
+    } else {
+      _1 := is_function(tok2, scptr._ptr_struct_Scope_$value)
+      if (_1) {
+        tok1 := function(tok2, basety, attr, scptr, gblsptr)
+      } else {
+        tok1 := tok2
+      }
+    }
+    _ := is_EOF(tok1)
+    tok2 := tok1
+  }
+  $result := gblsptr._ptr_struct_Obj_$value
+}
+
+method parse_typedef(tok: Ref, basety: Ref, scope: Ref) returns ($result: Ref)
+{
+  var first: Bool
+  var rest: Ref
+  var _: Ref
+  var _1: Bool
+  var ty: Ref
+  var tmp: Ref
+  var _2: Ref
+  var _3: Ref
+  var _4: Ref
+  var tok1: Ref
+  var tok2: Ref
+  tok2 := tok
+  first := true
+  rest := new(_ptr_struct_Token_$value)
+  rest._ptr_struct_Token_$value := tok2
+  _ := str_semicolon()
+  _1 := consume(rest, tok2, _)
+  while (!_1)
+    invariant ? && true 
+  {
+    tok2 := rest._ptr_struct_Token_$value
+    if (!first) {
+      _2 := str_comma()
+      tok1 := skip(tok2, _2)
+    } else {
+      tok1 := tok2
+    }
+    first := false
+    rest._ptr_struct_Token_$value := tok1
+    ty := declarator(rest, tok1, basety, scope)
+    tok1 := rest._ptr_struct_Token_$value
+    _3 := ty_name(ty)
+    if (_3 == null) {
+      tydef_name_error()
+    }
+    _4 := ty_name(ty)
+    tmp := push_scope(scope, _4)
+    tmp.VarScope$type_def := ty
+    _ := str_semicolon()
+    _1 := consume(rest, tok1, _)
+    tok2 := tok1
+  }
+  tok2 := rest._ptr_struct_Token_$value
+  $result := tok2
+}
+
+method pointer_to(base: Ref) returns ($result: Ref)
+{
+  var ty: Ref
+  var _: Ref
+  _ := new_TY_PTR()
+  ty := new_type(_, 8, 8)
+  ty.Type$base := base
+  ty.Type$is_unsigned := true
+  $result := ty
+}
+
+method pointers(rest: Ref, tok: Ref, ty: Ref) returns ($result: Ref)
+{
+  var rst: Ref
+  var consume_b: Bool
+  var _: Ref
+  var _1: Ref
+  var _2: Bool
+  var _3: Ref
+  var _4: Bool
+  var _5: Ref
+  var _6: Bool
+  var _7: Ref
+  var ty1: Ref
+  var tok1: Ref
+  var ty2: Ref
+  ty2 := ty
+  tok1 := tok
+  rst := new(_ptr_struct_Token_$value)
+  rst._ptr_struct_Token_$value := tok1
+  _ := str_star()
+  consume_b := consume(rst, tok1, _)
+  tok1 := rst._ptr_struct_Token_$value
+  while (consume_b)
+    invariant ? && true 
+  {
+    ty1 := pointer_to(ty2)
+    _1 := str_const()
+    _2 := equal(tok1, _1)
+    if (!_2) {
+      _3 := str_volatile()
+      _4 := equal(tok1, _3)
+    }
+    if (!(_2 || _4)) {
+      _5 := str_restrict()
+      _6 := equal(tok1, _5)
+    }
+    while (_2 || _4 || _6)
+      invariant ? && true 
+    {
+      tok1 := tok1.Token$next
+      _1 := str_const()
+      _2 := equal(tok1, _1)
+      if (!_2) {
+        _3 := str_volatile()
+        _4 := equal(tok1, _3)
+      }
+      if (!(_2 || _4)) {
+        _5 := str_restrict()
+        _6 := equal(tok1, _5)
+      }
+    }
+    rst._ptr_struct_Token_$value := tok1
+    _7 := str_star()
+    consume_b := consume(rst, tok1, _7)
+    tok1 := rst._ptr_struct_Token_$value
+    ty2 := ty1
+  }
+  rest._ptr_struct_Token_$value := tok1
+  $result := ty2
+}
+
+method pointerss(tlist: Ref) returns ($result: Ref)
+{
+  var stmt1: Ref
+  var stmt2: Ref
+  var stmt3: Ref
+  var stmt4: Ref
+  var stmt5: Ref
+  var end: Ref
+  var _: Ref
+  var _1: Ref
+  var _2: Ref
+  var _3: Ref
+  var _4: Ref
+  var _5: Ref
+  var _6: Ref
+  var _7: Ref
+  var _8: Ref
+  var _9: Ref
+  var _10: Ref
+  var _11: Ref
+  var _12: Ref
+  var _13: Ref
+  var _14: Ref
+  var _15: Ref
+  var _16: Ref
+  var _17: Ref
+  var _18: Ref
+  var _19: Ref
+  var _20: Ref
+  var _21: Ref
+  var _22: Ref
+  var _23: Ref
+  var _24: Ref
+  var _25: Ref
+  var _26: Ref
+  var _27: Ref
+  var _28: Ref
+  var _29: Ref
+  var _30: Ref
+  var _31: Ref
+  var _32: Ref
+  var _33: Ref
+  var _34: Ref
+  var _35: Ref
+  var _36: Ref
+  var _37: Ref
+  var _38: Ref
+  var _39: Ref
+  var _40: Ref
+  var _41: Ref
+  var _42: Ref
+  var _43: Ref
+  var _44: Ref
+  var _45: Ref
+  var _46: Ref
+  var _47: Ref
+  var _48: Ref
+  var _49: Ref
+  var _50: Ref
+  var _51: Ref
+  var _52: Ref
+  var _53: Ref
+  var _54: Ref
+  var _55: Ref
+  var _56: Ref
+  var _57: Ref
+  var _58: Ref
+  var _59: Ref
+  var _60: Ref
+  var _61: Ref
+  var _62: Ref
+  var _63: Ref
+  var _64: Ref
+  var _65: Ref
+  var _66: Ref
+  var _67: Ref
+  var _68: Ref
+  var _69: Ref
+  var _70: Ref
+  var _71: Ref
+  var _72: Ref
+  var _73: Ref
+  _ := new_TK_PUNCT()
+  _1 := str_mul()
+  _2 := new_token(_, _1)
+  tlist.Token$next := _2
+  _3 := new_TK_PUNCT()
+  _4 := str_bitand()
+  _5 := new_token(_3, _4)
+  tlist.Token$next.Token$next := _5
+  _6 := tok_ident(120)
+  tlist.Token$next.Token$next.Token$next := _6
+  _7 := new_TK_PUNCT()
+  _8 := str_semicolon()
+  _9 := new_token(_7, _8)
+  tlist.Token$next.Token$next.Token$next.Token$next := _9
+  stmt1 := tlist.Token$next.Token$next.Token$next.Token$next
+  _10 := new_TK_KEYWORD()
+  _11 := str_int()
+  _12 := new_token(_10, _11)
+  stmt1.Token$next := _12
+  _13 := new_TK_PUNCT()
+  _14 := str_mul()
+  _15 := new_token(_13, _14)
+  stmt1.Token$next.Token$next := _15
+  _16 := tok_ident(108)
+  stmt1.Token$next.Token$next.Token$next := _16
+  _17 := new_TK_PUNCT()
+  _18 := str_semicolon()
+  _19 := new_token(_17, _18)
+  stmt1.Token$next.Token$next.Token$next.Token$next := _19
+  stmt2 := stmt1.Token$next.Token$next.Token$next.Token$next
+  _20 := new_TK_PUNCT()
+  _21 := str_mul()
+  _22 := new_token(_20, _21)
+  stmt2.Token$next := _22
+  _23 := tok_ident(108)
+  stmt2.Token$next.Token$next := _23
+  _24 := new_TK_PUNCT()
+  _25 := str_eq()
+  _26 := new_token(_24, _25)
+  stmt2.Token$next.Token$next.Token$next := _26
+  _27 := new_TK_PUNCT()
+  _28 := str_bitand()
+  _29 := new_token(_27, _28)
+  stmt2.Token$next.Token$next.Token$next.Token$next := _29
+  _30 := tok_ident(120)
+  stmt2.Token$next.Token$next.Token$next.Token$next.Token$next := _30
+  _31 := new_TK_PUNCT()
+  _32 := str_semicolon()
+  _33 := new_token(_31, _32)
+  stmt2.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next := _33
+  stmt3 := stmt2.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next
+  _34 := new_TK_KEYWORD()
+  _35 := str_int()
+  _36 := new_token(_34, _35)
+  stmt3.Token$next := _36
+  _37 := new_TK_PUNCT()
+  _38 := str_mul()
+  _39 := new_token(_37, _38)
+  stmt3.Token$next.Token$next := _39
+  _40 := new_TK_PUNCT()
+  _41 := str_mul()
+  _42 := new_token(_40, _41)
+  stmt3.Token$next.Token$next.Token$next := _42
+  _43 := tok_ident(122)
+  stmt3.Token$next.Token$next.Token$next.Token$next := _43
+  _44 := new_TK_PUNCT()
+  _45 := str_semicolon()
+  _46 := new_token(_44, _45)
+  stmt3.Token$next.Token$next.Token$next.Token$next.Token$next := _46
+  stmt4 := stmt3.Token$next.Token$next.Token$next.Token$next.Token$next
+  _47 := new_TK_PUNCT()
+  _48 := str_mul()
+  _49 := new_token(_47, _48)
+  stmt4.Token$next := _49
+  _50 := new_TK_PUNCT()
+  _51 := str_mul()
+  _52 := new_token(_50, _51)
+  stmt4.Token$next.Token$next := _52
+  _53 := tok_ident(122)
+  stmt4.Token$next.Token$next.Token$next := _53
+  _54 := new_TK_PUNCT()
+  _55 := str_eq()
+  _56 := new_token(_54, _55)
+  stmt4.Token$next.Token$next.Token$next.Token$next := _56
+  _57 := new_TK_PUNCT()
+  _58 := str_bitand()
+  _59 := new_token(_57, _58)
+  stmt4.Token$next.Token$next.Token$next.Token$next.Token$next := _59
+  _60 := tok_ident(121)
+  stmt4.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next := _60
+  _61 := new_TK_PUNCT()
+  _62 := str_semicolon()
+  _63 := new_token(_61, _62)
+  stmt4.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next := _63
+  stmt5 := stmt4.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next
+  _64 := new_TK_PUNCT()
+  _65 := str_mul()
+  _66 := new_token(_64, _65)
+  stmt5.Token$next := _66
+  _67 := new_TK_PUNCT()
+  _68 := str_mul()
+  _69 := new_token(_67, _68)
+  stmt5.Token$next.Token$next := _69
+  _70 := tok_ident(122)
+  stmt5.Token$next.Token$next.Token$next := _70
+  _71 := new_TK_PUNCT()
+  _72 := str_semicolon()
+  _73 := new_token(_71, _72)
+  stmt5.Token$next.Token$next.Token$next.Token$next := _73
+  end := stmt5.Token$next.Token$next.Token$next.Token$next
+  $result := end
+}
+
+method postfix(rest: Ref, tok: Ref, scope: Ref) returns ($result: Ref)
+{
+  var rst: Ref
+  var node: Ref
+  var break_loop: Bool
+  var _: Ref
+  var _1: Bool
+  var node1: Ref
+  var tok1: Ref
+  tok1 := tok
+  rst := new(_ptr_struct_Token_$value)
+  rst._ptr_struct_Token_$value := tok1
+  node := primary(rst, tok1, scope)
+  tok1 := rst._ptr_struct_Token_$value
+  break_loop := false
+  while (!break_loop)
+    invariant ? && true 
+  {
+    _ := str_oparen()
+    _1 := equal(tok1, _)
+    if (_1) {
+      rst._ptr_struct_Token_$value := tok1
+      node1 := funcall(rst, tok1.Token$next, node, scope)
+      tok1 := rst._ptr_struct_Token_$value
+    } else {
+      rest._ptr_struct_Token_$value := tok1
+      break_loop := true
+      node1 := node
+    }
+    node := node1
+  }
+  $result := node
+}
+
+method primary(rest: Ref, tok: Ref, scope: Ref) returns ($result: Ref)
+{
+  var start: Ref
+  var rst: Ref
+  var _: Ref
+  var _1: Bool
+  var node: Ref
+  var _2: Ref
+  var _3: Ref
+  var _4: Bool
+  var sc: Ref
+  var node1: Ref
+  var _5: Ref
+  var _6: Ref
+  var _7: Bool
+  var _8: Ref
+  var _9: Bool
+  var _10: Bool
+  var node2: Ref
+  var _11: Ref
+  var _12: Ref
+  var tok1: Ref
+  tok1 := tok
+  start := tok1
+  rst := new(_ptr_struct_Token_$value)
+  rst._ptr_struct_Token_$value := tok1
+  _ := str_oparen()
+  _1 := equal(tok1, _)
+  if (_1) {
+    node := expr(rst, tok1.Token$next, scope)
+    tok1 := rst._ptr_struct_Token_$value
+    _2 := str_cparen()
+    _3 := skip(tok1, _2)
+    rest._ptr_struct_Token_$value := _3
+    $result := node
+  } else {
+    _4 := is_IDENT(tok1)
+    if (_4) {
+      sc := find_var(tok1, scope)
+      rest._ptr_struct_Token_$value := tok1.Token$next
+      if (sc != null) {
+        if (sc.VarScope$var != null) {
+          _5 := new_ND_VAR()
+          node1 := new_node(_5, tok1)
+          node1.ASTNode$var := sc.VarScope$var
+          $result := node1
+        } else {
+          _6 := str_oparen()
+          _7 := equal(tok1.Token$next, _6)
+          if (_7) {
+            func_impdecl_error()
+            $result := null
+          } else {
+            undef_variable_error()
+            $result := null
+          }
+        }
+      } else {
+        _8 := str_oparen()
+        _9 := equal(tok1.Token$next, _8)
+        if (_9) {
+          func_impdecl_error()
+          $result := null
+        } else {
+          undef_variable_error()
+          $result := null
+        }
+      }
+    } else {
+      _10 := is_NUM(tok1)
+      if (_10) {
+        _11 := new_ND_NUM()
+        node2 := new_node(_11, tok1)
+        _12 := name(tok1)
+        node2.ASTNode$val := _12
+        node2.ASTNode$ty := tok1.Token$ty
+        rest._ptr_struct_Token_$value := tok1.Token$next
+        $result := node2
+      } else {
+        expr_error()
+        $result := null
+      }
+    }
+  }
+}
+
+method print_nodes(nlist: Ref, rep: Bool)
+{
+  var cur: Ref
+  var _: Ref
+  var n: Ref
+  var n1: Ref
+  var _1: Ref
+  var _2: Ref
+  var _3: Ref
+  var _4: Bool
+  var n2: Ref
+  var n3: Ref
+  cur := nlist
+  if (cur == null) {
+    
+  } elseif (rep) {
+    while (cur != null)
+      invariant ? && true 
+    {
+      printchar(114)
+      printchar(101)
+      printchar(112)
+      printchar(58)
+      printchar(32)
+      _ := name(cur.ASTNode$tok)
+      print_str_list(_)
+      printchar(10)
+      print_nodes(cur.ASTNode$lhs, false)
+      print_nodes(cur.ASTNode$rhs, false)
+      print_nodes(cur.ASTNode$cond, false)
+      print_nodes(cur.ASTNode$then, false)
+      print_nodes(cur.ASTNode$els, false)
+      print_nodes(cur.ASTNode$init, false)
+      print_nodes(cur.ASTNode$inc, false)
+      n := cur.ASTNode$body
+      while (n != null)
+        invariant ? && true 
+      {
+        print_nodes(n, false)
+        n := n.ASTNode$next
+      }
+      n1 := cur.ASTNode$args
+      while (n1 != null)
+        invariant ? && true 
+      {
+        print_nodes(n1, false)
+        n1 := n1.ASTNode$next
+      }
+      cur := cur.ASTNode$next
+    }
+  } else {
+    _1 := name(cur.ASTNode$tok)
+    print_str_list(_1)
+    _2 := name(cur.ASTNode$tok)
+    _3 := str_semicolon()
+    _4 := equals(_2, _3)
+    if (_4) {
+      printchar(10)
+    } else {
+      printchar(32)
+    }
+    print_nodes(cur.ASTNode$lhs, false)
+    print_nodes(cur.ASTNode$rhs, false)
+    print_nodes(cur.ASTNode$cond, false)
+    print_nodes(cur.ASTNode$then, false)
+    print_nodes(cur.ASTNode$els, false)
+    print_nodes(cur.ASTNode$init, false)
+    print_nodes(cur.ASTNode$inc, false)
+    n2 := cur.ASTNode$body
+    while (n2 != null)
+      invariant ? && true 
+    {
+      print_nodes(n2, false)
+      n2 := n2.ASTNode$next
+    }
+    n3 := cur.ASTNode$args
+    while (n3 != null)
+      invariant ? && true 
+    {
+      print_nodes(n3, false)
+      n3 := n3.ASTNode$next
+    }
+  }
+}
+
+method print_str_list(str: Ref)
+{
+  var cur: Ref
+  var i: Int
+  var _: Int
+  if (str != null) {
+    cur := str.StringList$root
+    i := 0
+    _ := get_len(str)
+    while (i < _)
+      invariant ? && true 
+    {
+      printchar(cur.CharNode$val)
+      cur := cur.CharNode$next
+      i := i + 1
+      _ := get_len(str)
+    }
+    printchar(cur.CharNode$val)
+  }
+}
+
+method print_tokens(tlist: Ref)
+{
+  var cur: Ref
+  var _: Ref
+  var _1: Ref
+  var _2: Ref
+  var _3: Bool
+  var _4: Ref
+  var _5: Ref
+  var _6: Bool
+  var _7: Ref
+  var _8: Ref
+  var _9: Bool
+  cur := tlist
+  while (cur != null)
+    invariant ? && true 
+  {
+    _ := name(cur)
+    print_str_list(_)
+    _1 := name(cur)
+    _2 := str_semicolon()
+    _3 := equals(_1, _2)
+    if (!_3) {
+      _4 := name(cur)
+      _5 := str_obracket()
+      _6 := equals(_4, _5)
+    }
+    if (!(_3 || _6)) {
+      _7 := name(cur)
+      _8 := str_cbracket()
+      _9 := equals(_7, _8)
+    }
+    if (_3 || _6 || _9) {
+      printchar(10)
+    } else {
+      printchar(32)
+    }
+    cur := cur.Token$next
+  }
+}
+
+method push_scope(scope: Ref, name: Ref) returns ($result: Ref)
+{
+  var sc: Ref
+  var $result_0: Ref
+  sc := new(VarScope$var, VarScope$type_def)
+  $result_0 := varscopemap_put(scope.Scope$vars, name, sc)
+  $result := sc
+}
+
+method push_tag_scope(scope: Ref, name: Ref, ty: Ref)
+{
+  var $result_0: Ref
+  $result_0 := tagscopemap_put(scope.Scope$tags, name, ty)
+}
+
+method relational(rest: Ref, tok: Ref, scope: Ref) returns ($result: Ref)
+{
+  var rst: Ref
+  var node: Ref
+  var break_loop: Bool
+  var start: Ref
+  var _: Ref
+  var _1: Bool
+  var _2: Ref
+  var _3: Ref
+  var _4: Ref
+  var _5: Bool
+  var _6: Ref
+  var _7: Ref
+  var _8: Ref
+  var _9: Bool
+  var _10: Ref
+  var _11: Ref
+  var _12: Ref
+  var _13: Bool
+  var _14: Ref
+  var _15: Ref
+  var node1: Ref
+  var tok1: Ref
+  tok1 := tok
+  rst := new(_ptr_struct_Token_$value)
+  rst._ptr_struct_Token_$value := tok1
+  node := shift(rst, tok1, scope)
+  tok1 := rst._ptr_struct_Token_$value
+  break_loop := false
+  while (!break_loop)
+    invariant ? && true 
+  {
+    start := tok1
+    _ := str_lt()
+    _1 := equal(tok1, _)
+    if (_1) {
+      rst._ptr_struct_Token_$value := tok1
+      _2 := new_ND_LT()
+      _3 := shift(rst, tok1.Token$next, scope)
+      node1 := new_binary(_2, node, _3, start)
+      tok1 := rst._ptr_struct_Token_$value
+    } else {
+      _4 := str_le()
+      _5 := equal(tok1, _4)
+      if (_5) {
+        rst._ptr_struct_Token_$value := tok1
+        _6 := new_ND_LE()
+        _7 := shift(rst, tok1.Token$next, scope)
+        node1 := new_binary(_6, node, _7, start)
+        tok1 := rst._ptr_struct_Token_$value
+      } else {
+        _8 := str_gt()
+        _9 := equal(tok1, _8)
+        if (_9) {
+          rst._ptr_struct_Token_$value := tok1
+          _10 := new_ND_LT()
+          _11 := shift(rst, tok1.Token$next, scope)
+          node1 := new_binary(_10, _11, node, start)
+          tok1 := rst._ptr_struct_Token_$value
+        } else {
+          _12 := str_ge()
+          _13 := equal(tok1, _12)
+          if (_13) {
+            rst._ptr_struct_Token_$value := tok1
+            _14 := new_ND_LE()
+            _15 := shift(rst, tok1.Token$next, scope)
+            node1 := new_binary(_14, _15, node, start)
+            tok1 := rst._ptr_struct_Token_$value
+          } else {
+            rest._ptr_struct_Token_$value := tok1
+            break_loop := true
+            node1 := node
+          }
+        }
+      }
+    }
+    node := node1
+  }
+  $result := node
+}
+
+method same_typekind(ty1: Ref, ty2: Ref) returns ($result: Bool)
+{
+  if (ty1 == null || ty2 == null || ty1.Type$kind == null || ty2.Type$kind == null) {
+    $result := false
+  } else {
+    $result := ty1.Type$kind.TypeKind$kind == ty2.Type$kind.TypeKind$kind
+  }
+}
+
+method shift(rest: Ref, tok: Ref, scope: Ref) returns ($result: Ref)
+{
+  var rst: Ref
+  var node: Ref
+  var break_loop: Bool
+  var start: Ref
+  var _: Ref
+  var _1: Bool
+  var _2: Ref
+  var _3: Ref
+  var _4: Ref
+  var _5: Bool
+  var _6: Ref
+  var _7: Ref
+  var node1: Ref
+  var tok1: Ref
+  tok1 := tok
+  rst := new(_ptr_struct_Token_$value)
+  rst._ptr_struct_Token_$value := tok1
+  node := add(rst, tok1, scope)
+  tok1 := rst._ptr_struct_Token_$value
+  break_loop := false
+  while (!break_loop)
+    invariant ? && true 
+  {
+    start := tok1
+    _ := str_bitshl()
+    _1 := equal(tok1, _)
+    if (_1) {
+      rst._ptr_struct_Token_$value := tok1
+      _2 := new_ND_SHL()
+      _3 := add(rst, tok1.Token$next, scope)
+      node1 := new_binary(_2, node, _3, start)
+      tok1 := rst._ptr_struct_Token_$value
+    } else {
+      _4 := str_bitshr()
+      _5 := equal(tok1, _4)
+      if (_5) {
+        rst._ptr_struct_Token_$value := tok1
+        _6 := new_ND_SHR()
+        _7 := add(rst, tok1.Token$next, scope)
+        node1 := new_binary(_6, node, _7, start)
+        tok1 := rst._ptr_struct_Token_$value
+      } else {
+        rest._ptr_struct_Token_$value := tok1
+        break_loop := true
+        node1 := node
+      }
+    }
+    node := node1
+  }
+  $result := node
+}
+
+method skip(tok: Ref, op: Ref) returns ($result: Ref)
+{
+  var _: Bool
+  _ := equal(tok, op)
+  if (!_) {
+    token_match_error()
+  }
+  $result := tok.Token$next
+}
+
+method stmt(rest: Ref, tok: Ref, scope: Ref, globals: Ref, locals: Ref) returns ($result: Ref)
+{
+  var rst: Ref
+  var _: Ref
+  var _1: Bool
+  var node: Ref
+  var _2: Ref
+  var _3: Ref
+  var _4: Bool
+  var exp: Ref
+  var _5: Ref
+  var _6: Ref
+  var _7: Ref
+  var _8: Bool
+  var node1: Ref
+  var _9: Ref
+  var _10: Ref
+  var _11: Ref
+  var _12: Ref
+  var _13: Ref
+  var _14: Ref
+  var _15: Bool
+  var _16: Ref
+  var _17: Ref
+  var _18: Bool
+  var node2: Ref
+  var _19: Ref
+  var _20: Ref
+  var _21: Ref
+  var _22: Ref
+  var _23: Ref
+  var _24: Ref
+  var _25: Bool
+  var _26: Ref
+  var _27: Ref
+  var tok1: Ref
+  var tok11: Ref
+  var tok111: Ref
+  var tok2: Ref
+  tok2 := tok
+  rst := new(_ptr_struct_Token_$value)
+  _ := str_return()
+  _1 := equal(tok2, _)
+  if (_1) {
+    _2 := new_ND_RETURN()
+    node := new_node(_2, tok2)
+    _3 := str_semicolon()
+    _4 := consume(rest, tok2.Token$next, _3)
+    if (_4) {
+      $result := node
+    } else {
+      rst._ptr_struct_Token_$value := tok2
+      exp := expr(rst, tok2.Token$next, scope._ptr_struct_Scope_$value)
+      tok2 := rst._ptr_struct_Token_$value
+      _5 := str_semicolon()
+      _6 := skip(tok2, _5)
+      rest._ptr_struct_Token_$value := _6
+      add_type(exp)
+      node.ASTNode$lhs := exp
+      $result := node
+    }
+    tok1 := tok2
+    tok11 := tok1
+    tok111 := tok11
+  } else {
+    _7 := str_if()
+    _8 := equal(tok2, _7)
+    if (_8) {
+      _9 := new_ND_IF()
+      node1 := new_node(_9, tok2)
+      _10 := str_oparen()
+      tok1 := skip(tok2.Token$next, _10)
+      rst._ptr_struct_Token_$value := tok1
+      _11 := expr(rst, tok1, scope._ptr_struct_Scope_$value)
+      node1.ASTNode$cond := _11
+      tok1 := rst._ptr_struct_Token_$value
+      _12 := str_cparen()
+      tok11 := skip(tok1, _12)
+      rst._ptr_struct_Token_$value := tok11
+      _13 := stmt(rst, tok11, scope, globals, locals)
+      node1.ASTNode$then := _13
+      tok11 := rst._ptr_struct_Token_$value
+      _14 := str_else()
+      _15 := equal(tok11, _14)
+      if (_15) {
+        rst._ptr_struct_Token_$value := tok11
+        _16 := stmt(rst, tok11.Token$next, scope, globals, locals)
+        node1.ASTNode$els := _16
+        tok11 := rst._ptr_struct_Token_$value
+      }
+      rest._ptr_struct_Token_$value := tok11
+      $result := node1
+      tok111 := tok11
+    } else {
+      _17 := str_while()
+      _18 := equal(tok2, _17)
+      if (_18) {
+        _19 := new_ND_FOR()
+        node2 := new_node(_19, tok2)
+        _20 := str_oparen()
+        tok1 := skip(tok2.Token$next, _20)
+        rst._ptr_struct_Token_$value := tok1
+        _21 := expr(rst, tok1, scope._ptr_struct_Scope_$value)
+        node2.ASTNode$cond := _21
+        tok11 := rst._ptr_struct_Token_$value
+        _22 := str_cparen()
+        tok111 := skip(tok11, _22)
+        _23 := stmt(rest, tok111, scope, globals, locals)
+        node2.ASTNode$then := _23
+        $result := node2
+      } else {
+        _24 := str_obracket()
+        _25 := equal(tok2, _24)
+        if (_25) {
+          _26 := compound_stmt(rest, tok2.Token$next, scope, globals, locals)
+          $result := _26
+        } else {
+          _27 := expr_stmt(rest, tok2, scope._ptr_struct_Scope_$value)
+          $result := _27
+        }
+        tok1 := tok2
+        tok11 := tok1
+        tok111 := tok11
+      }
+    }
+  }
+}
+
+method str_add() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 43)
+  $result := str
+}
+
+method str_auto() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 97)
+  add_char(str, 117)
+  add_char(str, 116)
+  add_char(str, 111)
+  $result := str
+}
+
+method str_bitand() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 38)
+  $result := str
+}
+
+method str_bitnot() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 126)
+  $result := str
+}
+
+method str_bitor() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 124)
+  $result := str
+}
+
+method str_bitshl() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 60)
+  add_char(str, 60)
+  $result := str
+}
+
+method str_bitshr() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 62)
+  add_char(str, 62)
+  $result := str
+}
+
+method str_bitxor() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 94)
+  $result := str
+}
+
+method str_bool() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 95)
+  add_char(str, 66)
+  add_char(str, 111)
+  add_char(str, 111)
+  add_char(str, 108)
+  $result := str
+}
+
+method str_cbracket() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 125)
+  $result := str
+}
+
+method str_char() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 99)
+  add_char(str, 104)
+  add_char(str, 97)
+  add_char(str, 114)
+  $result := str
+}
+
+method str_colon() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 58)
+  $result := str
+}
+
+method str_comma() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 44)
+  $result := str
+}
+
+method str_const() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 99)
+  add_char(str, 111)
+  add_char(str, 110)
+  add_char(str, 115)
+  add_char(str, 116)
+  $result := str
+}
+
+method str_cparen() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 41)
+  $result := str
+}
+
+method str_div() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 47)
+  $result := str
+}
+
+method str_double() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 100)
+  add_char(str, 111)
+  add_char(str, 117)
+  add_char(str, 98)
+  add_char(str, 108)
+  add_char(str, 101)
+  $result := str
+}
+
+method str_else() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 101)
+  add_char(str, 108)
+  add_char(str, 115)
+  add_char(str, 101)
+  $result := str
+}
+
+method str_enum() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 101)
+  add_char(str, 110)
+  add_char(str, 117)
+  add_char(str, 109)
+  $result := str
+}
+
+method str_eq() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 61)
+  $result := str
+}
+
+method str_extern() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 101)
+  add_char(str, 120)
+  add_char(str, 116)
+  add_char(str, 101)
+  add_char(str, 114)
+  add_char(str, 110)
+  $result := str
+}
+
+method str_float() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 102)
+  add_char(str, 108)
+  add_char(str, 111)
+  add_char(str, 97)
+  add_char(str, 116)
+  $result := str
+}
+
+method str_ge() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 62)
+  add_char(str, 61)
+  $result := str
+}
+
+method str_gt() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 62)
+  $result := str
+}
+
+method str_if() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 105)
+  add_char(str, 102)
+  $result := str
+}
+
+method str_inline() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 105)
+  add_char(str, 110)
+  add_char(str, 108)
+  add_char(str, 105)
+  add_char(str, 110)
+  add_char(str, 101)
+  $result := str
+}
+
+method str_int() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 105)
+  add_char(str, 110)
+  add_char(str, 116)
+  $result := str
+}
+
+method str_le() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 60)
+  add_char(str, 61)
+  $result := str
+}
+
+method str_logand() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 38)
+  add_char(str, 38)
+  $result := str
+}
+
+method str_logeq() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 61)
+  add_char(str, 61)
+  $result := str
+}
+
+method str_logneq() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 33)
+  add_char(str, 61)
+  $result := str
+}
+
+method str_lognot() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 33)
+  $result := str
+}
+
+method str_logor() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 124)
+  add_char(str, 124)
+  $result := str
+}
+
+method str_long() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 108)
+  add_char(str, 111)
+  add_char(str, 110)
+  add_char(str, 103)
+  $result := str
+}
+
+method str_lt() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 60)
+  $result := str
+}
+
+method str_mod() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 37)
+  $result := str
+}
+
+method str_mul() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 42)
+  $result := str
+}
+
+method str_obracket() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 123)
+  $result := str
+}
+
+method str_oparen() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 40)
+  $result := str
+}
+
+method str_register() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 114)
+  add_char(str, 101)
+  add_char(str, 103)
+  add_char(str, 105)
+  add_char(str, 115)
+  add_char(str, 116)
+  add_char(str, 101)
+  add_char(str, 114)
+  $result := str
+}
+
+method str_restrict() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 114)
+  add_char(str, 101)
+  add_char(str, 115)
+  add_char(str, 116)
+  add_char(str, 114)
+  add_char(str, 105)
+  add_char(str, 99)
+  add_char(str, 116)
+  $result := str
+}
+
+method str_return() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 114)
+  add_char(str, 101)
+  add_char(str, 116)
+  add_char(str, 117)
+  add_char(str, 114)
+  add_char(str, 110)
+  $result := str
+}
+
+method str_semicolon() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 59)
+  $result := str
+}
+
+method str_short() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 115)
+  add_char(str, 104)
+  add_char(str, 111)
+  add_char(str, 114)
+  add_char(str, 116)
+  $result := str
+}
+
+method str_signed() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 115)
+  add_char(str, 105)
+  add_char(str, 103)
+  add_char(str, 110)
+  add_char(str, 101)
+  add_char(str, 100)
+  $result := str
+}
+
+method str_star() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 42)
+  $result := str
+}
+
+method str_static() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 115)
+  add_char(str, 116)
+  add_char(str, 97)
+  add_char(str, 116)
+  add_char(str, 105)
+  add_char(str, 99)
+  $result := str
+}
+
+method str_struct() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 115)
+  add_char(str, 116)
+  add_char(str, 114)
+  add_char(str, 117)
+  add_char(str, 99)
+  add_char(str, 116)
+  $result := str
+}
+
+method str_sub() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 45)
+  $result := str
+}
+
+method str_typedef() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 116)
+  add_char(str, 121)
+  add_char(str, 112)
+  add_char(str, 101)
+  add_char(str, 100)
+  add_char(str, 101)
+  add_char(str, 102)
+  $result := str
+}
+
+method str_unsigned() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 117)
+  add_char(str, 110)
+  add_char(str, 115)
+  add_char(str, 105)
+  add_char(str, 103)
+  add_char(str, 110)
+  add_char(str, 101)
+  add_char(str, 100)
+  $result := str
+}
+
+method str_void() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 118)
+  add_char(str, 111)
+  add_char(str, 105)
+  add_char(str, 100)
+  $result := str
+}
+
+method str_volatile() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 118)
+  add_char(str, 111)
+  add_char(str, 108)
+  add_char(str, 97)
+  add_char(str, 116)
+  add_char(str, 105)
+  add_char(str, 108)
+  add_char(str, 101)
+  $result := str
+}
+
+method str_while() returns ($result: Ref)
+{
+  var str: Ref
+  str := new_stringlist()
+  add_char(str, 119)
+  add_char(str, 104)
+  add_char(str, 105)
+  add_char(str, 108)
+  add_char(str, 101)
+  $result := str
+}
+
+method struct_type() returns ($result: Ref)
+{
+  var _: Ref
+  var _1: Ref
+  _ := new_TY_STRUCT()
+  _1 := new_type(_, 0, 1)
+  $result := _1
+}
+
+method tagscopemap_get(map: Ref, key: Ref) returns ($result: Ref)
+{
+  var curr: Ref
+  var res: Ref
+  var _: Bool
+  if (map != null) {
+    curr := map
+    res := null
+    while (curr != null && res == null)
+      invariant ? && true 
+    {
+      _ := equals(curr.TagScopeMap$key, key)
+      if (_) {
+        res := curr.TagScopeMap$val
+      }
+      curr := curr.TagScopeMap$next
+    }
+    $result := res
+  } else {
+    $result := null
+  }
+}
+
+method tagscopemap_put(map: Ref, key: Ref, val: Ref) returns ($result: Ref)
+{
+  var curr: Ref
+  var prev: Ref
+  var res: Ref
+  var _: Bool
+  var newtsm: Ref
+  if (map != null) {
+    curr := map
+    prev := map
+    res := null
+    while (curr != null && res == null)
+      invariant ? && true 
+    {
+      _ := equals(curr.TagScopeMap$key, key)
+      if (_) {
+        res := curr.TagScopeMap$val
+        curr.TagScopeMap$val := val
+      }
+      prev := curr
+      curr := curr.TagScopeMap$next
+    }
+    if (res == null) {
+      newtsm := new_tagscopemap()
+      newtsm.TagScopeMap$key := key
+      newtsm.TagScopeMap$val := val
+      newtsm.TagScopeMap$next := null
+      prev.TagScopeMap$next := newtsm
+    }
+    $result := res
+  } else {
+    scope_error()
+    $result := null
+  }
+}
+
+method tok_ident(c: Int) returns ($result: Ref)
+{
+  var id_str: Ref
+  var _: Ref
+  var _1: Ref
+  id_str := new_stringlist()
+  add_char(id_str, c)
+  _ := new_TK_IDENT()
+  _1 := new_token(_, id_str)
+  $result := _1
+}
+
+method ty_name(ty: Ref) returns ($result: Ref)
+{
+  var _: Ref
+  if (ty != null) {
+    _ := name(ty.Type$name)
+    $result := _
+  } else {
+    $result := null
+  }
+}
+
+method type_suffix(rest: Ref, tok: Ref, ty: Ref, scope: Ref) returns ($result: Ref)
+{
+  var _: Ref
+  var _1: Bool
+  var _2: Ref
+  _ := str_oparen()
+  _1 := equal(tok, _)
+  if (_1) {
+    _2 := func_params(rest, tok.Token$next, ty, scope)
+    $result := _2
+  }
+  rest._ptr_struct_Token_$value := tok
+  $result := ty
+}
+
+method unary(rest: Ref, tok: Ref, scope: Ref) returns ($result: Ref)
+{
+  var _: Ref
+  var _1: Bool
+  var _2: Ref
+  var _3: Ref
+  var _4: Bool
+  var _5: Ref
+  var _6: Ref
+  var _7: Ref
+  var _8: Ref
+  var _9: Bool
+  var lhs: Ref
+  var _10: Ref
+  var _11: Ref
+  var _12: Ref
+  var _13: Bool
+  var node: Ref
+  var _14: Bool
+  var _15: Ref
+  var _16: Ref
+  var _17: Ref
+  var _18: Bool
+  var _19: Ref
+  var _20: Ref
+  var _21: Ref
+  var _22: Ref
+  var _23: Bool
+  var _24: Ref
+  var _25: Ref
+  var _26: Ref
+  var _27: Ref
+  _ := str_add()
+  _1 := equal(tok, _)
+  if (_1) {
+    _2 := unary(rest, tok.Token$next, scope)
+    $result := _2
+  } else {
+    _3 := str_sub()
+    _4 := equal(tok, _3)
+    if (_4) {
+      _5 := new_ND_NEG()
+      _6 := unary(rest, tok.Token$next, scope)
+      _7 := new_unary(_5, _6, tok)
+      $result := _7
+    } else {
+      _8 := str_bitand()
+      _9 := equal(tok, _8)
+      if (_9) {
+        lhs := unary(rest, tok.Token$next, scope)
+        add_type(lhs)
+        _10 := new_ND_ADDR()
+        _11 := new_unary(_10, lhs, tok)
+        $result := _11
+      } else {
+        _12 := str_mul()
+        _13 := equal(tok, _12)
+        if (_13) {
+          node := unary(rest, tok.Token$next, scope)
+          add_type(node)
+          _14 := is_FUNC(node.ASTNode$ty)
+          if (_14) {
+            $result := node
+          } else {
+            _15 := new_ND_DEREF()
+            _16 := new_unary(_15, node, tok)
+            $result := _16
+          }
+        } else {
+          _17 := str_lognot()
+          _18 := equal(tok, _17)
+          if (_18) {
+            _19 := new_ND_NOT()
+            _20 := unary(rest, tok.Token$next, scope)
+            _21 := new_unary(_19, _20, tok)
+            $result := _21
+          } else {
+            _22 := str_bitnot()
+            _23 := equal(tok, _22)
+            if (_23) {
+              _24 := new_ND_BITNOT()
+              _25 := unary(rest, tok.Token$next, scope)
+              _26 := new_unary(_24, _25, tok)
+              $result := _26
+            } else {
+              _27 := postfix(rest, tok, scope)
+              $result := _27
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+method unreachable()
+{
+  parser_error()
+}
+
+method varscopemap_get(map: Ref, key: Ref) returns ($result: Ref)
+{
+  var curr: Ref
+  var res: Ref
+  var _: Bool
+  if (map != null) {
+    curr := map
+    res := null
+    while (curr != null && res == null)
+      invariant ? && true 
+    {
+      _ := equals(curr.VarScopeMap$key, key)
+      if (_) {
+        res := curr.VarScopeMap$val
+      }
+      curr := curr.VarScopeMap$next
+    }
+    $result := res
+  } else {
+    $result := null
+  }
+}
+
+method varscopemap_put(map: Ref, key: Ref, val: Ref) returns ($result: Ref)
+{
+  var curr: Ref
+  var prev: Ref
+  var res: Ref
+  var _: Bool
+  var newvsm: Ref
+  if (map != null) {
+    curr := map
+    prev := map
+    res := null
+    while (curr != null && res == null)
+      invariant ? && true 
+    {
+      _ := equals(curr.VarScopeMap$key, key)
+      if (_) {
+        res := curr.VarScopeMap$val
+        curr.VarScopeMap$val := val
+      }
+      prev := curr
+      curr := curr.VarScopeMap$next
+    }
+    if (res == null) {
+      newvsm := new_varscopemap()
+      newvsm.VarScopeMap$key := key
+      newvsm.VarScopeMap$val := val
+      newvsm.VarScopeMap$next := null
+      prev.VarScopeMap$next := newvsm
+    }
+    $result := res
+  } else {
+    scope_error()
+    $result := null
+  }
+}
+
+method whiles(tlist: Ref) returns ($result: Ref)
+{
+  var one: Ref
+  var tmp: Ref
+  var _: Ref
+  var _1: Ref
+  var _2: Ref
+  var _3: Ref
+  var _4: Ref
+  var _5: Ref
+  var _6: Ref
+  var _7: Ref
+  var _8: Ref
+  var _9: Ref
+  var _10: Ref
+  var _11: Ref
+  var _12: Ref
+  var _13: Ref
+  var _14: Ref
+  var _15: Ref
+  var _16: Ref
+  var _17: Ref
+  var _18: Ref
+  var _19: Ref
+  var _20: Ref
+  var _21: Ref
+  var tmp1: Ref
+  one := new_stringlist()
+  add_char(one, 49)
+  _ := new_TK_KEYWORD()
+  _1 := str_while()
+  _2 := new_token(_, _1)
+  tlist.Token$next := _2
+  _3 := new_TK_PUNCT()
+  _4 := str_oparen()
+  _5 := new_token(_3, _4)
+  tlist.Token$next.Token$next := _5
+  _6 := tok_ident(112)
+  tlist.Token$next.Token$next.Token$next := _6
+  _7 := new_TK_PUNCT()
+  _8 := str_gt()
+  _9 := new_token(_7, _8)
+  tlist.Token$next.Token$next.Token$next.Token$next := _9
+  _10 := new_TK_NUM()
+  _11 := new_token(_10, one)
+  tlist.Token$next.Token$next.Token$next.Token$next.Token$next := _11
+  _12 := new_ty_int()
+  tlist.Token$next.Token$next.Token$next.Token$next.Token$next.Token$ty := _12
+  _13 := new_TK_PUNCT()
+  _14 := str_cparen()
+  _15 := new_token(_13, _14)
+  tlist.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next := _15
+  _16 := new_TK_PUNCT()
+  _17 := str_obracket()
+  _18 := new_token(_16, _17)
+  tlist.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next := _18
+  tmp := tlist.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next.Token$next
+  tmp1 := bools(tmp)
+  _19 := new_TK_PUNCT()
+  _20 := str_cbracket()
+  _21 := new_token(_19, _20)
+  tmp1.Token$next := _21
+  $result := tmp1.Token$next
+}
+
+method printint(value: Int)
+{
+  
+}
+
+method printchar(value: Int)
+{
+  
+}
+
+method printbool(value: Bool)
+{
+  
+}
+
+method flush()
+{
+  
+}
+
+method stringlist_error()
+{
+  
+}
+
+method token_match_error()
+{
+  
+}
+
+method node_kind_error()
+{
+  
+}
+
+method node_binop_error()
+{
+  
+}
+
+method node_neg_error()
+{
+  
+}
+
+method node_deref_error(errorty: Bool)
+{
+  
+}
+
+method node_stmt_error()
+{
+  
+}
+
+method parser_error()
+{
+  
+}
+
+method scope_error()
+{
+  
+}
+
+method num_op_error()
+{
+  
+}
+
+method undef_variable_error()
+{
+  
+}
+
+method func_impdecl_error()
+{
+  
+}
+
+method func_error()
+{
+  
+}
+
+method func_args_error(option: Bool)
+{
+  
+}
+
+method func_as_arg_error()
+{
+  
+}
+
+method func_name_error()
+{
+  
+}
+
+method func_redecl_error()
+{
+  
+}
+
+method func_redef_error()
+{
+  
+}
+
+method expr_error()
+{
+  
+}
+
+method var_decl_void_error()
+{
+  
+}
+
+method var_type_error()
+{
+  
+}
+
+method var_name_error()
+{
+  
+}
+
+method storage_type_error()
+{
+  
+}
+
+method storage_type_unsupported_error()
+{
+  
+}
+
+method structs_enums_unsupported_error()
+{
+  
+}
+
+method type_error()
+{
+  
+}
+
+method tydef_name_error()
+{
+  
+}
+
+method param_name_error()
+{
+  
+}
+
+method param_type_error()
+{
+  
+}
