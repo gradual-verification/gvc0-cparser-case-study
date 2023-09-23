@@ -1,0 +1,329 @@
+jenna@ubuntu-2023:~/Desktop/gvc0$ cc0 src/test/resources/case-study-2023/cparser.c0
+src/test/resources/case-study-2023/cparser.c0: 92.3-92.11: error: expected a type, found identifier 'CharNode'
+   | 
+92 |   CharNode *next;
+   |   ~~~~~~~~ 
+cc0: error: compilation failed
+
+Fixed: by adding typedef for CharNode which was missing.
+
+
+jenna@ubuntu-2023:~/Desktop/gvc0$ cc0 src/test/resources/case-study-2023/cparser.c0
+src/test/resources/case-study-2023/cparser.c0: 96.1-96.7: error: expected ';', found: 'struct'
+[Hint: terminate preceding struct definition with ';']
+   | 
+96 | struct StringList {
+   | ~~~~~~ 
+cc0: error: compilation failed
+
+Fixed: by adding a ';' to the struct definition before it and the one for StringList since they were missing ';'
+       at their tail end
+
+
+jenna@ubuntu-2023:~/Desktop/gvc0$ cc0 src/test/resources/case-study-2023/cparser.c0
+src/test/resources/case-study-2023/cparser.c0: 191.3-191.7: error: expected a type, found identifier 'Type'
+    | 
+191 |   Type *ty;         // Used if TK_NUM or TK_STR
+    |   ~~~~ 
+cc0: note: perhaps you meant one of:
+              Token
+
+cc0: error: compilation failed
+
+Fixed: Moved Type typedef to above Token definition to simulate including the .h0 file for Type in Token.
+       Type uses Token and Token uses Type in their definitions, so this seems like the best/simplest solution.
+       Commented out typedef of Type in "Type" file since can't have it typedefed twice. Again includes would solve
+       this issue.
+
+
+cc0 src/test/resources/case-study-2023/cparser.c0
+src/test/resources/case-study-2023/cparser.c0: 271.19-272.5: error: consecutive expressions
+[Hint: missing infix operator?]
+    | 
+271 |   TokenKind *tk = alloc(struct TokenKind) ... tk->kind = 1;
+    |                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+cc0: error: compilation failed
+
+Fixed: The alloc statement is missing a semicolon at the end and effects relate new_TK_<X> functions that were copy
+       pasted and modified from this one. Added all of the missing semicolons.
+
+
+src/test/resources/case-study-2023/cparser.c0: 464.1-464.5: error: expected ';', found: 'bool'
+[Hint: terminate preceding struct definition with ';']
+    | 
+464 | bool is_VOID(Type *ty) {
+    | ~~~~ 
+cc0: error: compilation failed
+
+Fixed: added semicolon to end of TypeKind struct definition.
+
+
+jenna@ubuntu-2023:~/Desktop/gvc0$ cc0 src/test/resources/case-study-2023/cparser.c0
+src/test/resources/case-study-2023/cparser.c0: 544.18-545.5: error: consecutive expressions
+[Hint: missing infix operator?]
+    | 
+544 |   TypeKind *ty = alloc(struct TypeKind) ... ty->kind = 1;
+    |                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+cc0: error: compilation failed
+
+Fixed: The alloc statement is missing a semicolon at the end and effects relate new_TY_<X> functions that were copy
+       pasted and modified from this one. Added all of the missing semicolons.
+
+
+jenna@ubuntu-2023:~/Desktop/gvc0$ cc0 src/test/resources/case-study-2023/cparser.c0
+src/test/resources/case-study-2023/cparser.c0: 745.3-745.10: error: expected a type, found identifier 'ASTNode'
+    | 
+745 |   ASTNode *body;
+    |   ~~~~~~~ 
+cc0: error: compilation failed
+
+Fixed: Moved ASTNode typedef to above Obj definition to simulate including the .h0 file for ASTNode in Obj.
+       Obj uses ASTNode and ASTNode uses Obj in their definitions, so this seems like the best/simplest solution.
+       Commented out typedef of ASTNode in "ASTNode" file since can't have it typedefed twice. Again includes would solve
+       this issue.
+
+
+jenna@ubuntu-2023:~/Desktop/gvc0$ cc0 src/test/resources/case-study-2023/cparser.c0
+src/test/resources/case-study-2023/cparser.c0: 843.3-843.11: error: expected ';', found: 'NodeKind'
+[Hint: terminate preceding struct definition with ';']
+    | 
+843 | } NodeKind;
+    |   ~~~~~~~~ 
+cc0: error: compilation failed
+
+Fixed: NodeKind shouldn't be here in its struct definition (its typedef is further up in the file); so, I removed it.
+
+
+jenna@ubuntu-2023:~/Desktop/gvc0$ cc0 src/test/resources/case-study-2023/cparser.c0
+src/test/resources/case-study-2023/cparser.c0: 1118.30-1118.35: error: expected a type, found identifier 'Scope'
+     | 
+1118 | bool is_typename(Token *tok, Scope *scope); // determines if the token is a typename
+     |                              ~~~~~ 
+cc0: note: perhaps you meant one of:
+              Type
+
+cc0: error: compilation failed
+
+Fixed: Moved typedef for Scope further up in the file where it should be for these function declarations.
+
+
+jenna@ubuntu-2023:~/Desktop/gvc0$ cc0 src/test/resources/case-study-2023/cparser.c0
+src/test/resources/case-study-2023/cparser.c0: 1154.18-1154.22: error: expected a type, found identifier 'Node'
+     | 
+1154 | ASTNode *new_add(Node *lhs, Node *rhs, Token *tok);
+     |                  ~~~~ 
+cc0: note: perhaps you meant one of:
+              ASTNode
+              NodeKind
+              void
+
+cc0: error: compilation failed
+
+Fixed: new_add, new_sub, and funcall declarations need 'Node' to be 'ASTNode' so fixed this.
+
+
+jenna@ubuntu-2023:~/Desktop/gvc0$ cc0 src/test/resources/case-study-2023/cparser.c0
+src/test/resources/case-study-2023/cparser.c0: 2910.46-2910.46: error: single line comment not terminated by newline at end of file
+     | 
+2910 | //-------------Testing-----------------------
+     |                                               
+cc0: error: compilation failed
+
+Fixed: added a main function after this comment for future testing code.
+
+
+enna@ubuntu-2023:~/Desktop/gvc0$ cc0 src/test/resources/case-study-2023/cparser.c0
+src/test/resources/case-study-2023/cparser.c0: 155.5-155.27: error: type struct CharNode not small
+[Hint: cannot pass or store structs in variables directly; use pointers
+]
+    | 
+155 |     CharNode c1 = s1->root;
+    |     ~~~~~~~~~~~~~~~~~~~~~~ 
+cc0: error: compilation failed
+
+Fixed: CharNode c1 and CharNode c2 in the next line should both be CharNode pointers, fixed this.
+
+
+jenna@ubuntu-2023:~/Desktop/gvc0$ cc0 src/test/resources/case-study-2023/cparser.c0
+src/test/resources/case-study-2023/cparser.c0: 219.18-219.32: error: type struct TokenKind not small
+[Hint: cannot pass or store structs in variables directly; use pointers
+]
+    | 
+219 | Token *new_token(TokenKind kind, StringList *str);
+    |                  ~~~~~~~~~~~~~~ 
+cc0: error: compilation failed
+
+Fixed: this argument ('TokenKind') should be a pointer to a TokenKind; fixed this in the declaration and definition.
+
+
+jenna@ubuntu-2023:~/Desktop/gvc0$ cc0 src/test/resources/case-study-2023/cparser.c0
+src/test/resources/case-study-2023/cparser.c0: 338.5-338.16: error: type mismatch
+expected return type: StringList*
+   found return type: Token*
+    | 
+338 |     return tok;
+    |     ~~~~~~~~~~~ 
+cc0: error: compilation failed
+
+Fixed: this should return NULL and tok should be NULL here; just switched it to returning NULL.
+
+
+jenna@ubuntu-2023:~/Desktop/gvc0$ cc0 src/test/resources/case-study-2023/cparser.c0
+src/test/resources/case-study-2023/cparser.c0: 413.16-413.29: error: type struct TypeKind not small
+[Hint: cannot pass or store structs in variables directly; use pointers
+]
+    | 
+413 | Type *new_type(TypeKind kind, int size, int align);
+    |                ~~~~~~~~~~~~~ 
+cc0: error: compilation failed
+
+Fixed: TypeKind should be a TypeKind pointer, fixed this in the declaration and definition of new_type
+
+
+jenna@ubuntu-2023:~/Desktop/gvc0$ cc0 src/test/resources/case-study-2023/cparser.c0
+src/test/resources/case-study-2023/cparser.c0: 614.5-614.18: error: type mismatch
+expected return type: bool*
+   found return type: bool
+    | 
+614 |     return false;
+    |     ~~~~~~~~~~~~~ 
+cc0: error: compilation failed
+
+Fixed: same_typekind should return a bool not a bool pointer; fixed this typo. Fixed in decl and def.
+
+
+jenna@ubuntu-2023:~/Desktop/gvc0$ cc0 src/test/resources/case-study-2023/cparser.c0
+src/test/resources/case-study-2023/cparser.c0: 704.3-704.13: error: type struct Type not small
+[Hint: cannot pass or store structs in variables directly; use pointers
+]
+    | 
+704 |   *ret = *ty;
+    |   ~~~~~~~~~~ 
+cc0: error: compilation failed
+
+Fixed: had to re-implement the body of copy_type to assign corresponding fields to ret from ty rather than use
+       pointer dereferences.
+
+
+jenna@ubuntu-2023:~/Desktop/gvc0$ cc0 src/test/resources/case-study-2023/cparser.c0
+src/test/resources/case-study-2023/cparser.c0: 771.3-771.17: error: 'struct NodeKind' not declared or defined
+    | 
+771 |   NodeKind kind; // Node kind
+    |   ~~~~~~~~~~~~~~ 
+cc0: note: perhaps you meant one of:
+              TokenKind
+
+cc0: error: compilation failed
+
+Fixed: NodeKind in ASTNode should be a pointer to NodeKind; fixed this typo
+
+
+jenna@ubuntu-2023:~/Desktop/gvc0$ cc0 src/test/resources/case-study-2023/cparser.c0
+src/test/resources/case-study-2023/cparser.c0: 854.1-857.2: error: function 'new_ND_NULL_EXPR' does not end in a return statement
+    | 
+854 | NodeKind *new_ND_NULL_EXPR() { ... }
+    | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+cc0: error: compilation failed
+
+Fixed: new_ND_<X> functions do not have a return stmt for the new kind pointer the functions are allocating; fixed these functions
+       to have a return stmt.
+
+
+jenna@ubuntu-2023:~/Desktop/gvc0$ cc0 src/test/resources/case-study-2023/cparser.c0
+src/test/resources/case-study-2023/cparser.c0: 704.3-704.13: error: type struct Type not small
+[Hint: cannot pass or store structs in variables directly; use pointers
+]
+    | 
+704 |   *ret = *ty;
+    |   ~~~~~~~~~~ 
+cc0: error: compilation failed
+
+Fixed: fixed this by assigning all fields from ty to ret and returning the new ret* in copy_type.
+
+jenna@ubuntu-2023:~/Desktop/gvc0$ cc0 src/test/resources/case-study-2023/cparser.c0
+src/test/resources/case-study-2023/cparser.c0: 1065.9-1065.25: error: comparison with '==' or '!=' with incompatible types
+ left-hand side: NodeKind*
+right-hand side: int
+     | 
+1065 |     if (node->kind == 33) { // ND_NUM
+     |         ~~~~~~~~~~~~~~~~ 
+cc0: error: compilation failed
+
+Fixed: node->kind should be dereferenced one more time to node->kind->kind; made this change throughout add_type function and
+       put gaurd rails for when node->kind is null.
+
+
+jenna@ubuntu-2023:~/Desktop/gvc0$ cc0 src/test/resources/case-study-2023/cparser.c0
+src/test/resources/case-study-2023/cparser.c0: 1783.1-1787.2: error: function 'new_attr' does not end in a return statement
+     | 
+1783 | VarAttr *new_attr() { ... }
+     | ~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+cc0: error: compilation failed
+
+Fixed: this function should return the new attr pointer that is created in this function; fixed this and also attr->align = 0;
+       should be added to the function as well.
+
+
+jenna@ubuntu-2023:~/Desktop/gvc0$ cc0 src/test/resources/case-study-2023/cparser.c0
+src/test/resources/case-study-2023/cparser.c0: 1795.3-1795.26: error: illegal left-hand side of assignment
+[Hint: an assignment must be a variable or of the form *l, l[e], l.f, l->f, or *(t*)l]
+     | 
+1795 |   push_scope(scope, name)->var = var;
+     |   ~~~~~~~~~~~~~~~~~~~~~~~ 
+cc0: error: compilation failed
+
+Fixed: added additional assignments to deal with this limitation; fixed this in other places where I was doing this as well.
+
+
+jenna@ubuntu-2023:~/Desktop/gvc0$ cc0 src/test/resources/case-study-2023/cparser.c0
+src/test/resources/case-study-2023/cparser.c0: 1809.22-1809.26: error: type mismatch
+expected: Scope*
+   found: StringList*
+     | 
+1809 |   Obj *var = new_var(name, ty);
+     |                      ~~~~ 
+cc0: error: compilation failed
+
+Fixed: missing additional arg scope, which is already available in new_gvar so just passed along.
+
+
+jenna@ubuntu-2023:~/Desktop/gvc0$ cc0 src/test/resources/case-study-2023/cparser.c0
+src/test/resources/case-study-2023/cparser.c0: 2264.46-2264.69: error: too few arguments in function call
+     | 
+2264 |     return new_binary(new_ND_ASSIGN(), node, assign(rest, tok->next), tok);
+     |                                              ~~~~~~~~~~~~~~~~~~~~~~~ 
+cc0: error: compilation failed
+
+Fixed: missing additional scope arge, which is already available in assign so just passed along.
+
+
+jenna@ubuntu-2023:~/Desktop/gvc0$ cc0 src/test/resources/case-study-2023/cparser.c0
+src/test/resources/case-study-2023/cparser.c0: 2391.51-2391.56: error: type mismatch
+expected: VarAttr*
+   found: VarAttr**
+     | 
+2391 |         cur->next = declaration(rst, tok, basety, atptr, scope, locals);
+     |                          
+
+Fixed: don't need VarAttr**, can just send VarAttr* directly to declaration so changed it to this.
+
+
+jenna@ubuntu-2023:~/Desktop/gvc0$ cc0 src/test/resources/case-study-2023/cparser.c0
+src/test/resources/case-study-2023/cparser.c0: 2612.19-2612.36: error: too few arguments in function call
+     | 
+2612 |       Type *ty2 = find_typedef(tok);
+     |                   ~~~~~~~~~~~~~~~~~ 
+cc0: error: compilation failed
+
+Fixed: scope an argument to the caller declspec needs to be sent to find_typedef; so did this.
+
+
+jenna@ubuntu-2023:~/Desktop/gvc0$ cc0 src/test/resources/case-study-2023/cparser.c0
+src/test/resources/case-study-2023/cparser.c0: 2734.17-2734.41: error: too few arguments in function call
+     | 
+2734 |     Type *ty2 = declspec(rst, tok, NULL);
+     |                 ~~~~~~~~~~~~~~~~~~~~~~~~ 
+cc0: error: compilation failed
+
+Fixed: needed to add scope as a parameter to caller function: func_params and this ended up adding this same dependency to declarator,
+       is_function, and type_suffix

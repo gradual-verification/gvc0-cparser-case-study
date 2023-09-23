@@ -1,0 +1,111 @@
+jenna@ubuntu-2023:~/Desktop/gvc0$ cc0 src/test/resources/case-study-2023/cparser.c0
+jenna@ubuntu-2023:~/Desktop/gvc0$ ./a.out
+typedef int t ;
+int f ( int p ) {
+int x , int y ;
+y = 42 ;
+x = y ;
+x = 42 + 239 - y ;
+y = - x ;
+y = x << 42 ;
+y = x >> - 239 ;
+x = ~ ( y & x ) ;
+float a , b , c ;
+b = 2.84 * 0.000 ;
+c = 2.84 % 0.000 ;
+a = b / c ;
+* & x ;
+int * l ;
+* l = & x ;
+int * * z ;
+* * z = & y ;
+* * z ;
+if ( p <= 1 ) {
+while ( p > 1 ) {
+_Bool b ;
+_Bool c ;
+_Bool d ;
+b = c == d ;
+b = c <= d ;
+b = c < d ;
+b = c >= d ;
+b = c > d ;
+b = c && d ;
+b = ! c ;
+b = c != d ;
+}
+return 1 ;
+}
+else {
+return f ( p - 1 ) + f ( p - 2 ) ;
+}
+}
+^Cc0rt: Interrupted
+  at add_char (<unknown location>)
+ at str_static (src/test/resources/case-study-2023/cparser.c0: 1309.3-1309.20)
+ at is_typename (src/test/resources/case-study-2023/cparser.c0: 2464.17-2464.29)
+ at declspec (src/test/resources/case-study-2023/cparser.c0: 2583.25-2583.48)
+ at parse (src/test/resources/case-study-2023/cparser.c0: 2947.20-2947.53)
+ at main (src/test/resources/case-study-2023/cparser.c0: 3422.18-3422.30)
+
+First run of test case on parser ended up producing what seems like an infinite loop
+
+
+Debugging process
+- put some print statements in parse to see where the infinite loop is occurring
+- printlns in function and typedef are not being executed even though typedef is the first part of the program
+- declspec is continuously executing, but the end of the file isn't being reached, so declspec is not moving the tok list forward
+Realization: code (even chibicc) assumes program will always be a declspec, typedef, function, or global variable otherwise the parser
+doesn't advance the token list and falls into an infinite loop; might catch this during lexing, tokenizing, preprocessing
+- Something is buggy though since the loop in declspec should execute (advancing the list) but it isn't recognizing the first token as
+  a typedef
+- Printed token that it is getting stuck on which is the first semicolon ending the typedef
+- Removing printing from point directly after the execution of declspec shows that declspec does execute its loop for the 'typedef' and sets the attribute
+  which allows parsing of typedefs
+- Seems like the issue is in parsing of typedefs, looking into this next
+- in parse_typedef the consume of semicolon str is in the condition of the while loop which is fine, but means re-assignment of the 'rest' pointer to tok
+  needs to happen both in the loop and after the loop -- it was only happening in the loop before; added the after loop assignment which should now skip over semi-colons
+
+- Now working without infinite loop and program is making its way into 'function'
+- Unfortunately, it is producing an "error: token does not match expected op" error
+	- this comes from a 'skip' call when a token and given op do not match
+	- found this by searching the error message
+- Printing the token contents and op contents to see what they are
+	- token is x identifier and op is a comma
+	- most likely this is from 'int x, int y;' type declarations
+- From this I looked for str_comma() in the declaration function for parsing decls like the previously mentioned one
+- Turns out my interpretation of i++ > 0 in the if statement at the top of the while loop value was wrong (treated it like ++i)
+	- Moved the i = i + 1; statement to after the if (C0 does not support i++ or ++i)
+	- Now skip won't execute until the next iteration of the loop aligning things correctly
+
+- Next error is: "variable name omitted"
+- Searched the error message, which is unique and coming from 'declaration' as well
+	- This happens when the type name coming from 'declarator' is null
+- I printed the token that is causing the issue and it is the second int in 'int x, int y;'
+- Chibicc is not designed to support 'int x, int y;' , in fact I believe this is illegal in C as well;
+  the token should be changed to 'int x, y;'
+	- This doesn't happen anywhere else
+
+- Next error is dereferencing a null pointer:
+c0rt: attempt to dereference null pointer
+ at add_type (src/test/resources/case-study-2023/cparser.c0: 1112.18-1112.31)
+ at add_type (src/test/resources/case-study-2023/cparser.c0: 1055.5-1055.24)
+ at add_type (src/test/resources/case-study-2023/cparser.c0: 1055.5-1055.24)
+ at compound_stmt (src/test/resources/case-study-2023/cparser.c0: 2403.7-2403.20)
+ at function (src/test/resources/case-study-2023/cparser.c0: 2913.14-2913.62)
+ at parse (src/test/resources/case-study-2023/cparser.c0: 2958.13-2958.56)
+ at main (src/test/resources/case-study-2023/cparser.c0: 3424.18-3424.30)
+Segmentation fault (core dumped)
+
+- really annoying to find this null pointer dereference due to function dependencies inherent to parsing programs
+  ; using normal print debugging techniques
+	- using print statements I figured out it was a mistake in the implementation of add_type where the null pointer
+	  exception was occurring; the way the type was being assign applies to commas not variables and I had to add a separate case
+          and code for vars that wouldn't incorrectly dereference a field that is null for them but non-null for commas;
+          this is a translation error from chibicc to c0
+	- this was tricky to find because add_type calls itself recursively, so it took some time and print statements to figure out what node
+          was causing the issue, then I had to figure out where in the code the node was being created to make sure the node->ty creation statement
+          for the corresponding node was implemented correctly and the node was of the correct type and going into the correct case
+	- double checked the other cases and they look good
+
+

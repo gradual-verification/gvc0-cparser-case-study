@@ -1,0 +1,40 @@
+typedef int t ;
+int f ( int p ) {
+int x , int y ;
+y = 42 ;
+x = y ;
+x = 42 + 239 - y ;
+y = - x ;
+y = x << 42 ;
+y = x >> - 239 ;
+x = ~ ( y & x ) ;
+float a , b , c ;
+b = 2.84 * 0.000 ;
+c = 2.84 % 0.000 ;
+a = b / c ;
+* & x ;
+int * l ;
+* l = & x ;
+int * * z ;
+* * z = & y ;
+* * z ;
+if ( p <= 1 ) {
+while ( p > 1 ) {
+_Bool b ;
+_Bool c ;
+_Bool d ;
+b = c == d ;
+b = c <= d ;
+b = c < d ;
+b = c >= d ;
+b = c > d ;
+b = c && d ;
+b = ! c ;
+b = c != d ;
+}
+return 1 ;
+}
+else {
+return f ( p - 1 ) + f ( p - 2 ) ;
+}
+}

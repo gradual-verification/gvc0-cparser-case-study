@@ -1,0 +1,1895 @@
+/* Feature list
+  - local vars declarations only
+
+   Types
+   - int
+   - char
+   - bool
+   - struct types --- going to add support for this last in the core since it has doable but interesting complexity; FEATURE EXTENSION MAYBE?
+   
+   Not doing + why:
+   - Arrays - implementation similar to structs but a bit more complexity
+   - Unions - implementation similar to structs
+   - global vars - more complexity, look into this
+   - casts + pointer arithmentic - advanced C features
+   - variadic functions - advanced C feature
+   - no variable-length array - advanced feature; no arrays
+
+   - explanation could be following the C0 -> c1 -> educational path but I'm not sure C0 supports too much more like enums, switches, etc.
+
+   - Types -- most type removal is just repetitative code for dealing with them compared to ones that I am implementing
+      - _Alignas - advanced c feature, since c11
+      - union - for obvious reasons
+      - __restrict, __restrict__ - these are same as restrict (keeping) just for C++
+      - "_Noreturn" - advanced c feature since c23; deprecated for another syntax
+      - _Thread_local, __thread - advanced c feature since c11; __thread was predecessor to c11 _Thread_local
+      - _Atomic - advanced c feature for threads; since c11
+      - typeof - compiler extension, not in base c, advanced feature no-the-less
+   - Functions can't have
+      - array arguments
+      - function arguments
+      - __func__ not allowed as local variable in function - advanced feature
+        - __FUNCTION__ either
+      - asm statements -- no assembly stmts allowed, too complex
+   - Not doing to slim up functionality (getting a little bit large)
+    - gotos
+    - switches
+    - do while loops
+    - for loops
+    - break, continue
+    - labeled statements
+   
+   
+   Decls
+   - function  
+
+
+   Statements
+   - alloc
+   - free
+   - struct -- will do as a feature extension
+   - function call
+   - pointer assignment
+   - variable assignment
+   - type decl
+   - ifs
+   - loops
+
+*/
+
+//------------StringList--------------------------------------------------------------------------------
+/* Interface */
+typedef struct StringList StringList;
+
+StringList *new_stringlist();
+void add_char(StringList *s, char c);
+bool equals(StringList *s1, StringList *s2);
+int get_len(StringList *s);
+
+/* Implementation */
+struct CharNode {
+  char val;
+  CharNode *next;
+}
+
+struct StringList {
+  CharNode *root;
+  int len;
+}
+
+// Create a new empty string in list form
+StringList *new_stringlist() {
+  StringList *s = alloc(struct StringList);
+  CharNode *r = alloc(struct CharNode);
+  r->val = '\0';
+  r->next = NULL;
+  s->root = r;
+  s->len = 0;
+  return s;
+}
+
+// Add char to the end of the string
+void add_char(StringList *s, char c) {
+  if (s == NULL) {
+    error("Adding char to string list that's NULL");
+  } else if (s->root == NULL) {
+    CharNode *end = alloc(struct CharNode);
+    end->val = '\0';
+    end->next = NULL;
+    CharNode *cnode = alloc(struct CharNode);
+    cnode->val = c;
+    cnode->next = end;
+    s->root = cnode;
+    s->len = 1;
+  } else if (s->root->next == NULL) {
+    CharNode *cnode = alloc(struct CharNode);
+    cnode->val = c;
+    cnode->next = s->root;
+    s->root = cnode;
+    s->len = 1;
+  } else {
+      CharNode *prev = s->root;
+      CharNode *r = s->root;
+      while (r->next != NULL) {
+        prev = r;
+        r = r->next;
+      }
+      CharNode *cnode = alloc(struct CharNode);
+      cnode->val = c;
+      cnode->next = r;
+      prev->next = cnode;
+      s->len = s->len + 1;
+  }
+}
+
+// Tests whether the two string lists are equal (have the exact same contents, including same len)
+bool equals(StringList *s1, StringList *s2) {
+  if (s1 != NULL && 
+      s2 != NULL && 
+      s1->root != NULL &&
+      s2->root != NULL &&
+      s1->len == s2->len) {
+    int ln = s2->len;
+    int i;
+    CharNode c1 = s1->root;
+    CharNode c2 = s2->root;
+    bool eq = true;
+    for (i = 0; i < ln; i = i + 1) {
+      eq = eq && c1->val == c2->val;
+      c1 = c1->next;
+      c2 = c2->next;
+    }
+    eq = eq && c1->val == '\0' && c2->val == '\0';
+    return eq;
+  }
+  return false;
+}
+
+int get_len(StringList *s) {
+  return s != NULL ? s->len : -1;
+}
+
+//-------------Token-----------------------------------------------------------------------------------
+// Input tokens are represented by a linked list. Unlike many recursive
+// descent parsers, we don't have the notion of the "input token stream".
+// Most parsing functions don't change the global state of the parser.
+// So it is very easy to lookahead arbitrary number of tokens in this
+// parser.
+
+/* Public Interface */
+typedef struct Token Token; // remove more as I narrow down the feature set from going top down
+typedef struct TokenKind TokenKind;
+
+struct Token {
+  TokenKind *kind;         // Token kind
+  Token *next;      // Next token
+  //int64_t val;      // If kind is TK_NUM, its value
+  //long double fval; // If kind is TK_NUM, its value
+  //char *loc;        // Token location
+  //int len;          // Token length
+  Type *ty;         // Used if TK_NUM or TK_STR
+  StringList *str;    // String literal contents including terminating '\0' and token len
+};
+
+// Checks if a token is of the specified kind
+bool is_IDENT(Token *t);
+bool is_PUNCT(Token *t);
+bool is_KEYWORD(Token *t);
+bool is_STR(Token *t);
+bool is_NUM(Token *t);
+bool is_PP_NUM(Token *t);
+bool is_EOF(Token *t);
+
+// Creates a new tokenkind with the specified kind
+TokenKind *new_TK_IDENT();
+TokenKind *new_TK_PUNCT();
+TokenKind *new_TK_KEYWORD();
+TokenKind *new_TK_STR();
+TokenKind *new_TK_NUM();
+TokenKind *new_TK_PP_NUM();
+TokenKind *new_TK_EOF();
+
+// Helper functions for tokens
+bool equal(Token *tok, StringList *op);
+Token *skip(Token *tok, StringList *op);
+bool consume(Token **rest, Token *tok, StringList *str);
+Token *new_token(TokenKind kind, StringList *str);
+StringList *name(Token *tok);
+
+/* Private Implementation */
+struct TokenKind {
+  int kind;
+};
+
+bool is_IDENT(Token *t) {
+  if (t != NULL && t->kind != NULL)
+    return t->kind->kind == 1;
+  else
+    return false; 
+}
+bool is_PUNCT(Token *t) {
+  if (t != NULL && t->kind != NULL)
+    return t->kind->kind == 2;
+  else
+    return false;
+}
+bool is_KEYWORD(Token *t) {
+  if (t != NULL && t->kind != NULL)
+    return t->kind->kind == 3;
+  else
+    return false;
+}
+bool is_STR(Token *t) {
+  if (t != NULL && t->kind != NULL)
+    return t->kind->kind == 4;
+  else
+    return false;
+}
+bool is_NUM(Token *t) {
+  if (t != NULL && t->kind != NULL)
+    return t->kind->kind == 5;
+  else
+    return false;
+}
+bool is_PP_NUM(Token *t) {
+  if (t != NULL && t->kind != NULL)
+    return t->kind->kind == 6;
+  else
+    return false;
+}
+bool is_EOF(Token *t) {
+  if (t != NULL && t->kind != NULL)
+    return t->kind->kind == 7;
+  else
+    return false;
+}
+
+TokenKind *new_TK_IDENT() {
+  TokenKind *tk = alloc(struct TokenKind)
+  tk->kind = 1;
+  return tk;  
+}
+TokenKind *new_TK_PUNCT() {
+  TokenKind *tk = alloc(struct TokenKind)
+  tk->kind = 2;
+  return tk;  
+}
+TokenKind *new_TK_KEYWORD() {
+  TokenKind *tk = alloc(struct TokenKind)
+  tk->kind = 3;
+  return tk;  
+}
+TokenKind *new_TK_STR() {
+  TokenKind *tk = alloc(struct TokenKind)
+  tk->kind = 4;
+  return tk;  
+}
+TokenKind *new_TK_NUM() {
+  TokenKind *tk = alloc(struct TokenKind)
+  tk->kind = 5;
+  return tk; 
+}
+TokenKind *new_TK_PP_NUM() {
+  TokenKind *tk = alloc(struct TokenKind)
+  tk->kind = 6;
+  return tk;
+}
+TokenKind *new_TK_EOF() {
+  TokenKind *tk = alloc(struct TokenKind)
+  tk->kind = 7;
+  return tk;
+}
+
+// Create a new token.
+Token *new_token(TokenKind kind, StringList *contents) {
+  Token *tok = alloc(struct Token);
+  tok->kind = kind;
+  tok->str = contents;
+  return tok;
+}
+
+// Ensure that the current token is `op`.
+bool equal(Token *tok, StringList *op) {
+  return equals(tok->str, op);
+}
+
+// Skips the current token if it matches `op`.
+Token *skip(Token *tok, StringList *op) {
+  if (!equal(tok, op))
+    error("Token does not match expected op");
+  return tok->next;
+}
+
+// Consumes the current token if it matches `op`.
+bool consume(Token **rest, Token *tok, StringList *str) {
+  if (equal(tok, str)) {
+    *rest = tok->next;
+    return true;
+  }
+  *rest = tok;
+  return false;
+}
+
+StringList *name(Token *tok) {
+  if (tok == NULL) {
+    return tok;
+  } else {
+    return tok->str;
+  }
+}
+
+//-------------Object-----------------------------------------------------------------------------------
+
+/* Public Interface */
+typedef struct Obj Obj;
+
+/* Implementation */
+// Variable or function
+struct Obj {
+  Obj *next;
+  char *name;    // Variable name
+  Type *ty;      // Type
+  Token *tok;    // representative token
+  bool is_local; // local or global/function
+  int align;     // alignment
+
+  // Local variable
+  int offset;
+
+  // Global variable or function
+  bool is_function;
+  bool is_definition;
+  bool is_static;
+
+  // Function
+  bool is_inline;
+  Obj *params;
+  Node *body;
+  Obj *locals;
+  Obj *va_area;
+  Obj *alloca_bottom;
+  int stack_size;
+
+  // Static inline function
+  //bool is_live;
+  //bool is_root;
+  //StringArray refs;
+};
+
+//--------------Type---------------------------------------------------------------------------------------
+
+/* Public Interface */
+typedef struct Type Type;
+typedef struct TypeKind TypeKind;
+
+struct Type {
+  TypeKind *kind;
+  int size;           // sizeof() value
+  int align;          // alignment
+  bool is_unsigned;   // unsigned or signed
+  Type *origin;       // for type compatibility check
+
+  // Pointer-to or array-of type. We intentionally use the same member
+  // to represent pointer/array duality in C.
+  //
+  // In many contexts in which a pointer is expected, we examine this
+  // member instead of "kind" member to determine whether a type is a
+  // pointer or not. That means in many contexts "array of T" is
+  // naturally handled as if it were "pointer to T", as required by
+  // the C spec.
+  Type *base;
+
+  // Declaration
+  Token *name;
+  Token *name_pos;
+
+  // Struct
+  /*Member *members;
+  bool is_flexible;
+  bool is_packed;*/
+
+  // Function type
+  Type *return_ty;
+  Type *params;
+  Type *next;
+};
+
+// Checks if a type is of the specified kind
+bool is_VOID(Type *ty);
+bool is_BOOL(Type *ty);
+bool is_CHAR(Type *ty);
+bool is_SHORT(Type *ty);
+bool is_INT(Type *ty);
+bool is_LONG(Type *ty);
+bool is_FLOAT(Type *ty);
+bool is_DOUBLE(Type *ty);
+bool is_LDOUBLE(Type *ty);
+bool is_ENUM(Type *ty);
+bool is_PTR(Type *ty);
+bool is_FUNC(Type *ty);
+bool is_STRUCT(Type *ty);
+
+// Creates a new typekind with the specified kind
+TypeKind *new_TY_VOID();
+TypeKind *new_TY_BOOL();
+TypeKind *new_TY_CHAR();
+TypeKind *new_TY_SHORT();
+TypeKind *new_TY_INT();
+TypeKind *new_TY_LONG();
+TypeKind *new_TY_FLOAT();
+TypeKind *new_TY_DOUBLE();
+TypeKind *new_TY_LDOUBLE();
+TypeKind *new_TY_ENUM();
+TypeKind *new_TY_PTR();
+TypeKind *new_TY_FUNC();
+TypeKind *new_TY_STRUCT();
+
+// Helper functions for types
+Type *new_type(TypeKind kind, int size, int align);
+Type *empty_type();
+
+Type *new_ty_void();
+Type *new_ty_bool();
+
+Type *new_ty_char();
+Type *new_ty_short();
+Type *new_ty_int();
+Type *new_ty_long();
+
+Type *new_ty_uchar();
+Type *new_ty_ushort();
+Type *new_ty_uint();
+Type *new_ty_ulong();
+
+Type *new_ty_float();
+Type *new_ty_double();
+Type *new_ty_ldouble();
+
+Type *enum_type();
+Type *struct_type();
+Type *func_type(Type *return_ty);
+Type *pointer_to(Type *base);
+Type *copy_type(Type *ty);
+
+StringList *ty_name(Type* ty);
+
+// Struct member
+/*struct Member {
+  Member *next;
+  Type *ty;
+  Token *tok; // for error message
+  Token *name;
+  int idx;
+  int align;
+  int offset;
+
+  // Bitfield
+  bool is_bitfield;
+  int bit_offset;
+  int bit_width;
+};*/
+
+/* Private Implementation */
+struct TypeKind {
+  int kind;
+}
+
+bool is_VOID(Type *ty) {
+  if (ty != NULL && ty->kind != NULL)
+    return ty->kind->kind == 1;
+  else
+    return false; 
+}
+bool is_BOOL(Type *ty) {
+  if (ty != NULL && ty->kind != NULL)
+    return ty->kind->kind == 2;
+  else
+    return false; 
+}
+bool is_CHAR(Type *ty) {
+  if (ty != NULL && ty->kind != NULL)
+    return ty->kind->kind == 3;
+  else
+    return false; 
+}
+bool is_SHORT(Type *ty) {
+  if (ty != NULL && ty->kind != NULL)
+    return ty->kind->kind == 4;
+  else
+    return false; 
+}
+bool is_INT(Type *ty) {
+  if (ty != NULL && ty->kind != NULL)
+    return ty->kind->kind == 5;
+  else
+    return false; 
+}
+bool is_LONG(Type *ty) {
+  if (ty != NULL && ty->kind != NULL)
+    return ty->kind->kind == 6;
+  else
+    return false; 
+}
+bool is_FLOAT(Type *ty) {
+  if (ty != NULL && ty->kind != NULL)
+    return ty->kind->kind == 7;
+  else
+    return false; 
+}
+bool is_DOUBLE(Type *ty) {
+  if (ty != NULL && ty->kind != NULL)
+    return ty->kind->kind == 8;
+  else
+    return false; 
+}
+bool is_LDOUBLE(Type *ty) {
+  if (ty != NULL && ty->kind != NULL)
+    return ty->kind->kind == 9;
+  else
+    return false; 
+}
+bool is_ENUM(Type *ty) {
+  if (ty != NULL && ty->kind != NULL)
+    return ty->kind->kind == 10;
+  else
+    return false; 
+}
+bool is_PTR(Type *ty) {
+  if (ty != NULL && ty->kind != NULL)
+    return ty->kind->kind == 11;
+  else
+    return false; 
+}
+bool is_FUNC(Type *ty) {
+  if (ty != NULL && ty->kind != NULL)
+    return ty->kind->kind == 12;
+  else
+    return false; 
+}
+bool is_STRUCT(Type *ty) {
+  if (ty != NULL && ty->kind != NULL)
+    return ty->kind->kind == 13;
+  else
+    return false; 
+}
+
+TypeKind *new_TY_VOID() {
+  TypeKind *ty = alloc(struct TypeKind)
+  ty->kind = 1;
+  return ty;  
+}
+TypeKind *new_TY_BOOL() {
+  TypeKind *ty = alloc(struct TypeKind)
+  ty->kind = 2;
+  return ty;  
+}
+TypeKind *new_TY_CHAR() {
+  TypeKind *ty = alloc(struct TypeKind)
+  ty->kind = 3;
+  return ty;  
+}
+TypeKind *new_TY_SHORT() {
+  TypeKind *ty = alloc(struct TypeKind)
+  ty->kind = 4;
+  return ty;  
+}
+TypeKind *new_TY_INT() {
+  TypeKind *ty = alloc(struct TypeKind)
+  ty->kind = 5;
+  return ty;  
+}
+TypeKind *new_TY_LONG() {
+  TypeKind *ty = alloc(struct TypeKind)
+  ty->kind = 6;
+  return ty;  
+}
+TypeKind *new_TY_FLOAT() {
+  TypeKind *ty = alloc(struct TypeKind)
+  ty->kind = 7;
+  return ty;  
+}
+TypeKind *new_TY_DOUBLE() {
+  TypeKind *ty = alloc(struct TypeKind)
+  ty->kind = 8;
+  return ty;  
+}
+TypeKind *new_TY_LDOUBLE() {
+  TypeKind *ty = alloc(struct TypeKind)
+  ty->kind = 9;
+  return ty;  
+}
+TypeKind *new_TY_ENUM() {
+  TypeKind *ty = alloc(struct TypeKind)
+  ty->kind = 10;
+  return ty;  
+}
+TypeKind *new_TY_PTR() {
+  TypeKind *ty = alloc(struct TypeKind)
+  ty->kind = 11;
+  return ty;  
+}
+TypeKind *new_TY_FUNC() {
+  TypeKind *ty = alloc(struct TypeKind)
+  ty->kind = 12;
+  return ty;  
+}
+TypeKind *new_TY_STRUCT() {
+  TypeKind *ty = alloc(struct TypeKind)
+  ty->kind = 13;
+  return ty;  
+}
+
+Type *new_type(TypeKind kind, int size, int align) {
+  Type *ty = alloc(struct Type);
+  ty->kind = kind;
+  ty->size = size;
+  ty->align = align;
+  return ty;
+}
+Type *empty_type() {
+  Type *ty = alloc(struct Type);
+  return ty;
+}
+
+Type *new_ty_void() {
+  return new_type(new_TY_VOID(),1,1);
+}
+Type *new_ty_bool() {
+  return new_type(new_TY_BOOL(),1,1);
+}
+
+Type *new_ty_char() {
+  return new_type(new_TY_CHAR(),1,1);
+}
+Type *new_ty_short() {
+  return new_type(new_TY_SHORT(),2,2);
+}
+Type *new_ty_int() {
+  return new_type(new_TY_INT(),4,4);
+}
+Type *new_ty_long() {
+  return new_type(new_TY_LONG(),8,8);
+}
+
+Type *new_ty_uchar() {
+  Type *ty = new_type(new_TY_CHAR(),1,1);
+  ty->is_unsigned = true;
+  return ty;
+}
+Type *new_ty_ushort() {
+  Type *ty = new_type(new_TY_SHORT(),2,2);
+  ty->is_unsigned = true;
+  return ty;
+}
+Type *new_ty_uint() {
+  Type *ty = new_type(new_TY_INT(),4,4);
+  ty->is_unsigned = true;
+  return ty;
+}
+Type *new_ty_ulong() {
+  Type *ty = new_type(new_TY_LONG(),8,8);
+  ty->is_unsigned = true;
+  return ty;
+}
+
+Type *new_ty_float() {
+  return new_type(new_TY_FLOAT(),4,4);
+}
+Type *new_ty_double() {
+  return new_type(new_TY_DOUBLE(),8,8);
+}
+Type *new_ty_ldouble() {
+  return new_type(new_TY_LDOUBLE(),16,16);
+}
+Type *pointer_to(Type *base) {
+  Type *ty = new_type(new_TY_PTR(), 8, 8);
+  ty->base = base;
+  ty->is_unsigned = true;
+  return ty;
+}
+
+Type *enum_type() {
+  return new_type(new_TY_ENUM(),4,4);
+}
+Type *struct_type() {
+  return new_type(new_TY_STRUCT(),0,1);
+}
+Type *func_type(Type *return_ty) {
+  // The C spec disallows sizeof(<function type>), but
+  // GCC allows that and the expression is evaluated to 1.
+  Type *ty = new_type(new_TY_FUNC(),1,1);
+  ty->return_ty = return_ty;
+  return ty;
+}
+Type *copy_type(Type *ty) {
+  Type *ret = alloc(Type);
+  *ret = *ty;
+  ret->origin = ty;
+  return ret;
+}
+
+StringList *ty_name(Type *ty) {
+  if (ty != NULL) {
+    return name(ty->name);
+  } else {
+    return NULL;
+  }
+}
+//-------------ASTNode-------------------------------------------------------------------------------------
+
+/* Public Interface */
+typedef struct NodeKind NodeKind;
+typedef struct ASTNode ASTNode;
+
+// AST node type
+struct ASTNode {
+  NodeKind kind; // Node kind
+  ASTNode *next;    // Next node
+  Type *ty;      // Type, e.g. int or pointer to int
+  Token *tok;    // Representative token
+
+  ASTNode *lhs;     // Left-hand side
+  ASTNode *rhs;     // Right-hand side
+
+  // "if" or "for" statement
+  ASTNode *cond;
+  ASTNode *then;
+  ASTNode *els;
+  ASTNode *init;
+  ASTNode *inc;
+
+  // "break" and "continue" labels
+  char *brk_label;
+  char *cont_label;
+
+  // Block or statement expression
+  ASTNode *body;
+
+  // Struct member access
+  //Member *member;
+
+  // Function call
+  Type *func_ty;
+  ASTNode *args;
+  bool pass_by_stack;
+  Obj *ret_buffer;
+
+  // Goto or labeled statement, or labels-as-values
+  char *label;
+  char *unique_label;
+  ASTNode *goto_next;
+
+  // Switch
+  /*Node *case_next;
+  Node *default_case;
+
+  // Case
+  long begin;
+  long end;*/
+
+  // "asm" string literal
+  char *asm_str;
+
+  // Atomic compare-and-swap
+  ASTNode *cas_addr;
+  ASTNode *cas_old;
+  ASTNode *cas_new;
+
+  // Atomic op= operators
+  Obj *atomic_addr;
+  ASTNode *atomic_expr;
+
+  // Variable
+  Obj *var;
+
+  // Numeric literal
+  /*int64_t val;
+  long double fval;*/
+};
+
+// AST node
+struct NodeKind {
+  int kind;
+} NodeKind;
+
+void set_ND_NULL_EXPR(ASTNode *n); // Do nothing
+void set_ND_ADD(ASTNode *n);       // +
+void set_ND_SUB(ASTNode *n);       // -
+void set_ND_MUL(ASTNode *n);       // *
+void set_ND_DIV(ASTNode *n);       // /
+void set_ND_NEG(ASTNode *n);       // unary -
+void set_ND_MOD(ASTNode *n);       // %
+void set_ND_BITAND(ASTNode *n);    // &
+void set_ND_BITOR(ASTNode *n);     // |
+void set_ND_BITXOR(ASTNode *n);    // ^
+void set_ND_SHL(ASTNode *n);       // <<
+void set_ND_SHR(ASTNode *n);       // >>
+void set_ND_EQ(ASTNode *n);        // ==
+void set_ND_NE(ASTNode *n);        // !=
+void set_ND_LT(ASTNode *n);        // <
+void set_ND_LE(ASTNode *n);        // <=
+void set_ND_ASSIGN(ASTNode *n);    // =
+void set_ND_COND(ASTNode *n);      // ?:
+void set_ND_COMMA(ASTNode *n);     // ,
+//void set_ND_MEMBER(ASTNode *n);    // . (struct member access)
+void set_ND_ADDR(ASTNode *n);      // unary &
+void set_ND_DEREF(ASTNode *n);     // unary *
+void set_ND_NOT(ASTNode *n);       // !
+void set_ND_BITNOT(ASTNode *n);    // ~
+void set_ND_LOGAND(ASTNode *n);    // &&
+void set_ND_LOGOR(ASTNode *n);     // ||
+void set_ND_RETURN(ASTNode *n);    // "return"
+void set_ND_IF(ASTNode *n);        // "if"
+void set_ND_FOR(ASTNode *n);       // "for" or "while"
+void set_ND_DO(ASTNode *n);        // "do"
+//void set_ND_SWITCH(ASTNode *n);    // "switch"
+//void set_ND_CASE(ASTNode *n);      // "case"
+void set_ND_BLOCK(ASTNode *n);     // { ... }
+void set_ND_GOTO(ASTNode *n);      // "goto"
+void set_ND_GOTO_EXPR(ASTNode *n); // "goto" labels-as-values
+void set_ND_LABEL(ASTNode *n);     // Labeled statement
+void set_ND_LABEL_VAL(ASTNode *n); // [GNU] Labels-as-values
+void set_ND_FUNCALL(ASTNode *n);   // Function call
+void set_ND_EXPR_STMT(ASTNode *n); // Expression statement
+void set_ND_STMT_EXPR(ASTNode *n); // Statement expression
+void set_ND_VAR(ASTNode *n);       // Variable
+void set_ND_NUM(ASTNode *n);       // Integer
+void set_ND_MEMZERO(ASTNode *n);   // Zero-clear a stack variable
+void set_ND_ASM(ASTNode *n);       // "asm"
+
+/* Private Implementation */
+
+//-------------Parser--------------------------------------------------------------------------------------
+// Recursive descent parser for C
+
+// Most functions in this file are named after the symbols they are
+// supposed to read from an input token list. For example, stmt() is
+// responsible for reading a statement from a token list. The function
+// then construct an AST node representing a statement.
+
+// Each function conceptually returns two values, an AST node and
+// remaining part of the input tokens. Since C doesn't support
+// multiple return values, the remaining tokens are returned to the
+// caller via a pointer argument. --- This is important for memory safety verification
+
+/* Public Interface */
+Obj *parse(Token *tok);
+
+
+/* Private Interface */
+
+typedef struct VarAttr VarAttr;
+
+VarAttr *new_attr();
+
+// Types
+bool is_typename(Token *tok, Scope *scope); // determines if the token is a typename
+Type *declspec(Token **rest, Token *tok, VarAttr *attr, Scope *scope); // parses types including complex type declarations like structs, unions, typedefs, enums
+                                                                // ; uses bit manipulation to deal validate type specifiers like "int long static" (where order doesn't matter) + invalidate others like "char int"
+                                                                // C0 has bit operators that work on int as 32-bit words, do we verify them?
+//Type *typename(Token **rest, Token *tok); // type-name is declspec abstract-declarator (calls both of these functions and that's it)
+                                                 // abstract-declarator is *(or more than one + const | volatile | restrict) (abstract-declarator) type-suffix
+Type *enum_specifier(Token **rest, Token *tok, Scope *scope);
+//Type *typeof_specifier(Token **rest, Token *tok); // advanced feature not implementing
+Type *type_suffix(Token **rest, Token *tok, Type *ty);
+//Type *declarator(Token **rest, Token *tok, Type *ty);
+//Node *declaration(Token **rest, Token *tok, Type *basety, VarAttr *attr);
+//Type *struct_decl(Token **rest, Token *tok, Scope *scope); // relies on struct_union_decl -- does bit manipulation to set member offsets after parsing
+                                                    // used in declspec
+                                                    // Can probably remove anonymous struct members; sufficient complexity in handling structs to ignore other stuff
+//static Type *union_decl(Token **rest, Token *tok); // simpler than struct_decl, does similar things; used in declspec
+
+
+// Initializers for more complex features like arrays, enums, structs
+//static void array_initializer2(Token **rest, Token *tok, Initializer *init, int i); // ignore in favor of structs
+//static void struct_initializer2(Token **rest, Token *tok, Initializer *init, Member *mem); // ignore for now, special feature for nice initialization of structs; GOOD FEATURE TO ADD
+void initializer2(Token **rest, Token *tok, Initializer *init);
+Initializer *initializer(Token **rest, Token *tok, Type *ty, Type **new_ty); // keep this around for initializing assignments; ignore string initialization due to having to re-write string manipulation stuff
+//static Node *lvar_initializer(Token **rest, Token *tok, Obj *var); // can ignore for now; not really necessary for a core; POSSIBLE FEATURE EXTENSION
+//static void gvar_initializer(Token **rest, Token *tok, Obj *var); // can ignore for now; not really necessary for a core; POSSIBLE FEATURE EXTENSION
+
+// Statements
+Node *compound_stmt(Token **rest, Token *tok);
+Node *stmt(Token **rest, Token *tok);
+
+// Expressions
+Node *expr_stmt(Token **rest, Token *tok);
+Node *expr(Token **rest, Token *tok);
+int64_t eval(Node *node);
+int64_t eval2(Node *node, char ***label);
+int64_t eval_rval(Node *node, char ***label);
+bool is_const_expr(Node *node);
+Node *assign(Token **rest, Token *tok);
+Node *logor(Token **rest, Token *tok);
+double eval_double(Node *node);
+Node *conditional(Token **rest, Token *tok);
+Node *logand(Token **rest, Token *tok);
+Node *bitor(Token **rest, Token *tok);
+Node *bitxor(Token **rest, Token *tok);
+Node *bitand(Token **rest, Token *tok);
+Node *equality(Token **rest, Token *tok);
+Node *relational(Token **rest, Token *tok);
+Node *shift(Token **rest, Token *tok);
+Node *add(Token **rest, Token *tok);
+Node *new_add(Node *lhs, Node *rhs, Token *tok);
+Node *new_sub(Node *lhs, Node *rhs, Token *tok);
+Node *mul(Token **rest, Token *tok);
+
+//Node *cast(Token **rest, Token *tok);
+
+//Member *get_struct_member(Type *ty, Token *tok);
+Node *postfix(Token **rest, Token *tok);
+Node *funcall(Token **rest, Token *tok, Node *node);
+Node *unary(Token **rest, Token *tok);
+Node *primary(Token **rest, Token *tok);
+Token *parse_typedef(Token *tok, Type *basety);
+bool is_function(Token *tok);
+Token *function(Token *tok, Type *basety, VarAttr *attr); // ignore variadic functions (advanced feature)
+//static Token *global_variable(Token *tok, Type *basety, VarAttr *attr); // more wide sweeping feature extension; remove now to save time ; POSSIBLE FEATURE EXTENSION
+
+
+/* Private Implementation */
+
+// Helpful strings
+StringList *str_void() {
+  StringList *str = new_stringlist();
+  add_char(str,'v');
+  add_char(str,'o');
+  add_char(str,'i');
+  add_char(str,'d');
+  return str;
+}
+StringList *str_bool() {
+  StringList *str = new_stringlist();
+  add_char(str,'_');
+  add_char(str,'B');
+  add_char(str,'o');
+  add_char(str,'o');
+  add_char(str,'l');
+  return str;
+}
+StringList *str_char() {
+  StringList *str = new_stringlist();
+  add_char(str,'c');
+  add_char(str,'h');
+  add_char(str,'a');
+  add_char(str,'r');
+  return str;
+}
+StringList *str_short() {
+  StringList *str = new_stringlist();
+  add_char(str,'s');
+  add_char(str,'h');
+  add_char(str,'o');
+  add_char(str,'r');
+  add_char(str,'t');
+  return str;
+}
+StringList *str_int() {
+  StringList *str = new_stringlist();
+  add_char(str,'i');
+  add_char(str,'n');
+  add_char(str,'t');
+  return str;
+}
+StringList *str_long() {
+  StringList *str = new_stringlist();
+  add_char(str,'l');
+  add_char(str,'o');
+  add_char(str,'n');
+  add_char(str,'g');
+  return str;
+}
+StringList *str_struct() {
+  StringList *str = new_stringlist();
+  add_char(str,'s');
+  add_char(str,'t');
+  add_char(str,'r');
+  add_char(str,'u');
+  add_char(str,'c');
+  add_char(str,'t');
+  return str;
+}
+StringList *str_typedef() {
+  StringList *str = new_stringlist();
+  add_char(str,'t');
+  add_char(str,'y');
+  add_char(str,'p');
+  add_char(str,'e');
+  add_char(str,'d');
+  add_char(str,'e');
+  add_char(str,'f');
+  return str;
+}
+StringList *str_enum() {
+  StringList *str = new_stringlist();
+  add_char(str,'e');
+  add_char(str,'n');
+  add_char(str,'u');
+  add_char(str,'m');
+  return str;
+}
+StringList *str_static() {
+  StringList *str = new_stringlist();
+  add_char(str,'s');
+  add_char(str,'t');
+  add_char(str,'a');
+  add_char(str,'t');
+  add_char(str,'i');
+  add_char(str,'c');
+  return str;
+}
+StringList *str_extern() {
+  StringList *str = new_stringlist();
+  add_char(str,'e');
+  add_char(str,'x');
+  add_char(str,'t');
+  add_char(str,'e');
+  add_char(str,'r');
+  add_char(str,'n');
+  return str;
+}
+StringList *str_signed() {
+  StringList *str = new_stringlist();
+  add_char(str,'s');
+  add_char(str,'i');
+  add_char(str,'g');
+  add_char(str,'n');
+  add_char(str,'e');
+  add_char(str,'d');
+  return str;
+}
+StringList *str_unsigned() {
+  StringList *str = new_stringlist();
+  add_char(str,'u');
+  add_char(str,'n');
+  add_char(str,'s');
+  add_char(str,'i');
+  add_char(str,'g');
+  add_char(str,'n');
+  add_char(str,'e');
+  add_char(str,'d');
+  return str;
+}
+StringList *str_const() {
+  StringList *str = new_stringlist();
+  add_char(str,'c');
+  add_char(str,'o');
+  add_char(str,'n');
+  add_char(str,'s');
+  add_char(str,'t');
+  return str;
+}
+StringList *str_volatile() {
+  StringList *str = new_stringlist();
+  add_char(str,'v');
+  add_char(str,'o');
+  add_char(str,'l');
+  add_char(str,'a');
+  add_char(str,'t');
+  add_char(str,'i');
+  add_char(str,'l');
+  add_char(str,'e');
+  return str;
+}
+StringList *str_auto() {
+  StringList *str = new_stringlist();
+  add_char(str,'a');
+  add_char(str,'u');
+  add_char(str,'t');
+  add_char(str,'o');
+  return str;
+}
+StringList *str_register() {
+  StringList *str = new_stringlist();
+  add_char(str,'r');
+  add_char(str,'e');
+  add_char(str,'g');
+  add_char(str,'i');
+  add_char(str,'s');
+  add_char(str,'t');
+  add_char(str,'e');
+  add_char(str,'r');
+  return str;
+}
+StringList *str_restrict() {
+  StringList *str = new_stringlist();
+  add_char(str,'r');
+  add_char(str,'e');
+  add_char(str,'s');
+  add_char(str,'t');
+  add_char(str,'r');
+  add_char(str,'i');
+  add_char(str,'c');
+  add_char(str,'t');
+  return str;
+}
+StringList *str_float() {
+  StringList *str = new_stringlist();
+  add_char(str,'f');
+  add_char(str,'l');
+  add_char(str,'o');
+  add_char(str,'a');
+  add_char(str,'t');
+  return str;
+}
+StringList *str_double() {
+  StringList *str = new_stringlist();
+  add_char(str,'d');
+  add_char(str,'o');
+  add_char(str,'u');
+  add_char(str,'b');
+  add_char(str,'l');
+  add_char(str,'e');
+  return str;
+}
+StringList *str_inline() {
+  StringList *str = new_stringlist();
+  add_char(str,'i');
+  add_char(str,'n');
+  add_char(str,'l');
+  add_char(str,'i');
+  add_char(str,'n');
+  add_char(str,'e');
+  return str;
+}
+StringList *str_oparen() {
+  StringList *str = new_stringlist();
+  add_char(str,'(');
+  return str;
+}
+StringList *str_cparen() {
+  StringList *str = new_stringlist();
+  add_char(str,')');
+  return str;
+}
+StringList *str_obracket() {
+  StringList *str = new_stringlist();
+  add_char(str,'{');
+  return str;
+}
+StringList *str_cbracket() {
+  StringList *str = new_stringlist();
+  add_char(str,'}');
+  return str;
+}
+StringList *str_eq() {
+  StringList *str = new_stringlist();
+  add_char(str,'=');
+  return str;
+}
+StringList *str_comma() {
+  StringList *str = new_stringlist();
+  add_char(str,',');
+  return str;
+}
+StringList *str_semicolon() {
+  StringList *str = new_stringlist();
+  add_char(str,';');
+  return str;
+}
+StringList *str_star() {
+  StringList *str = new_stringlist();
+  add_char(str,'*');
+  return str;
+}
+
+void unreachable() {
+  error("internal parser error");
+}
+
+// Scope for local variables, global variables, typedefs
+// or enum constants
+typedef struct VarScope VarScope;
+struct VarScope {
+  Obj *var;
+  Type *type_def;
+  Type *enum_ty;
+  int enum_val;
+};
+
+typedef struct VarScopeMap VarScopeMap;
+struct VarScopeMap {
+  StringList *key;
+  VarScope *val;
+  VarScopeMap *next;
+};
+
+typedef struct TagScopeMap TagScopeMap;
+struct TagScopeMap {
+  StringList *key;
+  Type *val;
+  TagScopeMap *next;
+};
+
+VarScopeMap *new_varscopemap() {
+  VarScopeMap *vsm = alloc(VarScopeMap);
+  vsm->key = NULL;
+  vsm->val = NULL;
+  vsm->next = NULL;
+  return vsm;
+}
+TagScopeMap *new_tagscopemap() {
+  TagScopeMap *tsm = alloc(TagScopeMap);
+  tsm->key = NULL;
+  tsm->val = NULL;
+  tsm->next = NULL;
+  return tsm; 
+}
+
+VarScope *varscopemap_get(VarScopeMap *map, StringList *key) {
+  if (map != NULL) {  
+    VarScopeMap *curr = map;
+    VarScope *res = NULL;
+    while (curr != NULL && res == NULL) {
+      if (equals(curr->key, key))
+        res = curr->val;
+      curr = curr->next;
+    }
+    return res;
+  } else {
+    return NULL;
+  }
+}
+Type *tagscopemap_get(TagScopeMap *map, StringList *key) {
+  if (map != NULL) {  
+    TagScopeMap *curr = map;
+    Type *res = NULL;
+    while (curr != NULL && res == NULL) {
+      if (equals(curr->key, key))
+        res = curr->val;
+      curr = curr->next;
+    }
+    return res;
+  } else {
+    return NULL;
+  }
+}
+
+// Puts value in map at key returning any previously found value (NULL otherwise)
+VarScope *varscopemap_put(VarScopeMap *map, StringList *key, VarScope *val) {
+  if (map != NULL) {  
+    VarScopeMap *curr = map;
+    VarScopeMap *prev = map;
+    VarScope *res = NULL;
+    while (curr != NULL && res == NULL) {
+      if (equals(curr->key, key)) {
+        res = curr->val;
+        curr->val = val;
+      }
+      prev = curr;
+      curr = curr->next;
+    }
+    if (res == NULL) {
+      VarScopeMap *newvsm = new_varscopemap();
+      newvsm->key = key;
+      newvsm->val = val;
+      newvsm->next = NULL;
+      prev->next = newvsm;
+    }
+    return res;
+  } else {
+    error("Can't add to NULL map pointer");
+  }
+}
+// Puts value in map at key returning any previously found value (NULL otherwise)
+Type *tagscopemap_put(TagScopeMap *map, StringList *key, Type *val) {
+  if (map != NULL) {  
+    TagScopeMap *curr = map;
+    TagScopeMap *prev = map;
+    Type *res = NULL;
+    while (curr != NULL && res == NULL) {
+      if (equals(curr->key, key)) {
+        res = curr->val;
+        curr->val = val;
+      }
+      prev = curr;
+      curr = curr->next;
+    }
+    if (res == NULL) {
+      TagScopeMap *newtsm = new_tagscopemap();
+      newtsm->key = key;
+      newtsm->val = val;
+      newtsm->next = NULL;
+      prev->next = newtsm;
+    }
+    return res;
+  } else {
+    error("Can't add to NULL map pointer");
+  }
+}
+
+//void hashmap_delete(HashMap *map, char *key);
+//void hashmap_delete2(HashMap *map, char *key, int keylen);
+
+// Represents a block scope.
+typedef struct Scope Scope;
+struct Scope {
+  Scope *next;
+
+  // C has two block scopes; one is for variables/typedefs and
+  // the other is for struct/enum tags.
+  VarScopeMap vars;
+  TagScopeMap tags;
+};
+
+Scope *new_scope() {
+  Scope *scope = alloc(Scope);
+  scope->next = NULL;
+  scope->vars = new_varscopemap();
+  scope->tags = new_tagscopemap();
+  return scope;
+}
+
+// Assume scope not null
+VarScope *push_scope(Scope *scope, StringList *name) {
+  VarScope *sc = alloc(VarScope);
+  varscopemap_put(scope->vars, name, sc);
+  return sc;
+}
+
+// Assume scope not null
+void push_tag_scope(Scope *scope, StringList *name, Type *ty) {
+    tagscopemap_put(scope->tags, name, ty);
+}
+
+// Assume scope not null
+void enter_scope(Scope **scope) {
+  Scope *sc = new_scope();
+  sc->next = *scope;
+  *scope = sc; 
+}
+
+// Assume scope and *scope not null
+void leave_scope(Scope **scope) {
+  *scope = (*scope)->next;
+}
+
+// Variable attributes such as typedef or extern.
+struct VarAttr {
+  bool is_typedef;
+  bool is_static;
+  bool is_extern;
+  bool is_inline;
+  int align;
+};
+
+VarAttr *new_attr() {
+  VarAttr *attr = alloc(VarAttr);
+  attr->is_typedef = false;
+  attr->is_static = false;
+  attr->is_extern = false;
+  attr->is_inline = false;
+  int align = 0;
+}
+
+// Find a variable by name.
+VarScope *find_var(Token *tok, Scope *scope) {
+  for (Scope *sc = scope; sc != NULL; sc = sc->next) {
+    VarScope *sc2 = varscopemap_get(sc->vars, name(tok));
+    if (sc2 != NULL)
+      return sc2;
+  }
+  return NULL;
+}
+
+// Find a tag by name
+Type *find_tag(Token *tok, Scope *scope) {
+  for (Scope *sc = scope; sc != NULL; sc = sc->next) {
+    Type *ty = tagscopemap_get(sc->tags, name(tok));
+    if (ty != NULL)
+      return ty;
+  }
+  return NULL;
+}
+
+Type *find_typedef(Token *tok, Scope *scope) {
+  if (is_IDENT(tok)) {
+    VarScope *sc = find_var(tok, scope);
+    if (sc != NULL)
+      return sc->type_def;
+  }
+  return NULL;
+}
+
+// Returns true if a given token represents a type.
+bool is_typename(Token *tok, Scope *scope) {
+  
+  bool res = false;
+  if (equal(tok,str_void())     || equal(tok,str_bool())     || equal(tok,str_char())   ||
+      equal(tok,str_short())    || equal(tok,str_int())      || equal(tok,str_long())   ||
+      equal(tok,str_struct())   || equal(tok,str_typedef())  || equal(tok,str_enum())   ||
+      equal(tok,str_static())   || equal(tok,str_extern())   || equal(tok,str_signed()) ||
+      equal(tok,str_const())    || equal(tok,str_volatile()) || equal(tok,str_auto())   ||
+      equal(tok,str_register()) || equal(tok,str_restrict()) || equal(tok,str_float())  ||
+      equal(tok,str_double())   || equal(tok,str_typedef())  || equal(tok,str_inline()) ||
+      equal(tok,str_unsigned()) || find_typedef(tok,scope) != NULL
+     )
+    res = true;
+
+  return res;
+}
+
+// Helper function for end of enums
+bool consume_end(Token **rest, Token *tok) {
+  if (equal(tok, str_cbracket())) {
+    *rest = tok->next;
+    return true;
+  }
+
+  if (equal(tok, str_comma()) && equal(tok->next, str_cbracket())) {
+    *rest = tok->next->next;
+    return true;
+  }
+
+  return false;
+}
+
+// enum-specifier = ident? "{" enum-list? "}"
+//                | ident ("{" enum-list? "}")?
+//
+// enum-list      = ident ("=" num)? ("," ident ("=" num)?)* ","?
+// TODO: NEED TO FINISH THIS
+/*static Type *enum_specifier(Token **rest, Token *tok, Scope *scope) {
+  Type *ty = enum_type();
+
+  // Read a struct tag.
+  Token *tag = NULL;
+  if (is_IDENT(tok)) {
+    tag = tok;
+    tok = tok->next;
+  }
+
+    if (tag != NULL && !equal(tok, str_obracket())) {
+    Type *ty = find_tag(tag, scope);
+    if (ty == NULL)
+      error("unknown enum type");
+    if (!is_ENUM(ty))
+      error("not an enum tag");
+    *rest = tok;
+    return ty;
+  }
+
+  tok = skip(tok, str_obracket());
+
+  // Read an enum-list.
+  int i = 0;
+  int val = 0;
+  while (!consume_end(rest, tok)) {
+    i = i + 1;
+    if (i > 0)
+      tok = skip(tok, str_comma());
+
+    StringList *name = name(tok);
+    tok = tok->next;
+
+    if (equal(tok, str_eq()))
+      val = const_expr(&tok, tok->next); // evals rhs of equals, need function evals
+
+    VarScope *sc = push_scope(name);
+    sc->enum_ty = ty;
+    val = val + 1
+    sc->enum_val = val;
+  }
+
+  if (tag != NULL)
+    push_tag_scope(tag, ty);
+  return ty;
+}*/
+
+// Parse Base Type
+// declspec = ("void" | "_Bool" | "char" | "short" | "int" | "long"
+//             | "typedef" | "static" | "extern" | "inline"
+//             | "signed" | "unsigned"
+//             | struct-decl | typedef-name      // struct-decl support in future
+//             | enum-specifier
+//             | "const" | "volatile" | "auto" | "register" | "restrict")+
+//
+// The order of typenames in a type-specifier doesn't matter. For
+// example, `int long static` means the same as `static long int`.
+// That can also be written as `static long` because you can omit
+// `int` if `long` or `short` are specified. However, something like
+// `char int` is not a valid type specifier. We have to accept only a
+// limited combinations of the typenames.
+//
+// In this function, we count the number of occurrences of each typename
+// while keeping the "current" type object that the typenames up
+// until that point represent. When we reach a non-typename token,
+// we returns the current type object.
+Type *declspec(Token **rest, Token *tok, VarAttr *attr, Scope *scope) {
+  // We use a single integer as counters for all typenames.
+  // For example, bits 0 and 1 represents how many times we saw the
+  // keyword "void" so far. With this, we can use a switch statement
+  // as you can see below.
+  
+  int VOID     = 1 << 0;
+  int BOOL     = 1 << 2;
+  int CHAR     = 1 << 4;
+  int SHORT    = 1 << 6;
+  int INT      = 1 << 8;
+  int LONG     = 1 << 10;
+  int FLOAT    = 1 << 12;
+  int DOUBLE   = 1 << 14;
+  int OTHER    = 1 << 16;
+  int SIGNED   = 1 << 17;
+  int UNSIGNED = 1 << 18;
+
+  Type *ty = new_ty_int();
+  int counter = 0;
+  bool break_loop = false;
+
+  while (!break_loop && is_typename(tok, scope)) {
+    // Handle storage class specifiers.
+    if (equal(tok, str_typedef()) || equal(tok, str_static()) || equal(tok, str_extern()) ||
+        equal(tok, str_inline())) {
+      if (attr == NULL)
+        error("storage class specifier is not allowed in this context");
+
+      if (equal(tok, str_typedef()))
+        attr->is_typedef = true;
+      else if (equal(tok, str_static()))
+        attr->is_static = true;
+      else if (equal(tok, str_extern()))
+        attr->is_extern = true;
+      else
+        attr->is_inline = true;
+
+      if (attr->is_typedef &&
+          (attr->is_static || attr->is_extern || attr->is_inline))
+        error("typedef may not be used together with static,"
+                  " extern, or inline");
+      
+      tok = tok->next;
+
+    // These keywords are recognized but ignored.
+    } else if (equal(tok, str_const()) || equal(tok, str_volatile()) ||
+               equal(tok, str_auto())  || equal(tok, str_register()) ||
+               equal(tok, str_restrict())) {
+        
+      tok = tok->next;
+      
+    } else {
+      // Handle user-defined types.
+      Type *ty2 = find_typedef(tok);
+      if (equal(tok, str_struct()) || equal(tok, str_enum()) ||
+          ty2 != NULL) {
+
+        if (counter > 0) {
+          break_loop = true;
+        } else {
+          Token **rst = alloc(Token*);
+          *rst = tok;
+          if (equal(tok, str_struct())) {
+            error("structs aren't supported yet");
+          } else if (equal(tok, str_enum())) {
+            //ty = enum_specifier(rst, tok->next, scope); // TODO
+            //tok = *rst;
+            error("enums not fully supported yet");
+          } else {
+            ty = ty2;
+            tok = tok->next;
+          }
+
+          counter = counter + OTHER;
+        }
+      } else {
+        // Handle built-in types.
+        if (equal(tok, str_void()))
+          counter = counter + VOID;
+        else if (equal(tok, str_bool()))
+          counter = counter + BOOL;
+        else if (equal(tok, str_char()))
+          counter = counter + CHAR;
+        else if (equal(tok, str_short()))
+          counter = counter + SHORT;
+        else if (equal(tok, str_int()))
+          counter = counter + INT;
+        else if (equal(tok, str_long()))
+          counter = counter + LONG;
+        else if (equal(tok, str_float()))
+          counter = counter + FLOAT;
+        else if (equal(tok, str_double()))
+          counter = counter + DOUBLE;
+        else if (equal(tok, str_signed()))
+          counter = counter | SIGNED;
+        else if (equal(tok, str_unsigned()))
+          counter = counter | UNSIGNED;
+        else
+          unreachable();
+
+        if (counter == VOID) {
+          ty = new_ty_void();
+        } else if (counter == BOOL) {
+          ty = new_ty_bool();
+        } else if (counter == CHAR ||
+                   counter == SIGNED + CHAR) {
+          ty = new_ty_char();
+        } else if (counter == UNSIGNED + CHAR) {
+          ty = new_ty_uchar();
+        } else if (counter == SHORT ||
+                   counter == SHORT + INT ||
+                   counter == SIGNED + SHORT ||
+                   counter == SIGNED + SHORT + INT) {
+          ty = new_ty_short();
+        } else if (counter == UNSIGNED + SHORT ||
+                   counter == UNSIGNED + SHORT + INT) {
+          ty = new_ty_ushort();
+        } else if (counter == INT ||
+                   counter == SIGNED ||
+                   counter == SIGNED + INT) {
+          ty = new_ty_int();
+        } else if (counter == UNSIGNED ||
+                   counter == UNSIGNED + INT) {
+          ty = new_ty_uint();
+        } else if (counter == LONG ||
+                   counter == LONG + INT ||
+                   counter == LONG + LONG ||
+                   counter == LONG + LONG + INT ||
+                   counter == SIGNED + LONG ||
+                   counter == SIGNED + LONG + INT ||
+                   counter == SIGNED + LONG + LONG ||
+                   counter == SIGNED + LONG + LONG + INT) {
+          ty = new_ty_long();
+        } else if (counter == UNSIGNED + LONG ||
+                   counter == UNSIGNED + LONG + INT ||
+                   counter == UNSIGNED + LONG + LONG ||
+                   counter == UNSIGNED + LONG + LONG + INT) {
+          ty = new_ty_ulong();
+        } else if (counter == FLOAT) {
+          ty = new_ty_float();
+        } else if (counter == DOUBLE) {
+          ty = new_ty_double();
+        } else if (counter == LONG + DOUBLE) {
+          ty = new_ty_ldouble();
+        } else {
+          error("invalid type");
+        }
+
+        tok = tok->next;
+
+      }
+    }
+  }
+
+  *rest = tok;
+  return ty;
+}
+
+// func-params = ("void" | param ("," param)*)? ")"
+// param       = declspec declarator
+Type *func_params(Token **rest, Token *tok, Type *ty) {
+  if (equal(tok, str_void()) && equal(tok->next, str_cparen())) {
+    *rest = tok->next->next;
+    return func_type(ty);
+  }
+
+  Type *head = empty_type();
+  Type *cur = head;
+  Token **rst = alloc(Token*);
+
+  while (!equal(tok, str_cparen())) {
+    if (cur != head)
+      tok = skip(tok, str_comma());
+
+    *rst = tok;
+    Type *ty2 = declspec(rst, tok, NULL);
+    tok = *rst;
+    ty2 = declarator(rst, tok, ty2);
+    tok = *rst;
+
+    if (is_FUNC(ty2)) {
+      error("functions are not allowed to take other functions as arguments");
+    }
+    
+    cur->next = copy_type(ty2);
+    cur = cur->next;
+  }
+
+  ty = func_type(ty);
+  ty->params = head->next;
+  *rest = tok->next;
+  return ty;
+}
+
+// type-suffix = "(" func-params
+//             | ε
+Type *type_suffix(Token **rest, Token *tok, Type *ty) {
+  if (equal(tok, str_oparen()))
+    return func_params(rest, tok->next, ty);
+
+  *rest = tok;
+  return ty;
+}
+
+Type *pointers(Token **rest, Token *tok, Type *ty) {
+  Token **rst = alloc(Token*);
+  *rst = tok;
+  bool consume_b = consume(rst, tok, str_star());
+  tok = *rst;
+  while (consume_b) {
+    ty = pointer_to(ty);
+    
+    while (equal(tok, str_const()) || equal(tok, str_volatile()) || equal(tok, str_restrict()))
+      tok = tok->next;
+    
+    *rst = tok;
+    consume_b = consume(rst, tok, str_star());
+    tok = *rst;
+  }
+  *rest = tok;
+  return ty;
+}
+
+// declarator = pointers ("(" ident ")" | "(" declarator ")" | ident) type-suffix
+Type *declarator(Token **rest, Token *tok, Type *ty) {
+  Token **rst = alloc(Token*);
+  *rst = tok;
+  ty = pointers(rst, tok, ty);
+  tok = *rst;
+
+  if (equal(tok, str_oparen())) {
+    Token *start = tok;
+    Type *dummy = empty_type();
+    declarator(rst, start->next, dummy);
+    tok = *rst;
+    tok = skip(tok, str_cparen());
+    ty = type_suffix(rest, tok, ty);
+    *rst = tok;
+    Type *res_ty = declarator(rst, start->next, ty);
+    tok = *rst;
+    return res_ty;
+  }
+
+  Token *name = NULL;
+  Token *name_pos = tok;
+
+  if (is_IDENT(tok)) {
+    name = tok;
+    tok = tok->next;
+  }
+
+  ty = type_suffix(rest, tok, ty);
+  ty->name = name;
+  ty->name_pos = name_pos;
+  return ty;
+}
+
+// Parse Typedef
+Token *parse_typedef(Token *tok, Type *basety, Scope *scope) {
+  bool first = true;
+
+  Token **rest = alloc(Token*);
+  *rest = tok;
+  while (!consume(rest, tok, str_semicolon())) {
+    tok = *rest;
+    if (!first)
+      tok = skip(tok, str_comma());
+    first = false;
+    
+    *rest = tok;
+    Type *ty = declarator(rest, tok, basety);
+    tok = *rest;
+    if (ty_name(ty) == NULL)
+      error("typedef name omitted");
+    push_scope(scope, ty_name(ty))->type_def = ty;
+  }
+  return tok;
+}
+
+// Parse Functions
+Token *function(Token *tok, Type *basety, VarAttr *attr, Scope *scope) {
+  Type *ty = declarator(&tok, tok, basety);
+  if (ty_name(ty) == NULL)
+    error("function name omitted");
+  StringList *name_str = ty_name(ty);
+
+  /* TODO: pick up here */
+  Obj *fn = find_func(name_str);
+  if (fn) {
+    // Redeclaration
+    if (!fn->is_function)
+      error("redeclared as a different kind of symbol");
+    if (fn->is_definition && equal(tok, "{"))
+      error("redefinition of function");
+    if (!fn->is_static && attr->is_static)
+      error("static declaration follows a non-static declaration");
+    fn->is_definition = fn->is_definition || equal(tok, "{");
+  } else {
+    fn = new_gvar(name_str, ty);
+    fn->is_function = true;
+    fn->is_definition = equal(tok, "{");
+    fn->is_static = attr->is_static || (attr->is_inline && !attr->is_extern);
+    fn->is_inline = attr->is_inline;
+  }
+
+  fn->is_root = !(fn->is_static && fn->is_inline);
+
+  if (consume(&tok, tok, ";"))
+    return tok;
+
+  current_fn = fn;
+  locals = NULL;
+  enter_scope();
+  create_param_lvars(ty->params);
+
+  // A buffer for a struct/union return value is passed
+  // as the hidden first parameter.
+  /*Type *rty = ty->return_ty;
+  if (rty->kind == TY_STRUCT && rty->size > 16)
+    new_lvar("", pointer_to(rty));*/
+
+  fn->params = locals;
+
+  fn->alloca_bottom = new_lvar("__alloca_size__", pointer_to(ty_char));
+
+  tok = skip(tok, "{");
+
+  fn->body = compound_stmt(&tok, tok);
+  fn->locals = locals;
+  leave_scope();
+  return tok;
+}
+
+// Lookahead tokens and returns true if a given token is a start
+// of a function definition or declaration.
+bool is_function(Token *tok) {
+  if (equal(tok, str_semicolon()))
+    return false;
+
+  Type *dummy = empty_type();
+  Token **rest = alloc(Token*);
+  *rest = tok;
+  Type *ty = declarator(rest, tok, dummy);
+  return is_FUNC(ty);
+}
+
+void declare_builtin_functions() { // <--- TODO: look into this
+  Type *ty = func_type(pointer_to(new_ty_void()));
+  ty->params = copy_type(new_ty_int());
+  builtin_alloca = new_gvar("alloca", ty);
+  builtin_alloca->is_definition = false;
+}
+
+// program = (typedef | function-definition)*
+void parse(Token *tok) {
+  Scope *scope = new_scope();
+
+  //declare_builtin_functions();
+  
+  // All local variable instances created during parsing are
+  // accumulated to this list.
+  //static Obj *locals;
+
+  // Tracking global variables to ensure uniqueness of identifiers
+  //Obj *globals;
+
+  while (!is_EOF(tok)) {
+    VarAttr *attr = new_attr();
+    
+
+    Token **rest = alloc(Token*);
+    *rest = tok;
+    
+    Type *basety = declspec(rest, tok, attr, scope); //just missing enums, should work tho
+
+    // Typedef
+    if (attr->is_typedef) {
+      tok = parse_typedef(tok, basety, scope);
+     // Function
+    } else if (is_function(tok)) {
+      tok = function(tok, basety, attr, scope);
+    }
+  }
+
+  // Need this to track function names
+  /*for (Obj *var = globals; var; var = var->next)
+    if (var->is_root)
+      mark_live(var);
+
+  // Remove redundant tentative definitions.
+  scan_globals();
+  return globals;*/
+}
+
+
+//-------------Testing-----------------------
