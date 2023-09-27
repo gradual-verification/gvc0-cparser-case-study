@@ -1,0 +1,36 @@
+jenna@ubuntu-2023:~/Desktop/gvc0$ sbt "run -c src/test/resources/case-study-2023/cparser.c0"
+[info] welcome to sbt 1.5.3 (Ubuntu Java 11.0.20.1)
+[info] loading settings for project gvc0-build from plugins.sbt ...
+[info] loading project definition from /home/jenna/Desktop/gvc0/project
+[info] loading settings for project gvc from build.sbt ...
+[info] loading settings for project silicon from build.sbt ...
+[info] loading settings for project silver from build.sbt ...
+[info] set current project to gvc0 (in build file:/home/jenna/Desktop/gvc0/)
+[info] running (fork) gvc.Main -c src/test/resources/case-study-2023/cparser.c0
+[info] Verifying 'src/test/resources/case-study-2023/cparser.c0' and gathering data.
+[info] Outputting collected data to /home/jenna/Desktop/gvc0/cparser-2023-09-26T19:01:23.114484/
+[info] [*] — Tue Sep 26 19:01:23 EDT 2023
+[error] Exception in thread "main" gvc.benchmarking.Timing$CC0CompilationException: /home/jenna/Desktop/gvc0/cparser-2023-09-26T19:01:23.114484/cparser.verified.c0: 3070.39-3070.51: error: comparison with '==' or '!=' with incompatible types left-hand side: charright-hand side: int     | 3070 |     if (_cond_1 && !(i < ln) && eq && c1->val == 0)     |                                       ~~~~~~~~~~~~ cc0: error: compilation failed
+[error]         at gvc.benchmarking.Timing$.compileOnError$1(Timing.scala:90)
+[error]         at gvc.benchmarking.Timing$.$anonfun$compileTimed$1(Timing.scala:96)
+[error]         at gvc.benchmarking.Timing$.$anonfun$compileTimed$1$adapted(Timing.scala:96)
+[error]         at gvc.benchmarking.Timing$.$anonfun$runTimedCommand$3(Timing.scala:126)
+[error]         at gvc.benchmarking.Timing$.$anonfun$runTimedCommand$3$adapted(Timing.scala:115)
+[error]         at scala.collection.immutable.Range.foreach(Range.scala:158)
+[error]         at gvc.benchmarking.Timing$.runTimedCommand(Timing.scala:115)
+[error]         at gvc.benchmarking.Timing$.compileTimed(Timing.scala:93)
+[error]         at gvc.Main$.run(main.scala:204)
+[error]         at gvc.Main$.delayedEndpoint$gvc$Main$1(main.scala:77)
+[error]         at gvc.Main$delayedInit$body.apply(main.scala:44)
+[error]         at scala.Function0.apply$mcV$sp(Function0.scala:39)
+[error]         at scala.Function0.apply$mcV$sp$(Function0.scala:39)
+[error]         at scala.runtime.AbstractFunction0.apply$mcV$sp(AbstractFunction0.scala:17)
+[error]         at scala.App.$anonfun$main$1$adapted(App.scala:80)
+[error]         at scala.collection.immutable.List.foreach(List.scala:431)
+[error]         at scala.App.main(App.scala:80)
+[error]         at scala.App.main$(App.scala:78)
+[error]         at gvc.Main$.main(main.scala:44)
+[error]         at gvc.Main.main(main.scala)
+[error] Nonzero exit code returned from runner: 1
+[error] (Compile / run) Nonzero exit code returned from runner: 1
+[error] Total time: 74 s (01:14), completed Sep 26, 2023, 7:02:33 PM
