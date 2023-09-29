@@ -1,0 +1,7010 @@
+#use <conio>
+#use <parser_errors>
+struct ASTNode;
+struct CharNode;
+struct NodeKind;
+struct Obj;
+struct Scope;
+struct StringList;
+struct TagScopeMap;
+struct Token;
+struct TokenKind;
+struct Type;
+struct TypeKind;
+struct VarAttr;
+struct VarScope;
+struct VarScopeMap;
+struct _ptr_struct_Obj_;
+struct _ptr_struct_Scope_;
+struct _ptr_struct_Token_;
+
+struct ASTNode
+{
+  struct NodeKind* kind;
+  struct ASTNode* next;
+  struct Type* ty;
+  struct Token* tok;
+  struct ASTNode* lhs;
+  struct ASTNode* rhs;
+  struct ASTNode* cond;
+  struct ASTNode* then;
+  struct ASTNode* els;
+  struct ASTNode* init;
+  struct ASTNode* inc;
+  struct ASTNode* body;
+  struct Type* func_ty;
+  struct ASTNode* args;
+  bool pass_by_stack;
+  struct Obj* var;
+  struct StringList* val;
+};
+
+struct CharNode
+{
+  char val;
+  struct CharNode* next;
+};
+
+struct NodeKind
+{
+  int kind;
+};
+
+struct Obj
+{
+  struct Obj* next;
+  struct StringList* name;
+  struct Type* ty;
+  struct Token* tok;
+  bool is_local;
+  int align;
+  int offset;
+  bool is_function;
+  bool is_definition;
+  struct Obj* params;
+  struct ASTNode* body;
+  struct Obj* locals;
+  int stack_size;
+};
+
+struct Scope
+{
+  struct Scope* next;
+  struct VarScopeMap* vars;
+  struct TagScopeMap* tags;
+};
+
+struct StringList
+{
+  struct CharNode* root;
+  int len;
+};
+
+struct TagScopeMap
+{
+  struct StringList* key;
+  struct Type* val;
+  struct TagScopeMap* next;
+};
+
+struct Token
+{
+  struct TokenKind* kind;
+  struct Token* next;
+  struct Type* ty;
+  struct StringList* str;
+};
+
+struct TokenKind
+{
+  int kind;
+};
+
+struct Type
+{
+  struct TypeKind* kind;
+  int size;
+  int align;
+  bool is_unsigned;
+  struct Type* origin;
+  struct Type* base;
+  struct Token* name;
+  struct Token* name_pos;
+  struct Type* return_ty;
+  struct Type* params;
+  struct Type* next;
+};
+
+struct TypeKind
+{
+  int kind;
+};
+
+struct VarAttr
+{
+  bool is_typedef;
+  int align;
+};
+
+struct VarScope
+{
+  struct Obj* var;
+  struct Type* type_def;
+};
+
+struct VarScopeMap
+{
+  struct StringList* key;
+  struct VarScope* val;
+  struct VarScopeMap* next;
+};
+
+struct _ptr_struct_Obj_
+{
+  struct Obj* value;
+};
+
+struct _ptr_struct_Scope_
+{
+  struct Scope* value;
+};
+
+struct _ptr_struct_Token_
+{
+  struct Token* value;
+};
+
+//@predicate endOfFile(struct Token* tok);
+//@predicate tokenKind(struct TokenKind* knd);
+//@predicate tokenList(struct Token* tok);
+//@predicate tokenListSeg(struct Token* strt, struct Token* end);
+
+//@predicate endOfFile(struct Token* tok) = ? && acc(tok->kind) && acc(tok->ty) && acc(tok->str) && acc(tok->next) && tok->next == NULL;
+//@predicate tokenKind(struct TokenKind* knd) = acc(knd->kind);
+//@predicate tokenList(struct Token* tok) = tokenListSeg(tok, NULL);
+//@predicate tokenListSeg(struct Token* strt, struct Token* end) = strt == end ? true : acc(strt->kind) && tokenKind(strt->kind) && acc(strt->ty) && acc(strt->str) && acc(strt->next) && tokenListSeg(strt->next, end);
+
+struct ASTNode* add(struct _ptr_struct_Token_* rest, struct Token* tok, struct Scope* scope);
+void add_char(struct StringList* s, char c);
+void add_type(struct ASTNode* node);
+struct ASTNode* assign(struct _ptr_struct_Token_* rest, struct Token* tok, struct Scope* scope);
+struct ASTNode* bitand(struct _ptr_struct_Token_* rest, struct Token* tok, struct Scope* scope);
+struct ASTNode* bitor(struct _ptr_struct_Token_* rest, struct Token* tok, struct Scope* scope);
+struct ASTNode* bitxor(struct _ptr_struct_Token_* rest, struct Token* tok, struct Scope* scope);
+struct Token* bools(struct Token* tlist);
+struct ASTNode* compound_stmt(struct _ptr_struct_Token_* rest, struct Token* tok, struct _ptr_struct_Scope_* scope, struct _ptr_struct_Obj_* globals, struct _ptr_struct_Obj_* locals);
+bool consume(struct _ptr_struct_Token_* rest, struct Token* tok, struct StringList* str);
+struct Type* copy_type(struct Type* ty);
+void create_param_lvars(struct Scope* scope, struct _ptr_struct_Obj_* locals, struct Type* param);
+struct ASTNode* declaration(struct _ptr_struct_Token_* rest, struct Token* tok, struct Type* basety, struct VarAttr* attr, struct _ptr_struct_Scope_* scope, struct _ptr_struct_Obj_* locals);
+struct Type* declarator(struct _ptr_struct_Token_* rest, struct Token* tok, struct Type* ty, struct Scope* scope);
+struct Type* declspec(struct _ptr_struct_Token_* rest, struct Token* tok, struct VarAttr* attr, struct Scope* scope);
+struct ASTNode* empty_node();
+struct Type* empty_type();
+void enter_scope(struct _ptr_struct_Scope_* scope);
+struct Type* enum_type();
+bool equal(struct Token* tok, struct StringList* op);
+struct ASTNode* equality(struct _ptr_struct_Token_* rest, struct Token* tok, struct Scope* scope);
+bool equals(struct StringList* s1, struct StringList* s2);
+struct ASTNode* expr(struct _ptr_struct_Token_* rest, struct Token* tok, struct Scope* scope);
+struct ASTNode* expr_stmt(struct _ptr_struct_Token_* rest, struct Token* tok, struct Scope* scope);
+struct Obj* find_func(struct Scope* scope, struct StringList* name);
+struct Type* find_tag(struct Token* tok, struct Scope* scope);
+struct Type* find_typedef(struct Token* tok, struct Scope* scope);
+struct VarScope* find_var(struct Token* tok, struct Scope* scope);
+struct Type* func_params(struct _ptr_struct_Token_* rest, struct Token* tok, struct Type* ty, struct Scope* scope);
+struct Type* func_type(struct Type* return_ty);
+struct ASTNode* funcall(struct _ptr_struct_Token_* rest, struct Token* tok, struct ASTNode* fn, struct Scope* scope);
+struct Token* functionp(struct Token* tok, struct Type* basety, struct VarAttr* attr, struct _ptr_struct_Scope_* scope, struct _ptr_struct_Obj_* globals);
+struct Token* functions(struct Token* tlist);
+int get_len(struct StringList* s);
+struct Token* ifstmt(struct Token* tlist);
+bool is_BOOL(struct Type* ty);
+bool is_CHAR(struct Type* ty);
+bool is_DOUBLE(struct Type* ty);
+bool is_ENUM(struct Type* ty);
+bool is_EOF(struct Token* t);
+bool is_FLOAT(struct Type* ty);
+bool is_FUNC(struct Type* ty);
+bool is_IDENT(struct Token* t);
+bool is_INT(struct Type* ty);
+bool is_KEYWORD(struct Token* t);
+bool is_LDOUBLE(struct Type* ty);
+bool is_LONG(struct Type* ty);
+bool is_NUM(struct Token* t);
+bool is_PP_NUM(struct Token* t);
+bool is_PTR(struct Type* ty);
+bool is_PUNCT(struct Token* t);
+bool is_SHORT(struct Type* ty);
+bool is_STR(struct Token* t);
+bool is_STRUCT(struct Type* ty);
+bool is_VOID(struct Type* ty);
+bool is_function(struct Token* tok, struct Scope* scope);
+bool is_numeric(struct Type* ty);
+bool is_typename(struct Token* tok, struct Scope* scope);
+void leave_scope(struct _ptr_struct_Scope_* scope);
+struct ASTNode* logand(struct _ptr_struct_Token_* rest, struct Token* tok, struct Scope* scope);
+struct ASTNode* logor(struct _ptr_struct_Token_* rest, struct Token* tok, struct Scope* scope);
+int main();
+struct ASTNode* mul(struct _ptr_struct_Token_* rest, struct Token* tok, struct Scope* scope);
+struct NodeKind* new_ND_ADD();
+struct NodeKind* new_ND_ADDR();
+struct NodeKind* new_ND_ASSIGN();
+struct NodeKind* new_ND_BITAND();
+struct NodeKind* new_ND_BITNOT();
+struct NodeKind* new_ND_BITOR();
+struct NodeKind* new_ND_BITXOR();
+struct NodeKind* new_ND_BLOCK();
+struct NodeKind* new_ND_COMMA();
+struct NodeKind* new_ND_DEREF();
+struct NodeKind* new_ND_DIV();
+struct NodeKind* new_ND_EQ();
+struct NodeKind* new_ND_EXPR_STMT();
+struct NodeKind* new_ND_FOR();
+struct NodeKind* new_ND_FUNCALL();
+struct NodeKind* new_ND_IF();
+struct NodeKind* new_ND_LE();
+struct NodeKind* new_ND_LOGAND();
+struct NodeKind* new_ND_LOGOR();
+struct NodeKind* new_ND_LT();
+struct NodeKind* new_ND_MEMZERO();
+struct NodeKind* new_ND_MOD();
+struct NodeKind* new_ND_MUL();
+struct NodeKind* new_ND_NE();
+struct NodeKind* new_ND_NEG();
+struct NodeKind* new_ND_NOT();
+struct NodeKind* new_ND_NULL_EXPR();
+struct NodeKind* new_ND_NUM();
+struct NodeKind* new_ND_RETURN();
+struct NodeKind* new_ND_SHL();
+struct NodeKind* new_ND_SHR();
+struct NodeKind* new_ND_STMT_EXPR();
+struct NodeKind* new_ND_SUB();
+struct NodeKind* new_ND_VAR();
+struct TokenKind* new_TK_EOF();
+struct TokenKind* new_TK_IDENT();
+struct TokenKind* new_TK_KEYWORD();
+struct TokenKind* new_TK_NUM();
+struct TokenKind* new_TK_PP_NUM();
+struct TokenKind* new_TK_PUNCT();
+struct TokenKind* new_TK_STR();
+struct TypeKind* new_TY_BOOL();
+struct TypeKind* new_TY_CHAR();
+struct TypeKind* new_TY_DOUBLE();
+struct TypeKind* new_TY_ENUM();
+struct TypeKind* new_TY_FLOAT();
+struct TypeKind* new_TY_FUNC();
+struct TypeKind* new_TY_INT();
+struct TypeKind* new_TY_LDOUBLE();
+struct TypeKind* new_TY_LONG();
+struct TypeKind* new_TY_PTR();
+struct TypeKind* new_TY_SHORT();
+struct TypeKind* new_TY_STRUCT();
+struct TypeKind* new_TY_VOID();
+struct ASTNode* new_add(struct ASTNode* lhsn, struct ASTNode* rhsn, struct Token* tok);
+struct VarAttr* new_attr();
+struct ASTNode* new_binary(struct NodeKind* kind, struct ASTNode* lhsn, struct ASTNode* rhsn, struct Token* tok);
+struct Obj* new_gvar(struct Scope* scope, struct _ptr_struct_Obj_* globals, struct StringList* name, struct Type* ty);
+struct Obj* new_lvar(struct Scope* scope, struct _ptr_struct_Obj_* locals, struct StringList* name, struct Type* ty);
+struct ASTNode* new_node(struct NodeKind* kind, struct Token* tok);
+struct Scope* new_scope();
+struct StringList* new_stringlist();
+struct ASTNode* new_sub(struct ASTNode* lhsn, struct ASTNode* rhsn, struct Token* tok);
+struct TagScopeMap* new_tagscopemap();
+struct Token* new_token(struct TokenKind* kind, struct StringList* contents);
+struct Type* new_ty_bool();
+struct Type* new_ty_char();
+struct Type* new_ty_double();
+struct Type* new_ty_float();
+struct Type* new_ty_int();
+struct Type* new_ty_ldouble();
+struct Type* new_ty_long();
+struct Type* new_ty_short();
+struct Type* new_ty_uchar();
+struct Type* new_ty_uint();
+struct Type* new_ty_ulong();
+struct Type* new_ty_ushort();
+struct Type* new_ty_void();
+struct Type* new_type(struct TypeKind* kind, int size, int align);
+struct ASTNode* new_unary(struct NodeKind* kind, struct ASTNode* e, struct Token* tok);
+struct Obj* new_var(struct Scope* scope, struct StringList* name, struct Type* ty);
+struct VarScopeMap* new_varscopemap();
+struct Token* nums(struct Token* tlist);
+struct Obj* parse(struct Token* tok);
+struct Token* parse_typedef(struct Token* tok, struct Type* basety, struct Scope* scope);
+struct Type* pointer_to(struct Type* base);
+struct Type* pointers(struct _ptr_struct_Token_* rest, struct Token* tok, struct Type* ty);
+struct Token* pointerss(struct Token* tlist);
+struct ASTNode* postfix(struct _ptr_struct_Token_* rest, struct Token* tok, struct Scope* scope);
+struct ASTNode* primary(struct _ptr_struct_Token_* rest, struct Token* tok, struct Scope* scope);
+void print_nodes(struct ASTNode* nlist, bool rep);
+void print_str_list(struct StringList* str);
+void print_tokens(struct Token* tlist);
+struct VarScope* push_scope(struct Scope* scope, struct StringList* name);
+void push_tag_scope(struct Scope* scope, struct StringList* name, struct Type* ty);
+struct ASTNode* relational(struct _ptr_struct_Token_* rest, struct Token* tok, struct Scope* scope);
+bool same_typekind(struct Type* ty1, struct Type* ty2);
+struct ASTNode* shift(struct _ptr_struct_Token_* rest, struct Token* tok, struct Scope* scope);
+struct Token* skip(struct Token* tok, struct StringList* op);
+struct ASTNode* stmt(struct _ptr_struct_Token_* rest, struct Token* tok, struct _ptr_struct_Scope_* scope, struct _ptr_struct_Obj_* globals, struct _ptr_struct_Obj_* locals);
+struct StringList* str_add();
+struct StringList* str_auto();
+struct StringList* str_bitand();
+struct StringList* str_bitnot();
+struct StringList* str_bitor();
+struct StringList* str_bitshl();
+struct StringList* str_bitshr();
+struct StringList* str_bitxor();
+struct StringList* str_bool();
+struct StringList* str_cbracket();
+struct StringList* str_char();
+struct StringList* str_colon();
+struct StringList* str_comma();
+struct StringList* str_const();
+struct StringList* str_cparen();
+struct StringList* str_div();
+struct StringList* str_double();
+struct StringList* str_else();
+struct StringList* str_enum();
+struct StringList* str_eq();
+struct StringList* str_extern();
+struct StringList* str_float();
+struct StringList* str_ge();
+struct StringList* str_gt();
+struct StringList* str_if();
+struct StringList* str_inline();
+struct StringList* str_int();
+struct StringList* str_le();
+struct StringList* str_logand();
+struct StringList* str_logeq();
+struct StringList* str_logneq();
+struct StringList* str_lognot();
+struct StringList* str_logor();
+struct StringList* str_long();
+struct StringList* str_lt();
+struct StringList* str_mod();
+struct StringList* str_mul();
+struct StringList* str_obracket();
+struct StringList* str_oparen();
+struct StringList* str_register();
+struct StringList* str_restrict();
+struct StringList* str_return();
+struct StringList* str_semicolon();
+struct StringList* str_short();
+struct StringList* str_signed();
+struct StringList* str_star();
+struct StringList* str_static();
+struct StringList* str_struct();
+struct StringList* str_sub();
+struct StringList* str_typedef();
+struct StringList* str_unsigned();
+struct StringList* str_void();
+struct StringList* str_volatile();
+struct StringList* str_while();
+struct Type* struct_type();
+struct Type* tagscopemap_get(struct TagScopeMap* map, struct StringList* key);
+struct Type* tagscopemap_put(struct TagScopeMap* map, struct StringList* key, struct Type* val);
+struct Token* tok_ident(char c);
+struct StringList* tok_name(struct Token* tok);
+struct StringList* ty_name(struct Type* ty);
+struct Type* type_suffix(struct _ptr_struct_Token_* rest, struct Token* tok, struct Type* ty, struct Scope* scope);
+struct ASTNode* unary(struct _ptr_struct_Token_* rest, struct Token* tok, struct Scope* scope);
+void unreachable();
+struct VarScope* varscopemap_get(struct VarScopeMap* map, struct StringList* key);
+struct VarScope* varscopemap_put(struct VarScopeMap* map, struct StringList* key, struct VarScope* val);
+struct Token* whiles(struct Token* tlist);
+
+struct ASTNode* add(struct _ptr_struct_Token_* rest, struct Token* tok, struct Scope* scope)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct _ptr_struct_Token_* rst = NULL;
+  struct ASTNode* node = NULL;
+  bool break_loop = false;
+  struct Token* start = NULL;
+  struct StringList* _ = NULL;
+  bool _1 = false;
+  struct ASTNode* _2 = NULL;
+  struct StringList* _3 = NULL;
+  bool _4 = false;
+  struct ASTNode* _5 = NULL;
+  struct ASTNode* node1 = NULL;
+  struct Token* tok1 = NULL;
+  tok1 = tok;
+  rst = alloc(struct _ptr_struct_Token_);
+  rst->value = tok1;
+  node = mul(rst, tok1, scope);
+  tok1 = rst->value;
+  break_loop = false;
+  while (!break_loop)
+    //@loop_invariant ?;
+  {
+    start = tok1;
+    _ = str_add();
+    _1 = equal(tok1, _);
+    if (_1)
+    {
+      rst->value = tok1;
+      _2 = mul(rst, tok1->next, scope);
+      node1 = new_add(node, _2, start);
+      tok1 = rst->value;
+    }
+    else
+    {
+      _3 = str_sub();
+      _4 = equal(tok1, _3);
+      if (_4)
+      {
+        rst->value = tok1;
+        _5 = mul(rst, tok1->next, scope);
+        node1 = new_sub(node, _5, start);
+        tok1 = rst->value;
+      }
+      else
+      {
+        rest->value = tok1;
+        break_loop = true;
+        node1 = node;
+      }
+    }
+    node = node1;
+  }
+  return node;
+}
+
+void add_char(struct StringList* s, char c)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct CharNode* end = NULL;
+  struct CharNode* cnode = NULL;
+  struct CharNode* cnode1 = NULL;
+  struct CharNode* prev = NULL;
+  struct CharNode* r = NULL;
+  struct CharNode* cnode2 = NULL;
+  if (s == NULL)
+  {
+    stringlist_error();
+  }
+  else
+  {
+    if (s->root == NULL)
+    {
+      end = alloc(struct CharNode);
+      end->val = '\0';
+      end->next = NULL;
+      cnode = alloc(struct CharNode);
+      cnode->val = c;
+      cnode->next = end;
+      s->root = cnode;
+      s->len = 1;
+    }
+    else
+    {
+      if (s->root->next == NULL)
+      {
+        cnode1 = alloc(struct CharNode);
+        cnode1->val = c;
+        cnode1->next = s->root;
+        s->root = cnode1;
+        s->len = 1;
+      }
+      else
+      {
+        prev = s->root;
+        r = s->root;
+        while (r->next != NULL)
+          //@loop_invariant ?;
+        {
+          prev = r;
+          r = r->next;
+        }
+        cnode2 = alloc(struct CharNode);
+        cnode2->val = c;
+        cnode2->next = r;
+        prev->next = cnode2;
+        s->len = s->len + 1;
+      }
+    }
+  }
+}
+
+void add_type(struct ASTNode* node)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct ASTNode* n = NULL;
+  struct ASTNode* n1 = NULL;
+  struct Type* _ = NULL;
+  bool _1 = false;
+  bool _2 = false;
+  struct Type* _3 = NULL;
+  struct Type* _4 = NULL;
+  struct Type* ty = NULL;
+  struct Type* _5 = NULL;
+  bool _6 = false;
+  struct ASTNode* s = NULL;
+  if (node == NULL || node->ty != NULL)
+  {
+  }
+  else
+  {
+    add_type(node->lhs);
+    add_type(node->rhs);
+    add_type(node->cond);
+    add_type(node->then);
+    add_type(node->els);
+    add_type(node->init);
+    add_type(node->inc);
+    n = node->body;
+    while (n != NULL)
+      //@loop_invariant ?;
+    {
+      add_type(n);
+      n = n->next;
+    }
+    n1 = node->args;
+    while (n1 != NULL)
+      //@loop_invariant ?;
+    {
+      add_type(n1);
+      n1 = n1->next;
+    }
+    if (node->kind == NULL)
+    {
+      node_kind_error();
+    }
+    if (node->kind->kind == 33)
+    {
+      _ = new_ty_int();
+      node->ty = _;
+    }
+    else
+    {
+      if (node->kind->kind == 2 || node->kind->kind == 3 || node->kind->kind == 4 || node->kind->kind == 5 || node->kind->kind == 7 || node->kind->kind == 8 || node->kind->kind == 9 || node->kind->kind == 10)
+      {
+        _1 = same_typekind(node->lhs->ty, node->rhs->ty);
+        if (_1)
+        {
+          node->ty = node->lhs->ty;
+        }
+        else
+        {
+          node_binop_error();
+        }
+      }
+      else
+      {
+        if (node->kind->kind == 6)
+        {
+          _2 = is_INT(node->lhs->ty);
+          if (_2)
+          {
+            node->ty = node->lhs->ty;
+          }
+          else
+          {
+            node_neg_error();
+          }
+        }
+        else
+        {
+          if (node->kind->kind == 17)
+          {
+            node->ty = node->lhs->ty;
+          }
+          else
+          {
+            if (node->kind->kind == 13 || node->kind->kind == 14 || node->kind->kind == 15 || node->kind->kind == 16)
+            {
+              _3 = new_ty_int();
+              node->ty = _3;
+            }
+            else
+            {
+              if (node->kind->kind == 29)
+              {
+                node->ty = node->func_ty->return_ty;
+              }
+              else
+              {
+                if (node->kind->kind == 21 || node->kind->kind == 24 || node->kind->kind == 23)
+                {
+                  _4 = new_ty_int();
+                  node->ty = _4;
+                }
+                else
+                {
+                  if (node->kind->kind == 22 || node->kind->kind == 11 || node->kind->kind == 12)
+                  {
+                    node->ty = node->lhs->ty;
+                  }
+                  else
+                  {
+                    if (node->kind->kind == 32)
+                    {
+                      node->ty = node->var->ty;
+                    }
+                    else
+                    {
+                      if (node->kind->kind == 18)
+                      {
+                        node->ty = node->rhs->ty;
+                      }
+                      else
+                      {
+                        if (node->kind->kind == 19)
+                        {
+                          ty = node->lhs->ty;
+                          _5 = pointer_to(ty);
+                          node->ty = _5;
+                        }
+                        else
+                        {
+                          if (node->kind->kind == 20)
+                          {
+                            if (node->lhs->ty->base == NULL)
+                            {
+                              node_deref_error(true);
+                            }
+                            _6 = is_VOID(node->lhs->ty->base);
+                            if (_6)
+                            {
+                              node_deref_error(false);
+                            }
+                            node->ty = node->lhs->ty->base;
+                          }
+                          else
+                          {
+                            if (node->kind->kind == 31)
+                            {
+                              if (node->body != NULL)
+                              {
+                                s = node->body;
+                                while (s->next != NULL)
+                                  //@loop_invariant ?;
+                                {
+                                  s = s->next;
+                                }
+                                if (s->kind == NULL)
+                                {
+                                  node_kind_error();
+                                }
+                                if (s->kind->kind == 30)
+                                {
+                                  node->ty = s->lhs->ty;
+                                }
+                              }
+                              else
+                              {
+                                node_stmt_error();
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+struct ASTNode* assign(struct _ptr_struct_Token_* rest, struct Token* tok, struct Scope* scope)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct _ptr_struct_Token_* rst = NULL;
+  struct ASTNode* node = NULL;
+  struct StringList* _ = NULL;
+  bool _1 = false;
+  struct NodeKind* _2 = NULL;
+  struct ASTNode* _3 = NULL;
+  struct ASTNode* _4 = NULL;
+  struct Token* tok1 = NULL;
+  tok1 = tok;
+  rst = alloc(struct _ptr_struct_Token_);
+  rst->value = tok1;
+  node = logor(rst, tok1, scope);
+  tok1 = rst->value;
+  _ = str_eq();
+  _1 = equal(tok1, _);
+  if (_1)
+  {
+    _2 = new_ND_ASSIGN();
+    _3 = assign(rest, tok1->next, scope);
+    _4 = new_binary(_2, node, _3, tok1);
+    return _4;
+  }
+  else
+  {
+    rest->value = tok1;
+    return node;
+  }
+}
+
+struct ASTNode* bitand(struct _ptr_struct_Token_* rest, struct Token* tok, struct Scope* scope)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct _ptr_struct_Token_* rst = NULL;
+  struct ASTNode* node = NULL;
+  struct StringList* _ = NULL;
+  bool _1 = false;
+  struct Token* start = NULL;
+  struct NodeKind* _2 = NULL;
+  struct ASTNode* _3 = NULL;
+  struct ASTNode* node1 = NULL;
+  struct Token* tok1 = NULL;
+  tok1 = tok;
+  rst = alloc(struct _ptr_struct_Token_);
+  rst->value = tok1;
+  node = equality(rst, tok1, scope);
+  tok1 = rst->value;
+  _ = str_bitand();
+  _1 = equal(tok1, _);
+  while (_1)
+    //@loop_invariant ?;
+  {
+    start = tok1;
+    rst->value = tok1;
+    _2 = new_ND_BITAND();
+    _3 = equality(rst, tok1->next, scope);
+    node1 = new_binary(_2, node, _3, start);
+    tok1 = rst->value;
+    _ = str_bitand();
+    _1 = equal(tok1, _);
+    node = node1;
+  }
+  rest->value = tok1;
+  return node;
+}
+
+struct ASTNode* bitor(struct _ptr_struct_Token_* rest, struct Token* tok, struct Scope* scope)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct _ptr_struct_Token_* rst = NULL;
+  struct ASTNode* node = NULL;
+  struct StringList* _ = NULL;
+  bool _1 = false;
+  struct Token* start = NULL;
+  struct NodeKind* _2 = NULL;
+  struct ASTNode* _3 = NULL;
+  struct ASTNode* node1 = NULL;
+  struct Token* tok1 = NULL;
+  tok1 = tok;
+  rst = alloc(struct _ptr_struct_Token_);
+  rst->value = tok1;
+  node = bitxor(rst, tok1, scope);
+  tok1 = rst->value;
+  _ = str_bitor();
+  _1 = equal(tok1, _);
+  while (_1)
+    //@loop_invariant ?;
+  {
+    start = tok1;
+    rst->value = tok1;
+    _2 = new_ND_BITOR();
+    _3 = bitxor(rst, tok1->next, scope);
+    node1 = new_binary(_2, node, _3, start);
+    tok1 = rst->value;
+    _ = str_bitor();
+    _1 = equal(tok1, _);
+    node = node1;
+  }
+  rest->value = tok1;
+  return node;
+}
+
+struct ASTNode* bitxor(struct _ptr_struct_Token_* rest, struct Token* tok, struct Scope* scope)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct _ptr_struct_Token_* rst = NULL;
+  struct ASTNode* node = NULL;
+  struct StringList* _ = NULL;
+  bool _1 = false;
+  struct Token* start = NULL;
+  struct NodeKind* _2 = NULL;
+  struct ASTNode* _3 = NULL;
+  struct ASTNode* node1 = NULL;
+  struct Token* tok1 = NULL;
+  tok1 = tok;
+  rst = alloc(struct _ptr_struct_Token_);
+  rst->value = tok1;
+  node = bitand(rst, tok1, scope);
+  tok1 = rst->value;
+  _ = str_bitxor();
+  _1 = equal(tok1, _);
+  while (_1)
+    //@loop_invariant ?;
+  {
+    start = tok1;
+    rst->value = tok1;
+    _2 = new_ND_BITXOR();
+    _3 = bitand(rst, tok1->next, scope);
+    node1 = new_binary(_2, node, _3, start);
+    tok1 = rst->value;
+    _ = str_bitxor();
+    _1 = equal(tok1, _);
+    node = node1;
+  }
+  rest->value = tok1;
+  return node;
+}
+
+struct Token* bools(struct Token* tlist)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct Token* stmt1 = NULL;
+  struct Token* stmt2 = NULL;
+  struct Token* stmt3 = NULL;
+  struct Token* stmt4 = NULL;
+  struct Token* stmt5 = NULL;
+  struct Token* stmt6 = NULL;
+  struct Token* stmt7 = NULL;
+  struct Token* stmt8 = NULL;
+  struct Token* stmt9 = NULL;
+  struct Token* stmt10 = NULL;
+  struct Token* end = NULL;
+  struct TokenKind* _ = NULL;
+  struct StringList* _1 = NULL;
+  struct Token* _2 = NULL;
+  struct Token* _3 = NULL;
+  struct TokenKind* _4 = NULL;
+  struct StringList* _5 = NULL;
+  struct Token* _6 = NULL;
+  struct TokenKind* _7 = NULL;
+  struct StringList* _8 = NULL;
+  struct Token* _9 = NULL;
+  struct Token* _10 = NULL;
+  struct TokenKind* _11 = NULL;
+  struct StringList* _12 = NULL;
+  struct Token* _13 = NULL;
+  struct TokenKind* _14 = NULL;
+  struct StringList* _15 = NULL;
+  struct Token* _16 = NULL;
+  struct Token* _17 = NULL;
+  struct TokenKind* _18 = NULL;
+  struct StringList* _19 = NULL;
+  struct Token* _20 = NULL;
+  struct Token* _21 = NULL;
+  struct TokenKind* _22 = NULL;
+  struct StringList* _23 = NULL;
+  struct Token* _24 = NULL;
+  struct Token* _25 = NULL;
+  struct TokenKind* _26 = NULL;
+  struct StringList* _27 = NULL;
+  struct Token* _28 = NULL;
+  struct Token* _29 = NULL;
+  struct TokenKind* _30 = NULL;
+  struct StringList* _31 = NULL;
+  struct Token* _32 = NULL;
+  struct Token* _33 = NULL;
+  struct TokenKind* _34 = NULL;
+  struct StringList* _35 = NULL;
+  struct Token* _36 = NULL;
+  struct Token* _37 = NULL;
+  struct TokenKind* _38 = NULL;
+  struct StringList* _39 = NULL;
+  struct Token* _40 = NULL;
+  struct Token* _41 = NULL;
+  struct TokenKind* _42 = NULL;
+  struct StringList* _43 = NULL;
+  struct Token* _44 = NULL;
+  struct Token* _45 = NULL;
+  struct TokenKind* _46 = NULL;
+  struct StringList* _47 = NULL;
+  struct Token* _48 = NULL;
+  struct Token* _49 = NULL;
+  struct TokenKind* _50 = NULL;
+  struct StringList* _51 = NULL;
+  struct Token* _52 = NULL;
+  struct Token* _53 = NULL;
+  struct TokenKind* _54 = NULL;
+  struct StringList* _55 = NULL;
+  struct Token* _56 = NULL;
+  struct Token* _57 = NULL;
+  struct TokenKind* _58 = NULL;
+  struct StringList* _59 = NULL;
+  struct Token* _60 = NULL;
+  struct Token* _61 = NULL;
+  struct TokenKind* _62 = NULL;
+  struct StringList* _63 = NULL;
+  struct Token* _64 = NULL;
+  struct Token* _65 = NULL;
+  struct TokenKind* _66 = NULL;
+  struct StringList* _67 = NULL;
+  struct Token* _68 = NULL;
+  struct Token* _69 = NULL;
+  struct TokenKind* _70 = NULL;
+  struct StringList* _71 = NULL;
+  struct Token* _72 = NULL;
+  struct Token* _73 = NULL;
+  struct TokenKind* _74 = NULL;
+  struct StringList* _75 = NULL;
+  struct Token* _76 = NULL;
+  struct Token* _77 = NULL;
+  struct TokenKind* _78 = NULL;
+  struct StringList* _79 = NULL;
+  struct Token* _80 = NULL;
+  struct Token* _81 = NULL;
+  struct TokenKind* _82 = NULL;
+  struct StringList* _83 = NULL;
+  struct Token* _84 = NULL;
+  struct Token* _85 = NULL;
+  struct TokenKind* _86 = NULL;
+  struct StringList* _87 = NULL;
+  struct Token* _88 = NULL;
+  struct Token* _89 = NULL;
+  struct TokenKind* _90 = NULL;
+  struct StringList* _91 = NULL;
+  struct Token* _92 = NULL;
+  struct Token* _93 = NULL;
+  struct TokenKind* _94 = NULL;
+  struct StringList* _95 = NULL;
+  struct Token* _96 = NULL;
+  struct TokenKind* _97 = NULL;
+  struct StringList* _98 = NULL;
+  struct Token* _99 = NULL;
+  struct Token* _100 = NULL;
+  struct TokenKind* _101 = NULL;
+  struct StringList* _102 = NULL;
+  struct Token* _103 = NULL;
+  struct Token* _104 = NULL;
+  struct TokenKind* _105 = NULL;
+  struct StringList* _106 = NULL;
+  struct Token* _107 = NULL;
+  struct Token* _108 = NULL;
+  struct TokenKind* _109 = NULL;
+  struct StringList* _110 = NULL;
+  struct Token* _111 = NULL;
+  struct Token* _112 = NULL;
+  struct TokenKind* _113 = NULL;
+  struct StringList* _114 = NULL;
+  struct Token* _115 = NULL;
+  _ = new_TK_KEYWORD();
+  _1 = str_bool();
+  _2 = new_token(_, _1);
+  tlist->next = _2;
+  _3 = tok_ident('b');
+  tlist->next->next = _3;
+  _4 = new_TK_PUNCT();
+  _5 = str_semicolon();
+  _6 = new_token(_4, _5);
+  tlist->next->next->next = _6;
+  stmt1 = tlist->next->next->next;
+  _7 = new_TK_KEYWORD();
+  _8 = str_bool();
+  _9 = new_token(_7, _8);
+  stmt1->next = _9;
+  _10 = tok_ident('c');
+  stmt1->next->next = _10;
+  _11 = new_TK_PUNCT();
+  _12 = str_semicolon();
+  _13 = new_token(_11, _12);
+  stmt1->next->next->next = _13;
+  stmt2 = stmt1->next->next->next;
+  _14 = new_TK_KEYWORD();
+  _15 = str_bool();
+  _16 = new_token(_14, _15);
+  stmt2->next = _16;
+  _17 = tok_ident('d');
+  stmt2->next->next = _17;
+  _18 = new_TK_PUNCT();
+  _19 = str_semicolon();
+  _20 = new_token(_18, _19);
+  stmt2->next->next->next = _20;
+  stmt3 = stmt2->next->next->next;
+  _21 = tok_ident('b');
+  stmt3->next = _21;
+  _22 = new_TK_PUNCT();
+  _23 = str_eq();
+  _24 = new_token(_22, _23);
+  stmt3->next->next = _24;
+  _25 = tok_ident('c');
+  stmt3->next->next->next = _25;
+  _26 = new_TK_PUNCT();
+  _27 = str_logeq();
+  _28 = new_token(_26, _27);
+  stmt3->next->next->next->next = _28;
+  _29 = tok_ident('d');
+  stmt3->next->next->next->next->next = _29;
+  _30 = new_TK_PUNCT();
+  _31 = str_semicolon();
+  _32 = new_token(_30, _31);
+  stmt3->next->next->next->next->next->next = _32;
+  stmt4 = stmt3->next->next->next->next->next->next;
+  _33 = tok_ident('b');
+  stmt4->next = _33;
+  _34 = new_TK_PUNCT();
+  _35 = str_eq();
+  _36 = new_token(_34, _35);
+  stmt4->next->next = _36;
+  _37 = tok_ident('c');
+  stmt4->next->next->next = _37;
+  _38 = new_TK_PUNCT();
+  _39 = str_le();
+  _40 = new_token(_38, _39);
+  stmt4->next->next->next->next = _40;
+  _41 = tok_ident('d');
+  stmt4->next->next->next->next->next = _41;
+  _42 = new_TK_PUNCT();
+  _43 = str_semicolon();
+  _44 = new_token(_42, _43);
+  stmt4->next->next->next->next->next->next = _44;
+  stmt5 = stmt4->next->next->next->next->next->next;
+  _45 = tok_ident('b');
+  stmt5->next = _45;
+  _46 = new_TK_PUNCT();
+  _47 = str_eq();
+  _48 = new_token(_46, _47);
+  stmt5->next->next = _48;
+  _49 = tok_ident('c');
+  stmt5->next->next->next = _49;
+  _50 = new_TK_PUNCT();
+  _51 = str_lt();
+  _52 = new_token(_50, _51);
+  stmt5->next->next->next->next = _52;
+  _53 = tok_ident('d');
+  stmt5->next->next->next->next->next = _53;
+  _54 = new_TK_PUNCT();
+  _55 = str_semicolon();
+  _56 = new_token(_54, _55);
+  stmt5->next->next->next->next->next->next = _56;
+  stmt6 = stmt5->next->next->next->next->next->next;
+  _57 = tok_ident('b');
+  stmt6->next = _57;
+  _58 = new_TK_PUNCT();
+  _59 = str_eq();
+  _60 = new_token(_58, _59);
+  stmt6->next->next = _60;
+  _61 = tok_ident('c');
+  stmt6->next->next->next = _61;
+  _62 = new_TK_PUNCT();
+  _63 = str_ge();
+  _64 = new_token(_62, _63);
+  stmt6->next->next->next->next = _64;
+  _65 = tok_ident('d');
+  stmt6->next->next->next->next->next = _65;
+  _66 = new_TK_PUNCT();
+  _67 = str_semicolon();
+  _68 = new_token(_66, _67);
+  stmt6->next->next->next->next->next->next = _68;
+  stmt7 = stmt6->next->next->next->next->next->next;
+  _69 = tok_ident('b');
+  stmt7->next = _69;
+  _70 = new_TK_PUNCT();
+  _71 = str_eq();
+  _72 = new_token(_70, _71);
+  stmt7->next->next = _72;
+  _73 = tok_ident('c');
+  stmt7->next->next->next = _73;
+  _74 = new_TK_PUNCT();
+  _75 = str_gt();
+  _76 = new_token(_74, _75);
+  stmt7->next->next->next->next = _76;
+  _77 = tok_ident('d');
+  stmt7->next->next->next->next->next = _77;
+  _78 = new_TK_PUNCT();
+  _79 = str_semicolon();
+  _80 = new_token(_78, _79);
+  stmt7->next->next->next->next->next->next = _80;
+  stmt8 = stmt7->next->next->next->next->next->next;
+  _81 = tok_ident('b');
+  stmt8->next = _81;
+  _82 = new_TK_PUNCT();
+  _83 = str_eq();
+  _84 = new_token(_82, _83);
+  stmt8->next->next = _84;
+  _85 = tok_ident('c');
+  stmt8->next->next->next = _85;
+  _86 = new_TK_PUNCT();
+  _87 = str_logand();
+  _88 = new_token(_86, _87);
+  stmt8->next->next->next->next = _88;
+  _89 = tok_ident('d');
+  stmt8->next->next->next->next->next = _89;
+  _90 = new_TK_PUNCT();
+  _91 = str_semicolon();
+  _92 = new_token(_90, _91);
+  stmt8->next->next->next->next->next->next = _92;
+  stmt9 = stmt8->next->next->next->next->next->next;
+  _93 = tok_ident('b');
+  stmt9->next = _93;
+  _94 = new_TK_PUNCT();
+  _95 = str_eq();
+  _96 = new_token(_94, _95);
+  stmt9->next->next = _96;
+  _97 = new_TK_PUNCT();
+  _98 = str_lognot();
+  _99 = new_token(_97, _98);
+  stmt9->next->next->next = _99;
+  _100 = tok_ident('c');
+  stmt9->next->next->next->next = _100;
+  _101 = new_TK_PUNCT();
+  _102 = str_semicolon();
+  _103 = new_token(_101, _102);
+  stmt9->next->next->next->next->next = _103;
+  stmt10 = stmt9->next->next->next->next->next;
+  _104 = tok_ident('b');
+  stmt10->next = _104;
+  _105 = new_TK_PUNCT();
+  _106 = str_eq();
+  _107 = new_token(_105, _106);
+  stmt10->next->next = _107;
+  _108 = tok_ident('c');
+  stmt10->next->next->next = _108;
+  _109 = new_TK_PUNCT();
+  _110 = str_logneq();
+  _111 = new_token(_109, _110);
+  stmt10->next->next->next->next = _111;
+  _112 = tok_ident('d');
+  stmt10->next->next->next->next->next = _112;
+  _113 = new_TK_PUNCT();
+  _114 = str_semicolon();
+  _115 = new_token(_113, _114);
+  stmt10->next->next->next->next->next->next = _115;
+  end = stmt10->next->next->next->next->next->next;
+  return end;
+}
+
+struct ASTNode* compound_stmt(struct _ptr_struct_Token_* rest, struct Token* tok, struct _ptr_struct_Scope_* scope, struct _ptr_struct_Obj_* globals, struct _ptr_struct_Obj_* locals)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct ASTNode* node = NULL;
+  struct ASTNode* head = NULL;
+  struct ASTNode* cur = NULL;
+  struct _ptr_struct_Token_* rst = NULL;
+  bool continue_loop = false;
+  struct NodeKind* _ = NULL;
+  struct StringList* _1 = NULL;
+  bool _2 = false;
+  bool _3 = false;
+  struct StringList* _4 = NULL;
+  bool _5 = false;
+  struct VarAttr* attr = NULL;
+  struct Type* basety = NULL;
+  bool _6 = false;
+  struct ASTNode* _7 = NULL;
+  struct ASTNode* _8 = NULL;
+  struct Token* tok1 = NULL;
+  struct Token* tok2 = NULL;
+  tok2 = tok;
+  _ = new_ND_BLOCK();
+  node = new_node(_, tok2);
+  head = empty_node();
+  cur = head;
+  rst = alloc(struct _ptr_struct_Token_);
+  enter_scope(scope);
+  continue_loop = false;
+  _1 = str_cbracket();
+  _2 = equal(tok2, _1);
+  while (!_2)
+    //@loop_invariant ?;
+  {
+    continue_loop = false;
+    _3 = is_typename(tok2, scope->value);
+    if (_3)
+    {
+      _4 = str_colon();
+      _5 = equal(tok2->next, _4);
+    }
+    if (_3 && !_5)
+    {
+      attr = new_attr();
+      rst->value = tok2;
+      basety = declspec(rst, tok2, attr, scope->value);
+      tok2 = rst->value;
+      if (attr->is_typedef)
+      {
+        tok1 = parse_typedef(tok2, basety, scope->value);
+        continue_loop = true;
+      }
+      else
+      {
+        _6 = is_function(tok2, scope->value);
+        if (_6)
+        {
+          tok1 = functionp(tok2, basety, attr, scope, globals);
+          continue_loop = true;
+        }
+        else
+        {
+          rst->value = tok2;
+          _7 = declaration(rst, tok2, basety, attr, scope, locals);
+          cur->next = _7;
+          tok1 = rst->value;
+          cur = cur->next;
+        }
+      }
+    }
+    else
+    {
+      rst->value = tok2;
+      _8 = stmt(rst, tok2, scope, globals, locals);
+      cur->next = _8;
+      tok1 = rst->value;
+      cur = cur->next;
+    }
+    if (!continue_loop)
+    {
+      add_type(cur);
+    }
+    _1 = str_cbracket();
+    _2 = equal(tok1, _1);
+    tok2 = tok1;
+  }
+  leave_scope(scope);
+  node->body = head->next;
+  rest->value = tok2->next;
+  return node;
+}
+
+bool consume(struct _ptr_struct_Token_* rest, struct Token* tok, struct StringList* str)
+  //@requires ?;
+  //@ensures ?;
+{
+  bool _ = false;
+  _ = equal(tok, str);
+  if (_)
+  {
+    rest->value = tok->next;
+    return true;
+  }
+  rest->value = tok;
+  return false;
+}
+
+struct Type* copy_type(struct Type* ty)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct Type* ret = NULL;
+  ret = alloc(struct Type);
+  ret->kind = ty->kind;
+  ret->size = ty->size;
+  ret->align = ty->align;
+  ret->is_unsigned = ty->is_unsigned;
+  ret->origin = ty;
+  ret->base = ty->base;
+  ret->name = ty->name;
+  ret->name_pos = ty->name_pos;
+  ret->return_ty = ty->return_ty;
+  ret->params = ty->params;
+  ret->next = ty->next;
+  return ret;
+}
+
+void create_param_lvars(struct Scope* scope, struct _ptr_struct_Obj_* locals, struct Type* param)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* _ = NULL;
+  struct StringList* _1 = NULL;
+  if (param != NULL)
+  {
+    create_param_lvars(scope, locals, param->next);
+    _ = ty_name(param);
+    if (_ == NULL)
+    {
+      param_name_error();
+    }
+    _1 = ty_name(param);
+    new_lvar(scope, locals, _1, param);
+  }
+}
+
+struct ASTNode* declaration(struct _ptr_struct_Token_* rest, struct Token* tok, struct Type* basety, struct VarAttr* attr, struct _ptr_struct_Scope_* scope, struct _ptr_struct_Obj_* locals)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct _ptr_struct_Token_* rst = NULL;
+  int i = 0;
+  struct ASTNode* node = NULL;
+  struct StringList* _ = NULL;
+  bool _1 = false;
+  struct Type* ty = NULL;
+  struct StringList* _2 = NULL;
+  bool _3 = false;
+  struct StringList* _4 = NULL;
+  struct Obj* v = NULL;
+  struct StringList* _5 = NULL;
+  bool _6 = false;
+  struct NodeKind* _7 = NULL;
+  struct Token* tok1 = NULL;
+  struct Token* tok2 = NULL;
+  tok2 = tok;
+  rst = alloc(struct _ptr_struct_Token_);
+  i = 0;
+  _ = str_semicolon();
+  _1 = equal(tok2, _);
+  while (!_1)
+    //@loop_invariant ?;
+  {
+    if (i > 0)
+    {
+      _2 = str_comma();
+      tok1 = skip(tok2, _2);
+    }
+    else
+    {
+      tok1 = tok2;
+    }
+    i = i + 1;
+    rst->value = tok1;
+    ty = declarator(rst, tok1, basety, scope->value);
+    tok1 = rst->value;
+    _3 = is_VOID(ty);
+    if (_3)
+    {
+      var_decl_void_error();
+    }
+    else
+    {
+      _4 = ty_name(ty);
+      if (_4 == NULL)
+      {
+        var_name_error();
+      }
+      else
+      {
+        _5 = ty_name(ty);
+        v = new_lvar(scope->value, locals, _5, ty);
+        if (attr != NULL && attr->align > 0)
+        {
+          v->align = attr->align;
+        }
+        if (v->ty->size < 0)
+        {
+          var_type_error();
+        }
+        _6 = is_VOID(v->ty);
+        if (_6)
+        {
+          var_decl_void_error();
+        }
+      }
+    }
+    _ = str_semicolon();
+    _1 = equal(tok1, _);
+    tok2 = tok1;
+  }
+  _7 = new_ND_BLOCK();
+  node = new_node(_7, tok2);
+  rest->value = tok2->next;
+  return node;
+}
+
+struct Type* declarator(struct _ptr_struct_Token_* rest, struct Token* tok, struct Type* ty, struct Scope* scope)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct _ptr_struct_Token_* rst = NULL;
+  struct Token* name = NULL;
+  struct Token* name_pos = NULL;
+  struct StringList* _ = NULL;
+  bool _1 = false;
+  struct Token* start = NULL;
+  struct Type* dummy = NULL;
+  struct Type* res_ty = NULL;
+  struct StringList* _2 = NULL;
+  bool _3 = false;
+  struct Type* ty1 = NULL;
+  struct Token* tok1 = NULL;
+  struct Type* ty11 = NULL;
+  struct Type* ty111 = NULL;
+  struct Token* tok2 = NULL;
+  tok2 = tok;
+  rst = alloc(struct _ptr_struct_Token_);
+  rst->value = tok2;
+  ty1 = pointers(rst, tok2, ty);
+  tok2 = rst->value;
+  _ = str_oparen();
+  _1 = equal(tok2, _);
+  if (_1)
+  {
+    start = tok2;
+    dummy = empty_type();
+    declarator(rst, start->next, dummy, scope);
+    tok2 = rst->value;
+    _2 = str_cparen();
+    tok1 = skip(tok2, _2);
+    ty11 = type_suffix(rest, tok1, ty1, scope);
+    rst->value = tok1;
+    res_ty = declarator(rst, start->next, ty11, scope);
+    tok1 = rst->value;
+    return res_ty;
+  }
+  else
+  {
+    tok1 = tok2;
+    ty11 = ty1;
+  }
+  name = NULL;
+  name_pos = tok1;
+  _3 = is_IDENT(tok1);
+  if (_3)
+  {
+    name = tok1;
+    tok1 = tok1->next;
+  }
+  ty111 = type_suffix(rest, tok1, ty11, scope);
+  ty111->name = name;
+  ty111->name_pos = name_pos;
+  return ty111;
+}
+
+struct Type* declspec(struct _ptr_struct_Token_* rest, struct Token* tok, struct VarAttr* attr, struct Scope* scope)
+  //@requires ?;
+  //@ensures ?;
+{
+  int VOID = 0;
+  int BOOL = 0;
+  int CHAR = 0;
+  int SHORT = 0;
+  int INT = 0;
+  int LONG = 0;
+  int FLOAT = 0;
+  int DOUBLE = 0;
+  int OTHER = 0;
+  int SIGNED = 0;
+  int UNSIGNED = 0;
+  struct Type* ty = NULL;
+  int counter = 0;
+  bool break_loop = false;
+  bool _ = false;
+  struct StringList* _1 = NULL;
+  bool _2 = false;
+  struct StringList* _3 = NULL;
+  bool _4 = false;
+  struct StringList* _5 = NULL;
+  bool _6 = false;
+  struct StringList* _7 = NULL;
+  bool _8 = false;
+  struct StringList* _9 = NULL;
+  bool _10 = false;
+  struct StringList* _11 = NULL;
+  bool _12 = false;
+  struct StringList* _13 = NULL;
+  bool _14 = false;
+  struct StringList* _15 = NULL;
+  bool _16 = false;
+  struct StringList* _17 = NULL;
+  bool _18 = false;
+  struct StringList* _19 = NULL;
+  bool _20 = false;
+  struct StringList* _21 = NULL;
+  bool _22 = false;
+  struct StringList* _23 = NULL;
+  bool _24 = false;
+  struct Type* ty2 = NULL;
+  struct StringList* _25 = NULL;
+  bool _26 = false;
+  struct StringList* _27 = NULL;
+  bool _28 = false;
+  struct _ptr_struct_Token_* rst = NULL;
+  struct StringList* _29 = NULL;
+  bool _30 = false;
+  struct StringList* _31 = NULL;
+  bool _32 = false;
+  int signed_other = 0;
+  int unsigned_other = 0;
+  struct StringList* _33 = NULL;
+  bool _34 = false;
+  struct StringList* _35 = NULL;
+  bool _36 = false;
+  struct StringList* _37 = NULL;
+  bool _38 = false;
+  struct StringList* _39 = NULL;
+  bool _40 = false;
+  struct StringList* _41 = NULL;
+  bool _42 = false;
+  struct StringList* _43 = NULL;
+  bool _44 = false;
+  struct StringList* _45 = NULL;
+  bool _46 = false;
+  struct StringList* _47 = NULL;
+  bool _48 = false;
+  struct StringList* _49 = NULL;
+  bool _50 = false;
+  struct StringList* _51 = NULL;
+  bool _52 = false;
+  struct Token* tok1 = NULL;
+  tok1 = tok;
+  VOID = 0;
+  BOOL = 0;
+  CHAR = 0;
+  SHORT = 0;
+  INT = 0;
+  LONG = 0;
+  FLOAT = 0;
+  DOUBLE = 0;
+  OTHER = 0;
+  SIGNED = 0;
+  UNSIGNED = 0;
+  ty = new_ty_int();
+  counter = 0;
+  break_loop = false;
+  if (!break_loop)
+  {
+    _ = is_typename(tok1, scope);
+  }
+  while (!break_loop && _)
+    //@loop_invariant ?;
+  {
+    _1 = str_typedef();
+    _2 = equal(tok1, _1);
+    if (!_2)
+    {
+      _3 = str_static();
+      _4 = equal(tok1, _3);
+    }
+    if (!(_2 || _4))
+    {
+      _5 = str_extern();
+      _6 = equal(tok1, _5);
+    }
+    if (!(_2 || _4 || _6))
+    {
+      _7 = str_inline();
+      _8 = equal(tok1, _7);
+    }
+    if (_2 || _4 || _6 || _8)
+    {
+      if (attr == NULL)
+      {
+        storage_type_error();
+      }
+      _9 = str_typedef();
+      _10 = equal(tok1, _9);
+      if (_10)
+      {
+        attr->is_typedef = true;
+      }
+      else
+      {
+        _11 = str_static();
+        _12 = equal(tok1, _11);
+        if (_12)
+        {
+          storage_type_unsupported_error();
+        }
+        else
+        {
+          _13 = str_extern();
+          _14 = equal(tok1, _13);
+          if (_14)
+          {
+            storage_type_unsupported_error();
+          }
+          else
+          {
+            storage_type_unsupported_error();
+          }
+        }
+      }
+      tok1 = tok1->next;
+    }
+    else
+    {
+      _15 = str_const();
+      _16 = equal(tok1, _15);
+      if (!_16)
+      {
+        _17 = str_volatile();
+        _18 = equal(tok1, _17);
+      }
+      if (!(_16 || _18))
+      {
+        _19 = str_auto();
+        _20 = equal(tok1, _19);
+      }
+      if (!(_16 || _18 || _20))
+      {
+        _21 = str_register();
+        _22 = equal(tok1, _21);
+      }
+      if (!(_16 || _18 || _20 || _22))
+      {
+        _23 = str_restrict();
+        _24 = equal(tok1, _23);
+      }
+      if (_16 || _18 || _20 || _22 || _24)
+      {
+        tok1 = tok1->next;
+      }
+      else
+      {
+        ty2 = find_typedef(tok1, scope);
+        _25 = str_struct();
+        _26 = equal(tok1, _25);
+        if (!_26)
+        {
+          _27 = str_enum();
+          _28 = equal(tok1, _27);
+        }
+        if (_26 || _28 || ty2 != NULL)
+        {
+          if (counter > 0)
+          {
+            break_loop = true;
+          }
+          else
+          {
+            rst = alloc(struct _ptr_struct_Token_);
+            rst->value = tok1;
+            _29 = str_struct();
+            _30 = equal(tok1, _29);
+            if (_30)
+            {
+              structs_enums_unsupported_error();
+            }
+            else
+            {
+              _31 = str_enum();
+              _32 = equal(tok1, _31);
+              if (_32)
+              {
+                structs_enums_unsupported_error();
+              }
+              else
+              {
+                ty = ty2;
+                tok1 = tok1->next;
+              }
+            }
+            OTHER = OTHER + 1;
+            counter = counter + 1;
+          }
+        }
+        else
+        {
+          _33 = str_void();
+          _34 = equal(tok1, _33);
+          if (_34)
+          {
+            VOID = VOID + 1;
+            counter = counter + 1;
+          }
+          else
+          {
+            _35 = str_bool();
+            _36 = equal(tok1, _35);
+            if (_36)
+            {
+              BOOL = BOOL + 1;
+              counter = counter + 1;
+            }
+            else
+            {
+              _37 = str_char();
+              _38 = equal(tok1, _37);
+              if (_38)
+              {
+                CHAR = CHAR + 1;
+                counter = counter + 1;
+              }
+              else
+              {
+                _39 = str_short();
+                _40 = equal(tok1, _39);
+                if (_40)
+                {
+                  SHORT = SHORT + 1;
+                  counter = counter + 1;
+                }
+                else
+                {
+                  _41 = str_int();
+                  _42 = equal(tok1, _41);
+                  if (_42)
+                  {
+                    INT = INT + 1;
+                    counter = counter + 1;
+                  }
+                  else
+                  {
+                    _43 = str_long();
+                    _44 = equal(tok1, _43);
+                    if (_44)
+                    {
+                      LONG = LONG + 1;
+                      counter = counter + 1;
+                    }
+                    else
+                    {
+                      _45 = str_float();
+                      _46 = equal(tok1, _45);
+                      if (_46)
+                      {
+                        FLOAT = FLOAT + 1;
+                        counter = counter + 1;
+                      }
+                      else
+                      {
+                        _47 = str_double();
+                        _48 = equal(tok1, _47);
+                        if (_48)
+                        {
+                          DOUBLE = DOUBLE + 1;
+                          counter = counter + 1;
+                        }
+                        else
+                        {
+                          _49 = str_signed();
+                          _50 = equal(tok1, _49);
+                          if (_50)
+                          {
+                            SIGNED = SIGNED + 1;
+                            counter = counter + 1;
+                          }
+                          else
+                          {
+                            _51 = str_unsigned();
+                            _52 = equal(tok1, _51);
+                            if (_52)
+                            {
+                              UNSIGNED = UNSIGNED + 1;
+                              counter = counter + 1;
+                            }
+                            else
+                            {
+                              unreachable();
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+          signed_other = VOID + BOOL + CHAR + SHORT + INT + LONG + FLOAT + DOUBLE + OTHER + UNSIGNED;
+          unsigned_other = VOID + BOOL + CHAR + SHORT + INT + LONG + FLOAT + DOUBLE + OTHER + SIGNED;
+          if (counter == 1 && VOID == 1)
+          {
+            ty = new_ty_void();
+          }
+          else
+          {
+            if (counter == 1 && BOOL == 1)
+            {
+              ty = new_ty_bool();
+            }
+            else
+            {
+              if (counter == 1 && CHAR == 1 || signed_other == 1 && SIGNED > 0 && CHAR == 1)
+              {
+                ty = new_ty_char();
+              }
+              else
+              {
+                if (unsigned_other == 1 && UNSIGNED > 0 && CHAR == 1)
+                {
+                  ty = new_ty_uchar();
+                }
+                else
+                {
+                  if (counter == 1 && SHORT == 1 || counter == 2 && SHORT == 1 && INT == 1 || signed_other == 1 && SIGNED > 0 && SHORT == 1 || signed_other == 2 && SIGNED > 0 && SHORT == 1 && INT == 1)
+                  {
+                    ty = new_ty_short();
+                  }
+                  else
+                  {
+                    if (unsigned_other == 1 && UNSIGNED > 0 && SHORT == 1 || unsigned_other == 2 && UNSIGNED > 0 && SHORT == 1 && INT == 1)
+                    {
+                      ty = new_ty_ushort();
+                    }
+                    else
+                    {
+                      if (counter == 1 && INT == 1 || signed_other == 0 && SIGNED > 0 || signed_other == 1 && SIGNED > 0 && INT == 1)
+                      {
+                        ty = new_ty_int();
+                      }
+                      else
+                      {
+                        if (unsigned_other == 0 && UNSIGNED > 0 || unsigned_other == 1 && UNSIGNED > 0 && INT == 1)
+                        {
+                          ty = new_ty_uint();
+                        }
+                        else
+                        {
+                          if (counter == 1 && LONG == 1 || counter == 2 && LONG == 1 && INT == 1 || counter == 2 && LONG == 2 || counter == 3 && LONG == 2 && INT == 1 || signed_other == 1 && SIGNED > 0 && LONG == 1 || signed_other == 2 && SIGNED > 0 && LONG == 1 && INT == 1 || signed_other == 2 && SIGNED > 0 && LONG == 2 || signed_other == 3 && SIGNED > 0 && LONG == 2 && INT == 1)
+                          {
+                            ty = new_ty_long();
+                          }
+                          else
+                          {
+                            if (unsigned_other == 1 && UNSIGNED > 0 && LONG == 1 || unsigned_other == 2 && UNSIGNED > 0 && LONG == 1 && INT == 1 || unsigned_other == 2 && UNSIGNED > 0 && LONG == 2 || unsigned_other == 3 && UNSIGNED > 0 && LONG == 2 && INT == 1)
+                            {
+                              ty = new_ty_ulong();
+                            }
+                            else
+                            {
+                              if (counter == 1 && FLOAT == 1)
+                              {
+                                ty = new_ty_float();
+                              }
+                              else
+                              {
+                                if (counter == 1 && DOUBLE == 1)
+                                {
+                                  ty = new_ty_double();
+                                }
+                                else
+                                {
+                                  if (counter == 2 && LONG == 1 && DOUBLE == 1)
+                                  {
+                                    ty = new_ty_ldouble();
+                                  }
+                                  else
+                                  {
+                                    type_error();
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+          tok1 = tok1->next;
+        }
+      }
+    }
+    if (!break_loop)
+    {
+      _ = is_typename(tok1, scope);
+    }
+  }
+  rest->value = tok1;
+  return ty;
+}
+
+struct ASTNode* empty_node()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct ASTNode* node = NULL;
+  node = alloc(struct ASTNode);
+  return node;
+}
+
+struct Type* empty_type()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct Type* ty = NULL;
+  ty = alloc(struct Type);
+  return ty;
+}
+
+void enter_scope(struct _ptr_struct_Scope_* scope)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct Scope* sc = NULL;
+  sc = new_scope();
+  sc->next = scope->value;
+  scope->value = sc;
+}
+
+struct Type* enum_type()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct TypeKind* _ = NULL;
+  struct Type* _1 = NULL;
+  _ = new_TY_ENUM();
+  _1 = new_type(_, 4, 4);
+  return _1;
+}
+
+bool equal(struct Token* tok, struct StringList* op)
+  //@requires ?;
+  //@ensures ?;
+{
+  bool _ = false;
+  _ = equals(tok->str, op);
+  return _;
+}
+
+struct ASTNode* equality(struct _ptr_struct_Token_* rest, struct Token* tok, struct Scope* scope)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct _ptr_struct_Token_* rst = NULL;
+  struct ASTNode* node = NULL;
+  bool break_loop = false;
+  struct Token* start = NULL;
+  struct StringList* _ = NULL;
+  bool _1 = false;
+  struct NodeKind* _2 = NULL;
+  struct ASTNode* _3 = NULL;
+  struct StringList* _4 = NULL;
+  bool _5 = false;
+  struct NodeKind* _6 = NULL;
+  struct ASTNode* _7 = NULL;
+  struct ASTNode* node1 = NULL;
+  struct Token* tok1 = NULL;
+  tok1 = tok;
+  rst = alloc(struct _ptr_struct_Token_);
+  rst->value = tok1;
+  node = relational(rst, tok1, scope);
+  tok1 = rst->value;
+  break_loop = false;
+  while (!break_loop)
+    //@loop_invariant ?;
+  {
+    start = tok1;
+    _ = str_logeq();
+    _1 = equal(tok1, _);
+    if (_1)
+    {
+      rst->value = tok1;
+      _2 = new_ND_EQ();
+      _3 = relational(rst, tok1->next, scope);
+      node1 = new_binary(_2, node, _3, start);
+      tok1 = rst->value;
+    }
+    else
+    {
+      _4 = str_logneq();
+      _5 = equal(tok1, _4);
+      if (_5)
+      {
+        rst->value = tok1;
+        _6 = new_ND_NE();
+        _7 = relational(rst, tok1->next, scope);
+        node1 = new_binary(_6, node, _7, start);
+        tok1 = rst->value;
+      }
+      else
+      {
+        rest->value = tok1;
+        break_loop = true;
+        node1 = node;
+      }
+    }
+    node = node1;
+  }
+  return node;
+}
+
+bool equals(struct StringList* s1, struct StringList* s2)
+  //@requires ?;
+  //@ensures ?;
+{
+  int ln = 0;
+  int i = 0;
+  struct CharNode* c1 = NULL;
+  struct CharNode* c2 = NULL;
+  bool eq = false;
+  if (s1 != NULL && s2 != NULL && s1->root != NULL && s2->root != NULL && s1->len == s2->len)
+  {
+    ln = s2->len;
+    c1 = s1->root;
+    c2 = s2->root;
+    eq = true;
+    i = 0;
+    while (i < ln)
+      //@loop_invariant ?;
+    {
+      eq = eq && c1->val == c2->val;
+      c1 = c1->next;
+      c2 = c2->next;
+      i = i + 1;
+    }
+    eq = eq && c1->val == '\0';
+    eq = eq && c2->val == '\0';
+    return eq;
+  }
+  return false;
+}
+
+struct ASTNode* expr(struct _ptr_struct_Token_* rest, struct Token* tok, struct Scope* scope)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct _ptr_struct_Token_* rst = NULL;
+  struct ASTNode* node = NULL;
+  struct StringList* _ = NULL;
+  bool _1 = false;
+  struct NodeKind* _2 = NULL;
+  struct ASTNode* _3 = NULL;
+  struct ASTNode* _4 = NULL;
+  struct Token* tok1 = NULL;
+  tok1 = tok;
+  rst = alloc(struct _ptr_struct_Token_);
+  rst->value = tok1;
+  node = assign(rst, tok1, scope);
+  tok1 = rst->value;
+  _ = str_comma();
+  _1 = equal(tok1, _);
+  if (_1)
+  {
+    _2 = new_ND_COMMA();
+    _3 = expr(rest, tok1->next, scope);
+    _4 = new_binary(_2, node, _3, tok1);
+    return _4;
+  }
+  else
+  {
+    rest->value = tok1;
+    return node;
+  }
+}
+
+struct ASTNode* expr_stmt(struct _ptr_struct_Token_* rest, struct Token* tok, struct Scope* scope)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* _ = NULL;
+  bool _1 = false;
+  struct NodeKind* _2 = NULL;
+  struct ASTNode* _3 = NULL;
+  struct ASTNode* node = NULL;
+  struct _ptr_struct_Token_* rst = NULL;
+  struct NodeKind* _4 = NULL;
+  struct ASTNode* _5 = NULL;
+  struct StringList* _6 = NULL;
+  struct Token* _7 = NULL;
+  struct Token* tok1 = NULL;
+  tok1 = tok;
+  _ = str_semicolon();
+  _1 = equal(tok1, _);
+  if (_1)
+  {
+    rest->value = tok1->next;
+    _2 = new_ND_BLOCK();
+    _3 = new_node(_2, tok1);
+    return _3;
+  }
+  else
+  {
+    _4 = new_ND_EXPR_STMT();
+    node = new_node(_4, tok1);
+    rst = alloc(struct _ptr_struct_Token_);
+    rst->value = tok1;
+    _5 = expr(rst, tok1, scope);
+    node->lhs = _5;
+    tok1 = rst->value;
+    _6 = str_semicolon();
+    _7 = skip(tok1, _6);
+    rest->value = _7;
+    return node;
+  }
+}
+
+struct Obj* find_func(struct Scope* scope, struct StringList* name)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct Scope* sc = NULL;
+  struct VarScope* sc2 = NULL;
+  sc = scope;
+  while (sc->next != NULL)
+    //@loop_invariant ?;
+  {
+    sc = sc->next;
+  }
+  sc2 = varscopemap_get(sc->vars, name);
+  if (sc2 != NULL && sc2->var != NULL && sc2->var->is_function)
+  {
+    return sc2->var;
+  }
+  return NULL;
+}
+
+struct Type* find_tag(struct Token* tok, struct Scope* scope)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct Scope* sc = NULL;
+  struct Type* ty = NULL;
+  struct StringList* _ = NULL;
+  sc = scope;
+  while (sc != NULL)
+    //@loop_invariant ?;
+  {
+    _ = tok_name(tok);
+    ty = tagscopemap_get(sc->tags, _);
+    if (ty != NULL)
+    {
+      return ty;
+    }
+    sc = sc->next;
+  }
+  return NULL;
+}
+
+struct Type* find_typedef(struct Token* tok, struct Scope* scope)
+  //@requires ?;
+  //@ensures ?;
+{
+  bool _ = false;
+  struct VarScope* sc = NULL;
+  _ = is_IDENT(tok);
+  if (_)
+  {
+    sc = find_var(tok, scope);
+    if (sc != NULL)
+    {
+      return sc->type_def;
+    }
+  }
+  return NULL;
+}
+
+struct VarScope* find_var(struct Token* tok, struct Scope* scope)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct Scope* sc = NULL;
+  struct VarScope* sc2 = NULL;
+  struct StringList* _ = NULL;
+  sc = scope;
+  while (sc != NULL)
+    //@loop_invariant ?;
+  {
+    _ = tok_name(tok);
+    sc2 = varscopemap_get(sc->vars, _);
+    if (sc2 != NULL)
+    {
+      return sc2;
+    }
+    sc = sc->next;
+  }
+  return NULL;
+}
+
+struct Type* func_params(struct _ptr_struct_Token_* rest, struct Token* tok, struct Type* ty, struct Scope* scope)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct Type* head = NULL;
+  struct Type* cur = NULL;
+  struct _ptr_struct_Token_* rst = NULL;
+  struct StringList* _ = NULL;
+  bool _1 = false;
+  struct StringList* _2 = NULL;
+  bool _3 = false;
+  struct Type* _4 = NULL;
+  struct StringList* _5 = NULL;
+  bool _6 = false;
+  struct Type* ty2 = NULL;
+  struct StringList* _7 = NULL;
+  bool _8 = false;
+  struct Type* _9 = NULL;
+  struct Token* tok1 = NULL;
+  struct Type* ty21 = NULL;
+  struct Type* ty1 = NULL;
+  struct Token* tok2 = NULL;
+  tok2 = tok;
+  _ = str_void();
+  _1 = equal(tok2, _);
+  if (_1)
+  {
+    _2 = str_cparen();
+    _3 = equal(tok2->next, _2);
+  }
+  if (_1 && _3)
+  {
+    rest->value = tok2->next->next;
+    _4 = func_type(ty);
+    return _4;
+  }
+  head = empty_type();
+  cur = head;
+  rst = alloc(struct _ptr_struct_Token_);
+  _5 = str_cparen();
+  _6 = equal(tok2, _5);
+  while (!_6)
+    //@loop_invariant ?;
+  {
+    if (cur != head)
+    {
+      _7 = str_comma();
+      tok1 = skip(tok2, _7);
+    }
+    else
+    {
+      tok1 = tok2;
+    }
+    rst->value = tok1;
+    ty2 = declspec(rst, tok1, NULL, scope);
+    tok1 = rst->value;
+    ty21 = declarator(rst, tok1, ty2, scope);
+    tok1 = rst->value;
+    _8 = is_FUNC(ty21);
+    if (_8)
+    {
+      func_as_arg_error();
+    }
+    _9 = copy_type(ty21);
+    cur->next = _9;
+    cur = cur->next;
+    _5 = str_cparen();
+    _6 = equal(tok1, _5);
+    tok2 = tok1;
+    ty2 = ty21;
+  }
+  ty1 = func_type(ty);
+  ty1->params = head->next;
+  rest->value = tok2->next;
+  return ty1;
+}
+
+struct Type* func_type(struct Type* return_ty)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct Type* ty = NULL;
+  struct TypeKind* _ = NULL;
+  _ = new_TY_FUNC();
+  ty = new_type(_, 1, 1);
+  ty->return_ty = return_ty;
+  return ty;
+}
+
+struct ASTNode* funcall(struct _ptr_struct_Token_* rest, struct Token* tok, struct ASTNode* fn, struct Scope* scope)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct Type* ty = NULL;
+  struct Type* param_ty = NULL;
+  struct ASTNode* head = NULL;
+  struct ASTNode* cur = NULL;
+  struct _ptr_struct_Token_* rst = NULL;
+  struct ASTNode* node = NULL;
+  bool _ = false;
+  bool _1 = false;
+  bool _2 = false;
+  bool _3 = false;
+  struct StringList* _4 = NULL;
+  bool _5 = false;
+  struct ASTNode* arg = NULL;
+  struct StringList* _6 = NULL;
+  struct StringList* _7 = NULL;
+  struct Token* _8 = NULL;
+  struct NodeKind* _9 = NULL;
+  struct Token* tok1 = NULL;
+  struct Token* tok2 = NULL;
+  tok2 = tok;
+  add_type(fn);
+  _ = is_FUNC(fn->ty);
+  if (!_)
+  {
+    _1 = is_PTR(fn->ty);
+  }
+  if (!_ && !!_1)
+  {
+    _2 = is_FUNC(fn->ty->base);
+  }
+  if (!_ && (!_1 || !_2))
+  {
+    func_error();
+  }
+  ty = NULL;
+  _3 = is_FUNC(fn->ty);
+  if (_3)
+  {
+    ty = fn->ty;
+  }
+  else
+  {
+    ty = fn->ty->base;
+  }
+  param_ty = ty->params;
+  head = empty_node();
+  cur = head;
+  rst = alloc(struct _ptr_struct_Token_);
+  _4 = str_cparen();
+  _5 = equal(tok2, _4);
+  while (!_5)
+    //@loop_invariant ?;
+  {
+    if (cur != head)
+    {
+      _6 = str_comma();
+      tok1 = skip(tok2, _6);
+    }
+    else
+    {
+      tok1 = tok2;
+    }
+    rst->value = tok1;
+    arg = assign(rst, tok1, scope);
+    tok1 = rst->value;
+    add_type(arg);
+    if (param_ty != NULL)
+    {
+      param_ty = param_ty->next;
+    }
+    else
+    {
+      func_args_error(true);
+    }
+    cur->next = arg;
+    cur = cur->next;
+    _4 = str_cparen();
+    _5 = equal(tok1, _4);
+    tok2 = tok1;
+  }
+  if (param_ty != NULL)
+  {
+    func_args_error(false);
+  }
+  _7 = str_cparen();
+  _8 = skip(tok2, _7);
+  rest->value = _8;
+  _9 = new_ND_FUNCALL();
+  node = new_unary(_9, fn, tok2);
+  node->func_ty = ty;
+  node->ty = ty->return_ty;
+  node->args = head->next;
+  return node;
+}
+
+struct Token* functionp(struct Token* tok, struct Type* basety, struct VarAttr* attr, struct _ptr_struct_Scope_* scope, struct _ptr_struct_Obj_* globals)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct _ptr_struct_Token_* rst = NULL;
+  struct Type* ty = NULL;
+  struct StringList* name_str = NULL;
+  struct Obj* fn = NULL;
+  struct _ptr_struct_Token_* rest = NULL;
+  struct _ptr_struct_Obj_* locals = NULL;
+  struct StringList* _ = NULL;
+  struct StringList* _1 = NULL;
+  bool _2 = false;
+  struct StringList* _3 = NULL;
+  bool _4 = false;
+  struct StringList* _5 = NULL;
+  bool _6 = false;
+  struct StringList* _7 = NULL;
+  bool _8 = false;
+  struct StringList* _9 = NULL;
+  struct ASTNode* _10 = NULL;
+  struct Token* tok1 = NULL;
+  struct Token* tok2 = NULL;
+  tok2 = tok;
+  rst = alloc(struct _ptr_struct_Token_);
+  rst->value = tok2;
+  ty = declarator(rst, tok2, basety, scope->value);
+  tok2 = rst->value;
+  _ = ty_name(ty);
+  if (_ == NULL)
+  {
+    func_name_error();
+  }
+  name_str = ty_name(ty);
+  fn = find_func(scope->value, name_str);
+  if (fn != NULL)
+  {
+    if (!fn->is_function)
+    {
+      func_redecl_error();
+    }
+    if (fn->is_definition)
+    {
+      _1 = str_obracket();
+      _2 = equal(tok2, _1);
+    }
+    if (fn->is_definition && _2)
+    {
+      func_redef_error();
+    }
+    if (!fn->is_definition)
+    {
+      _3 = str_obracket();
+      _4 = equal(tok2, _3);
+    }
+    fn->is_definition = fn->is_definition || _4;
+  }
+  else
+  {
+    fn = new_gvar(scope->value, globals, name_str, ty);
+    fn->is_function = true;
+    _5 = str_obracket();
+    _6 = equal(tok2, _5);
+    fn->is_definition = _6;
+  }
+  rest = alloc(struct _ptr_struct_Token_);
+  rest->value = tok2;
+  _7 = str_semicolon();
+  _8 = consume(rest, tok2, _7);
+  if (_8)
+  {
+    tok2 = rest->value;
+    return tok2;
+  }
+  tok2 = rest->value;
+  locals = alloc(struct _ptr_struct_Obj_);
+  locals->value = NULL;
+  enter_scope(scope);
+  create_param_lvars(scope->value, locals, ty->params);
+  fn->params = locals->value;
+  _9 = str_obracket();
+  tok1 = skip(tok2, _9);
+  rest->value = tok1;
+  _10 = compound_stmt(rest, tok1, scope, globals, locals);
+  fn->body = _10;
+  tok1 = rest->value;
+  fn->locals = locals->value;
+  leave_scope(scope);
+  return tok1;
+}
+
+struct Token* functions(struct Token* tlist)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct Token* tmp = NULL;
+  struct TokenKind* _ = NULL;
+  struct StringList* _1 = NULL;
+  struct Token* _2 = NULL;
+  struct Token* _3 = NULL;
+  struct TokenKind* _4 = NULL;
+  struct StringList* _5 = NULL;
+  struct Token* _6 = NULL;
+  struct TokenKind* _7 = NULL;
+  struct StringList* _8 = NULL;
+  struct Token* _9 = NULL;
+  struct Token* _10 = NULL;
+  struct TokenKind* _11 = NULL;
+  struct StringList* _12 = NULL;
+  struct Token* _13 = NULL;
+  struct TokenKind* _14 = NULL;
+  struct StringList* _15 = NULL;
+  struct Token* _16 = NULL;
+  struct TokenKind* _17 = NULL;
+  struct StringList* _18 = NULL;
+  struct Token* _19 = NULL;
+  struct Token* tmp1 = NULL;
+  struct Token* tmp11 = NULL;
+  struct Token* tmp111 = NULL;
+  _ = new_TK_KEYWORD();
+  _1 = str_int();
+  _2 = new_token(_, _1);
+  tlist->next = _2;
+  _3 = tok_ident('f');
+  tlist->next->next = _3;
+  _4 = new_TK_PUNCT();
+  _5 = str_oparen();
+  _6 = new_token(_4, _5);
+  tlist->next->next->next = _6;
+  _7 = new_TK_KEYWORD();
+  _8 = str_int();
+  _9 = new_token(_7, _8);
+  tlist->next->next->next->next = _9;
+  _10 = tok_ident('p');
+  tlist->next->next->next->next->next = _10;
+  _11 = new_TK_PUNCT();
+  _12 = str_cparen();
+  _13 = new_token(_11, _12);
+  tlist->next->next->next->next->next->next = _13;
+  _14 = new_TK_PUNCT();
+  _15 = str_obracket();
+  _16 = new_token(_14, _15);
+  tlist->next->next->next->next->next->next->next = _16;
+  tmp = tlist->next->next->next->next->next->next->next;
+  tmp1 = nums(tmp);
+  tmp11 = pointerss(tmp1);
+  tmp111 = ifstmt(tmp11);
+  _17 = new_TK_PUNCT();
+  _18 = str_cbracket();
+  _19 = new_token(_17, _18);
+  tmp111->next = _19;
+  return tmp111->next;
+}
+
+int get_len(struct StringList* s)
+  //@requires ?;
+  //@ensures ?;
+{
+  if (s != NULL)
+  {
+    return s->len;
+  }
+  else
+  {
+    return -1;
+  }
+}
+
+struct Token* ifstmt(struct Token* tlist)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* one = NULL;
+  struct StringList* two = NULL;
+  struct Token* tmp = NULL;
+  struct Token* elsee = NULL;
+  struct Token* ret2 = NULL;
+  struct Token* retp = NULL;
+  struct Token* end = NULL;
+  struct TokenKind* _ = NULL;
+  struct StringList* _1 = NULL;
+  struct Token* _2 = NULL;
+  struct TokenKind* _3 = NULL;
+  struct StringList* _4 = NULL;
+  struct Token* _5 = NULL;
+  struct Token* _6 = NULL;
+  struct TokenKind* _7 = NULL;
+  struct StringList* _8 = NULL;
+  struct Token* _9 = NULL;
+  struct TokenKind* _10 = NULL;
+  struct Token* _11 = NULL;
+  struct Type* _12 = NULL;
+  struct TokenKind* _13 = NULL;
+  struct StringList* _14 = NULL;
+  struct Token* _15 = NULL;
+  struct TokenKind* _16 = NULL;
+  struct StringList* _17 = NULL;
+  struct Token* _18 = NULL;
+  struct TokenKind* _19 = NULL;
+  struct StringList* _20 = NULL;
+  struct Token* _21 = NULL;
+  struct TokenKind* _22 = NULL;
+  struct Token* _23 = NULL;
+  struct Type* _24 = NULL;
+  struct TokenKind* _25 = NULL;
+  struct StringList* _26 = NULL;
+  struct Token* _27 = NULL;
+  struct TokenKind* _28 = NULL;
+  struct StringList* _29 = NULL;
+  struct Token* _30 = NULL;
+  struct TokenKind* _31 = NULL;
+  struct StringList* _32 = NULL;
+  struct Token* _33 = NULL;
+  struct TokenKind* _34 = NULL;
+  struct StringList* _35 = NULL;
+  struct Token* _36 = NULL;
+  struct TokenKind* _37 = NULL;
+  struct StringList* _38 = NULL;
+  struct Token* _39 = NULL;
+  struct Token* _40 = NULL;
+  struct TokenKind* _41 = NULL;
+  struct StringList* _42 = NULL;
+  struct Token* _43 = NULL;
+  struct Token* _44 = NULL;
+  struct TokenKind* _45 = NULL;
+  struct StringList* _46 = NULL;
+  struct Token* _47 = NULL;
+  struct TokenKind* _48 = NULL;
+  struct Token* _49 = NULL;
+  struct Type* _50 = NULL;
+  struct TokenKind* _51 = NULL;
+  struct StringList* _52 = NULL;
+  struct Token* _53 = NULL;
+  struct TokenKind* _54 = NULL;
+  struct StringList* _55 = NULL;
+  struct Token* _56 = NULL;
+  struct Token* _57 = NULL;
+  struct TokenKind* _58 = NULL;
+  struct StringList* _59 = NULL;
+  struct Token* _60 = NULL;
+  struct Token* _61 = NULL;
+  struct TokenKind* _62 = NULL;
+  struct StringList* _63 = NULL;
+  struct Token* _64 = NULL;
+  struct TokenKind* _65 = NULL;
+  struct Token* _66 = NULL;
+  struct Type* _67 = NULL;
+  struct TokenKind* _68 = NULL;
+  struct StringList* _69 = NULL;
+  struct Token* _70 = NULL;
+  struct TokenKind* _71 = NULL;
+  struct StringList* _72 = NULL;
+  struct Token* _73 = NULL;
+  struct TokenKind* _74 = NULL;
+  struct StringList* _75 = NULL;
+  struct Token* _76 = NULL;
+  struct Token* tmp1 = NULL;
+  one = new_stringlist();
+  add_char(one, '1');
+  two = new_stringlist();
+  add_char(two, '2');
+  _ = new_TK_KEYWORD();
+  _1 = str_if();
+  _2 = new_token(_, _1);
+  tlist->next = _2;
+  _3 = new_TK_PUNCT();
+  _4 = str_oparen();
+  _5 = new_token(_3, _4);
+  tlist->next->next = _5;
+  _6 = tok_ident('p');
+  tlist->next->next->next = _6;
+  _7 = new_TK_PUNCT();
+  _8 = str_le();
+  _9 = new_token(_7, _8);
+  tlist->next->next->next->next = _9;
+  _10 = new_TK_NUM();
+  _11 = new_token(_10, one);
+  tlist->next->next->next->next->next = _11;
+  _12 = new_ty_int();
+  tlist->next->next->next->next->next->ty = _12;
+  _13 = new_TK_PUNCT();
+  _14 = str_cparen();
+  _15 = new_token(_13, _14);
+  tlist->next->next->next->next->next->next = _15;
+  _16 = new_TK_PUNCT();
+  _17 = str_obracket();
+  _18 = new_token(_16, _17);
+  tlist->next->next->next->next->next->next->next = _18;
+  tmp = tlist->next->next->next->next->next->next->next;
+  tmp1 = whiles(tmp);
+  _19 = new_TK_KEYWORD();
+  _20 = str_return();
+  _21 = new_token(_19, _20);
+  tmp1->next = _21;
+  _22 = new_TK_NUM();
+  _23 = new_token(_22, one);
+  tmp1->next->next = _23;
+  _24 = new_ty_int();
+  tmp1->next->next->ty = _24;
+  _25 = new_TK_PUNCT();
+  _26 = str_semicolon();
+  _27 = new_token(_25, _26);
+  tmp1->next->next->next = _27;
+  elsee = tmp1->next->next->next;
+  _28 = new_TK_PUNCT();
+  _29 = str_cbracket();
+  _30 = new_token(_28, _29);
+  elsee->next = _30;
+  _31 = new_TK_KEYWORD();
+  _32 = str_else();
+  _33 = new_token(_31, _32);
+  elsee->next->next = _33;
+  _34 = new_TK_PUNCT();
+  _35 = str_obracket();
+  _36 = new_token(_34, _35);
+  elsee->next->next->next = _36;
+  ret2 = elsee->next->next->next;
+  _37 = new_TK_KEYWORD();
+  _38 = str_return();
+  _39 = new_token(_37, _38);
+  ret2->next = _39;
+  _40 = tok_ident('f');
+  ret2->next->next = _40;
+  _41 = new_TK_PUNCT();
+  _42 = str_oparen();
+  _43 = new_token(_41, _42);
+  ret2->next->next->next = _43;
+  _44 = tok_ident('p');
+  ret2->next->next->next->next = _44;
+  _45 = new_TK_PUNCT();
+  _46 = str_sub();
+  _47 = new_token(_45, _46);
+  ret2->next->next->next->next->next = _47;
+  _48 = new_TK_NUM();
+  _49 = new_token(_48, one);
+  ret2->next->next->next->next->next->next = _49;
+  _50 = new_ty_int();
+  ret2->next->next->next->next->next->next->ty = _50;
+  _51 = new_TK_PUNCT();
+  _52 = str_cparen();
+  _53 = new_token(_51, _52);
+  ret2->next->next->next->next->next->next->next = _53;
+  retp = ret2->next->next->next->next->next->next->next;
+  _54 = new_TK_PUNCT();
+  _55 = str_add();
+  _56 = new_token(_54, _55);
+  retp->next = _56;
+  _57 = tok_ident('f');
+  retp->next->next = _57;
+  _58 = new_TK_PUNCT();
+  _59 = str_oparen();
+  _60 = new_token(_58, _59);
+  retp->next->next->next = _60;
+  _61 = tok_ident('p');
+  retp->next->next->next->next = _61;
+  _62 = new_TK_PUNCT();
+  _63 = str_sub();
+  _64 = new_token(_62, _63);
+  retp->next->next->next->next->next = _64;
+  _65 = new_TK_NUM();
+  _66 = new_token(_65, two);
+  retp->next->next->next->next->next->next = _66;
+  _67 = new_ty_int();
+  retp->next->next->next->next->next->next->ty = _67;
+  _68 = new_TK_PUNCT();
+  _69 = str_cparen();
+  _70 = new_token(_68, _69);
+  retp->next->next->next->next->next->next->next = _70;
+  _71 = new_TK_PUNCT();
+  _72 = str_semicolon();
+  _73 = new_token(_71, _72);
+  retp->next->next->next->next->next->next->next->next = _73;
+  end = retp->next->next->next->next->next->next->next->next;
+  _74 = new_TK_PUNCT();
+  _75 = str_cbracket();
+  _76 = new_token(_74, _75);
+  end->next = _76;
+  return end->next;
+}
+
+bool is_BOOL(struct Type* ty)
+  //@requires ?;
+  //@ensures ?;
+{
+  if (ty != NULL && ty->kind != NULL)
+  {
+    return ty->kind->kind == 2;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool is_CHAR(struct Type* ty)
+  //@requires ?;
+  //@ensures ?;
+{
+  if (ty != NULL && ty->kind != NULL)
+  {
+    return ty->kind->kind == 3;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool is_DOUBLE(struct Type* ty)
+  //@requires ?;
+  //@ensures ?;
+{
+  if (ty != NULL && ty->kind != NULL)
+  {
+    return ty->kind->kind == 8;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool is_ENUM(struct Type* ty)
+  //@requires ?;
+  //@ensures ?;
+{
+  if (ty != NULL && ty->kind != NULL)
+  {
+    return ty->kind->kind == 10;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool is_EOF(struct Token* t)
+  //@requires ?;
+  //@ensures ?;
+{
+  if (t != NULL && t->kind != NULL)
+  {
+    return t->kind->kind == 7;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool is_FLOAT(struct Type* ty)
+  //@requires ?;
+  //@ensures ?;
+{
+  if (ty != NULL && ty->kind != NULL)
+  {
+    return ty->kind->kind == 7;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool is_FUNC(struct Type* ty)
+  //@requires ?;
+  //@ensures ?;
+{
+  if (ty != NULL && ty->kind != NULL)
+  {
+    return ty->kind->kind == 12;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool is_IDENT(struct Token* t)
+  //@requires ?;
+  //@ensures ?;
+{
+  if (t != NULL && t->kind != NULL)
+  {
+    return t->kind->kind == 1;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool is_INT(struct Type* ty)
+  //@requires ?;
+  //@ensures ?;
+{
+  if (ty != NULL && ty->kind != NULL)
+  {
+    return ty->kind->kind == 5;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool is_KEYWORD(struct Token* t)
+  //@requires ?;
+  //@ensures ?;
+{
+  if (t != NULL && t->kind != NULL)
+  {
+    return t->kind->kind == 3;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool is_LDOUBLE(struct Type* ty)
+  //@requires ?;
+  //@ensures ?;
+{
+  if (ty != NULL && ty->kind != NULL)
+  {
+    return ty->kind->kind == 9;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool is_LONG(struct Type* ty)
+  //@requires ?;
+  //@ensures ?;
+{
+  if (ty != NULL && ty->kind != NULL)
+  {
+    return ty->kind->kind == 6;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool is_NUM(struct Token* t)
+  //@requires ?;
+  //@ensures ?;
+{
+  if (t != NULL && t->kind != NULL)
+  {
+    return t->kind->kind == 5;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool is_PP_NUM(struct Token* t)
+  //@requires ?;
+  //@ensures ?;
+{
+  if (t != NULL && t->kind != NULL)
+  {
+    return t->kind->kind == 6;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool is_PTR(struct Type* ty)
+  //@requires ?;
+  //@ensures ?;
+{
+  if (ty != NULL && ty->kind != NULL)
+  {
+    return ty->kind->kind == 11;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool is_PUNCT(struct Token* t)
+  //@requires ?;
+  //@ensures ?;
+{
+  if (t != NULL && t->kind != NULL)
+  {
+    return t->kind->kind == 2;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool is_SHORT(struct Type* ty)
+  //@requires ?;
+  //@ensures ?;
+{
+  if (ty != NULL && ty->kind != NULL)
+  {
+    return ty->kind->kind == 4;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool is_STR(struct Token* t)
+  //@requires ?;
+  //@ensures ?;
+{
+  if (t != NULL && t->kind != NULL)
+  {
+    return t->kind->kind == 4;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool is_STRUCT(struct Type* ty)
+  //@requires ?;
+  //@ensures ?;
+{
+  if (ty != NULL && ty->kind != NULL)
+  {
+    return ty->kind->kind == 13;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool is_VOID(struct Type* ty)
+  //@requires ?;
+  //@ensures ?;
+{
+  if (ty != NULL && ty->kind != NULL)
+  {
+    return ty->kind->kind == 1;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool is_function(struct Token* tok, struct Scope* scope)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct Type* dummy = NULL;
+  struct _ptr_struct_Token_* rest = NULL;
+  struct Type* ty = NULL;
+  struct StringList* _ = NULL;
+  bool _1 = false;
+  bool _2 = false;
+  _ = str_semicolon();
+  _1 = equal(tok, _);
+  if (_1)
+  {
+    return false;
+  }
+  dummy = empty_type();
+  rest = alloc(struct _ptr_struct_Token_);
+  rest->value = tok;
+  ty = declarator(rest, tok, dummy, scope);
+  _2 = is_FUNC(ty);
+  return _2;
+}
+
+bool is_numeric(struct Type* ty)
+  //@requires ?;
+  //@ensures ?;
+{
+  bool _ = false;
+  bool _1 = false;
+  bool _2 = false;
+  bool _3 = false;
+  bool _4 = false;
+  bool _5 = false;
+  bool _6 = false;
+  bool _7 = false;
+  bool _8 = false;
+  _ = is_INT(ty);
+  if (!_)
+  {
+    _1 = is_BOOL(ty);
+  }
+  if (!(_ || _1))
+  {
+    _2 = is_CHAR(ty);
+  }
+  if (!(_ || _1 || _2))
+  {
+    _3 = is_SHORT(ty);
+  }
+  if (!(_ || _1 || _2 || _3))
+  {
+    _4 = is_LONG(ty);
+  }
+  if (!(_ || _1 || _2 || _3 || _4))
+  {
+    _5 = is_ENUM(ty);
+  }
+  if (!(_ || _1 || _2 || _3 || _4 || _5))
+  {
+    _6 = is_FLOAT(ty);
+  }
+  if (!(_ || _1 || _2 || _3 || _4 || _5 || _6))
+  {
+    _7 = is_DOUBLE(ty);
+  }
+  if (!(_ || _1 || _2 || _3 || _4 || _5 || _6 || _7))
+  {
+    _8 = is_LDOUBLE(ty);
+  }
+  return _ || _1 || _2 || _3 || _4 || _5 || _6 || _7 || _8;
+}
+
+bool is_typename(struct Token* tok, struct Scope* scope)
+  //@requires ?;
+  //@ensures ?;
+{
+  bool res = false;
+  struct StringList* _ = NULL;
+  bool _1 = false;
+  struct StringList* _2 = NULL;
+  bool _3 = false;
+  struct StringList* _4 = NULL;
+  bool _5 = false;
+  struct StringList* _6 = NULL;
+  bool _7 = false;
+  struct StringList* _8 = NULL;
+  bool _9 = false;
+  struct StringList* _10 = NULL;
+  bool _11 = false;
+  struct StringList* _12 = NULL;
+  bool _13 = false;
+  struct StringList* _14 = NULL;
+  bool _15 = false;
+  struct StringList* _16 = NULL;
+  bool _17 = false;
+  struct StringList* _18 = NULL;
+  bool _19 = false;
+  struct StringList* _20 = NULL;
+  bool _21 = false;
+  struct StringList* _22 = NULL;
+  bool _23 = false;
+  struct StringList* _24 = NULL;
+  bool _25 = false;
+  struct StringList* _26 = NULL;
+  bool _27 = false;
+  struct StringList* _28 = NULL;
+  bool _29 = false;
+  struct StringList* _30 = NULL;
+  bool _31 = false;
+  struct StringList* _32 = NULL;
+  bool _33 = false;
+  struct StringList* _34 = NULL;
+  bool _35 = false;
+  struct StringList* _36 = NULL;
+  bool _37 = false;
+  struct StringList* _38 = NULL;
+  bool _39 = false;
+  struct StringList* _40 = NULL;
+  bool _41 = false;
+  struct StringList* _42 = NULL;
+  bool _43 = false;
+  struct Type* _44 = NULL;
+  res = false;
+  _ = str_void();
+  _1 = equal(tok, _);
+  if (!_1)
+  {
+    _2 = str_bool();
+    _3 = equal(tok, _2);
+  }
+  if (!(_1 || _3))
+  {
+    _4 = str_char();
+    _5 = equal(tok, _4);
+  }
+  if (!(_1 || _3 || _5))
+  {
+    _6 = str_short();
+    _7 = equal(tok, _6);
+  }
+  if (!(_1 || _3 || _5 || _7))
+  {
+    _8 = str_int();
+    _9 = equal(tok, _8);
+  }
+  if (!(_1 || _3 || _5 || _7 || _9))
+  {
+    _10 = str_long();
+    _11 = equal(tok, _10);
+  }
+  if (!(_1 || _3 || _5 || _7 || _9 || _11))
+  {
+    _12 = str_struct();
+    _13 = equal(tok, _12);
+  }
+  if (!(_1 || _3 || _5 || _7 || _9 || _11 || _13))
+  {
+    _14 = str_typedef();
+    _15 = equal(tok, _14);
+  }
+  if (!(_1 || _3 || _5 || _7 || _9 || _11 || _13 || _15))
+  {
+    _16 = str_enum();
+    _17 = equal(tok, _16);
+  }
+  if (!(_1 || _3 || _5 || _7 || _9 || _11 || _13 || _15 || _17))
+  {
+    _18 = str_static();
+    _19 = equal(tok, _18);
+  }
+  if (!(_1 || _3 || _5 || _7 || _9 || _11 || _13 || _15 || _17 || _19))
+  {
+    _20 = str_extern();
+    _21 = equal(tok, _20);
+  }
+  if (!(_1 || _3 || _5 || _7 || _9 || _11 || _13 || _15 || _17 || _19 || _21))
+  {
+    _22 = str_signed();
+    _23 = equal(tok, _22);
+  }
+  if (!(_1 || _3 || _5 || _7 || _9 || _11 || _13 || _15 || _17 || _19 || _21 || _23))
+  {
+    _24 = str_const();
+    _25 = equal(tok, _24);
+  }
+  if (!(_1 || _3 || _5 || _7 || _9 || _11 || _13 || _15 || _17 || _19 || _21 || _23 || _25))
+  {
+    _26 = str_volatile();
+    _27 = equal(tok, _26);
+  }
+  if (!(_1 || _3 || _5 || _7 || _9 || _11 || _13 || _15 || _17 || _19 || _21 || _23 || _25 || _27))
+  {
+    _28 = str_auto();
+    _29 = equal(tok, _28);
+  }
+  if (!(_1 || _3 || _5 || _7 || _9 || _11 || _13 || _15 || _17 || _19 || _21 || _23 || _25 || _27 || _29))
+  {
+    _30 = str_register();
+    _31 = equal(tok, _30);
+  }
+  if (!(_1 || _3 || _5 || _7 || _9 || _11 || _13 || _15 || _17 || _19 || _21 || _23 || _25 || _27 || _29 || _31))
+  {
+    _32 = str_restrict();
+    _33 = equal(tok, _32);
+  }
+  if (!(_1 || _3 || _5 || _7 || _9 || _11 || _13 || _15 || _17 || _19 || _21 || _23 || _25 || _27 || _29 || _31 || _33))
+  {
+    _34 = str_float();
+    _35 = equal(tok, _34);
+  }
+  if (!(_1 || _3 || _5 || _7 || _9 || _11 || _13 || _15 || _17 || _19 || _21 || _23 || _25 || _27 || _29 || _31 || _33 || _35))
+  {
+    _36 = str_double();
+    _37 = equal(tok, _36);
+  }
+  if (!(_1 || _3 || _5 || _7 || _9 || _11 || _13 || _15 || _17 || _19 || _21 || _23 || _25 || _27 || _29 || _31 || _33 || _35 || _37))
+  {
+    _38 = str_typedef();
+    _39 = equal(tok, _38);
+  }
+  if (!(_1 || _3 || _5 || _7 || _9 || _11 || _13 || _15 || _17 || _19 || _21 || _23 || _25 || _27 || _29 || _31 || _33 || _35 || _37 || _39))
+  {
+    _40 = str_inline();
+    _41 = equal(tok, _40);
+  }
+  if (!(_1 || _3 || _5 || _7 || _9 || _11 || _13 || _15 || _17 || _19 || _21 || _23 || _25 || _27 || _29 || _31 || _33 || _35 || _37 || _39 || _41))
+  {
+    _42 = str_unsigned();
+    _43 = equal(tok, _42);
+  }
+  if (!(_1 || _3 || _5 || _7 || _9 || _11 || _13 || _15 || _17 || _19 || _21 || _23 || _25 || _27 || _29 || _31 || _33 || _35 || _37 || _39 || _41 || _43))
+  {
+    _44 = find_typedef(tok, scope);
+  }
+  if (_1 || _3 || _5 || _7 || _9 || _11 || _13 || _15 || _17 || _19 || _21 || _23 || _25 || _27 || _29 || _31 || _33 || _35 || _37 || _39 || _41 || _43 || _44 != NULL)
+  {
+    res = true;
+  }
+  return res;
+}
+
+void leave_scope(struct _ptr_struct_Scope_* scope)
+  //@requires ?;
+  //@ensures ?;
+{
+  scope->value = scope->value->next;
+}
+
+struct ASTNode* logand(struct _ptr_struct_Token_* rest, struct Token* tok, struct Scope* scope)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct _ptr_struct_Token_* rst = NULL;
+  struct ASTNode* node = NULL;
+  struct StringList* _ = NULL;
+  bool _1 = false;
+  struct Token* start = NULL;
+  struct NodeKind* _2 = NULL;
+  struct ASTNode* _3 = NULL;
+  struct ASTNode* node1 = NULL;
+  struct Token* tok1 = NULL;
+  tok1 = tok;
+  rst = alloc(struct _ptr_struct_Token_);
+  rst->value = tok1;
+  node = bitor(rst, tok1, scope);
+  tok1 = rst->value;
+  _ = str_logand();
+  _1 = equal(tok1, _);
+  while (_1)
+    //@loop_invariant ?;
+  {
+    start = tok1;
+    rst->value = tok1;
+    _2 = new_ND_LOGAND();
+    _3 = bitor(rst, tok1->next, scope);
+    node1 = new_binary(_2, node, _3, start);
+    tok1 = rst->value;
+    _ = str_logand();
+    _1 = equal(tok1, _);
+    node = node1;
+  }
+  rest->value = tok1;
+  return node;
+}
+
+struct ASTNode* logor(struct _ptr_struct_Token_* rest, struct Token* tok, struct Scope* scope)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct _ptr_struct_Token_* rst = NULL;
+  struct ASTNode* node = NULL;
+  struct StringList* _ = NULL;
+  bool _1 = false;
+  struct Token* start = NULL;
+  struct NodeKind* _2 = NULL;
+  struct ASTNode* _3 = NULL;
+  struct ASTNode* node1 = NULL;
+  struct Token* tok1 = NULL;
+  tok1 = tok;
+  rst = alloc(struct _ptr_struct_Token_);
+  rst->value = tok1;
+  node = logand(rst, tok1, scope);
+  tok1 = rst->value;
+  _ = str_logor();
+  _1 = equal(tok1, _);
+  while (_1)
+    //@loop_invariant ?;
+  {
+    start = tok1;
+    rst->value = tok1;
+    _2 = new_ND_LOGOR();
+    _3 = logand(rst, tok1->next, scope);
+    node1 = new_binary(_2, node, _3, start);
+    tok1 = rst->value;
+    _ = str_logor();
+    _1 = equal(tok1, _);
+    node = node1;
+  }
+  rest->value = tok1;
+  return node;
+}
+
+int main()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct Token* start = NULL;
+  struct Token* tmp = NULL;
+  struct Obj* globals = NULL;
+  struct TokenKind* _ = NULL;
+  struct StringList* _1 = NULL;
+  struct TokenKind* _2 = NULL;
+  struct StringList* _3 = NULL;
+  struct Token* _4 = NULL;
+  struct Token* _5 = NULL;
+  struct TokenKind* _6 = NULL;
+  struct StringList* _7 = NULL;
+  struct Token* _8 = NULL;
+  struct TokenKind* _9 = NULL;
+  struct Token* _10 = NULL;
+  struct Obj* params = NULL;
+  _ = new_TK_KEYWORD();
+  _1 = str_typedef();
+  start = new_token(_, _1);
+  _2 = new_TK_KEYWORD();
+  _3 = str_int();
+  _4 = new_token(_2, _3);
+  start->next = _4;
+  _5 = tok_ident('t');
+  start->next->next = _5;
+  _6 = new_TK_PUNCT();
+  _7 = str_semicolon();
+  _8 = new_token(_6, _7);
+  start->next->next->next = _8;
+  tmp = functions(start->next->next->next);
+  _9 = new_TK_EOF();
+  _10 = new_token(_9, NULL);
+  tmp->next = _10;
+  print_tokens(start);
+  globals = parse(start);
+  while (globals != NULL)
+    //@loop_invariant ?;
+  {
+    if (globals->is_function)
+    {
+      printchar('f');
+      printchar('u');
+      printchar('n');
+      printchar('c');
+      printchar(':');
+      printchar(' ');
+      print_str_list(globals->name);
+      printchar(' ');
+      printchar('w');
+      printchar('/');
+      printchar(' ');
+      printchar('p');
+      printchar('a');
+      printchar('r');
+      printchar('a');
+      printchar('m');
+      printchar('s');
+      printchar(':');
+      printchar(' ');
+      params = globals->params;
+      while (params != NULL)
+        //@loop_invariant ?;
+      {
+        if (params->ty == NULL)
+        {
+          param_type_error();
+        }
+        print_str_list(params->name);
+        printchar(' ');
+        params = params->next;
+      }
+      printchar('\n');
+      print_nodes(globals->body, true);
+    }
+    globals = globals->next;
+  }
+  return 0;
+}
+
+struct ASTNode* mul(struct _ptr_struct_Token_* rest, struct Token* tok, struct Scope* scope)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct _ptr_struct_Token_* rst = NULL;
+  struct ASTNode* node = NULL;
+  bool break_loop = false;
+  struct Token* start = NULL;
+  struct StringList* _ = NULL;
+  bool _1 = false;
+  struct NodeKind* _2 = NULL;
+  struct ASTNode* _3 = NULL;
+  struct StringList* _4 = NULL;
+  bool _5 = false;
+  struct NodeKind* _6 = NULL;
+  struct ASTNode* _7 = NULL;
+  struct StringList* _8 = NULL;
+  bool _9 = false;
+  struct NodeKind* _10 = NULL;
+  struct ASTNode* _11 = NULL;
+  struct ASTNode* node1 = NULL;
+  struct Token* tok1 = NULL;
+  tok1 = tok;
+  rst = alloc(struct _ptr_struct_Token_);
+  rst->value = tok1;
+  node = unary(rst, tok1, scope);
+  tok1 = rst->value;
+  break_loop = false;
+  while (!break_loop)
+    //@loop_invariant ?;
+  {
+    start = tok1;
+    _ = str_mul();
+    _1 = equal(tok1, _);
+    if (_1)
+    {
+      rst->value = tok1;
+      _2 = new_ND_MUL();
+      _3 = unary(rst, tok1->next, scope);
+      node1 = new_binary(_2, node, _3, start);
+      tok1 = rst->value;
+    }
+    else
+    {
+      _4 = str_div();
+      _5 = equal(tok1, _4);
+      if (_5)
+      {
+        rst->value = tok1;
+        _6 = new_ND_DIV();
+        _7 = unary(rst, tok1->next, scope);
+        node1 = new_binary(_6, node, _7, start);
+        tok1 = rst->value;
+      }
+      else
+      {
+        _8 = str_mod();
+        _9 = equal(tok1, _8);
+        if (_9)
+        {
+          rst->value = tok1;
+          _10 = new_ND_MOD();
+          _11 = unary(rst, tok1->next, scope);
+          node1 = new_binary(_10, node, _11, start);
+          tok1 = rst->value;
+        }
+        else
+        {
+          rest->value = tok1;
+          break_loop = true;
+          node1 = node;
+        }
+      }
+    }
+    node = node1;
+  }
+  return node;
+}
+
+struct NodeKind* new_ND_ADD()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct NodeKind* knd = NULL;
+  knd = alloc(struct NodeKind);
+  knd->kind = 2;
+  return knd;
+}
+
+struct NodeKind* new_ND_ADDR()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct NodeKind* knd = NULL;
+  knd = alloc(struct NodeKind);
+  knd->kind = 19;
+  return knd;
+}
+
+struct NodeKind* new_ND_ASSIGN()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct NodeKind* knd = NULL;
+  knd = alloc(struct NodeKind);
+  knd->kind = 17;
+  return knd;
+}
+
+struct NodeKind* new_ND_BITAND()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct NodeKind* knd = NULL;
+  knd = alloc(struct NodeKind);
+  knd->kind = 8;
+  return knd;
+}
+
+struct NodeKind* new_ND_BITNOT()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct NodeKind* knd = NULL;
+  knd = alloc(struct NodeKind);
+  knd->kind = 22;
+  return knd;
+}
+
+struct NodeKind* new_ND_BITOR()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct NodeKind* knd = NULL;
+  knd = alloc(struct NodeKind);
+  knd->kind = 9;
+  return knd;
+}
+
+struct NodeKind* new_ND_BITXOR()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct NodeKind* knd = NULL;
+  knd = alloc(struct NodeKind);
+  knd->kind = 10;
+  return knd;
+}
+
+struct NodeKind* new_ND_BLOCK()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct NodeKind* knd = NULL;
+  knd = alloc(struct NodeKind);
+  knd->kind = 28;
+  return knd;
+}
+
+struct NodeKind* new_ND_COMMA()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct NodeKind* knd = NULL;
+  knd = alloc(struct NodeKind);
+  knd->kind = 18;
+  return knd;
+}
+
+struct NodeKind* new_ND_DEREF()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct NodeKind* knd = NULL;
+  knd = alloc(struct NodeKind);
+  knd->kind = 20;
+  return knd;
+}
+
+struct NodeKind* new_ND_DIV()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct NodeKind* knd = NULL;
+  knd = alloc(struct NodeKind);
+  knd->kind = 5;
+  return knd;
+}
+
+struct NodeKind* new_ND_EQ()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct NodeKind* knd = NULL;
+  knd = alloc(struct NodeKind);
+  knd->kind = 13;
+  return knd;
+}
+
+struct NodeKind* new_ND_EXPR_STMT()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct NodeKind* knd = NULL;
+  knd = alloc(struct NodeKind);
+  knd->kind = 30;
+  return knd;
+}
+
+struct NodeKind* new_ND_FOR()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct NodeKind* knd = NULL;
+  knd = alloc(struct NodeKind);
+  knd->kind = 27;
+  return knd;
+}
+
+struct NodeKind* new_ND_FUNCALL()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct NodeKind* knd = NULL;
+  knd = alloc(struct NodeKind);
+  knd->kind = 29;
+  return knd;
+}
+
+struct NodeKind* new_ND_IF()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct NodeKind* knd = NULL;
+  knd = alloc(struct NodeKind);
+  knd->kind = 26;
+  return knd;
+}
+
+struct NodeKind* new_ND_LE()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct NodeKind* knd = NULL;
+  knd = alloc(struct NodeKind);
+  knd->kind = 16;
+  return knd;
+}
+
+struct NodeKind* new_ND_LOGAND()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct NodeKind* knd = NULL;
+  knd = alloc(struct NodeKind);
+  knd->kind = 23;
+  return knd;
+}
+
+struct NodeKind* new_ND_LOGOR()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct NodeKind* knd = NULL;
+  knd = alloc(struct NodeKind);
+  knd->kind = 24;
+  return knd;
+}
+
+struct NodeKind* new_ND_LT()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct NodeKind* knd = NULL;
+  knd = alloc(struct NodeKind);
+  knd->kind = 15;
+  return knd;
+}
+
+struct NodeKind* new_ND_MEMZERO()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct NodeKind* knd = NULL;
+  knd = alloc(struct NodeKind);
+  knd->kind = 34;
+  return knd;
+}
+
+struct NodeKind* new_ND_MOD()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct NodeKind* knd = NULL;
+  knd = alloc(struct NodeKind);
+  knd->kind = 7;
+  return knd;
+}
+
+struct NodeKind* new_ND_MUL()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct NodeKind* knd = NULL;
+  knd = alloc(struct NodeKind);
+  knd->kind = 4;
+  return knd;
+}
+
+struct NodeKind* new_ND_NE()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct NodeKind* knd = NULL;
+  knd = alloc(struct NodeKind);
+  knd->kind = 14;
+  return knd;
+}
+
+struct NodeKind* new_ND_NEG()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct NodeKind* knd = NULL;
+  knd = alloc(struct NodeKind);
+  knd->kind = 6;
+  return knd;
+}
+
+struct NodeKind* new_ND_NOT()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct NodeKind* knd = NULL;
+  knd = alloc(struct NodeKind);
+  knd->kind = 21;
+  return knd;
+}
+
+struct NodeKind* new_ND_NULL_EXPR()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct NodeKind* knd = NULL;
+  knd = alloc(struct NodeKind);
+  knd->kind = 1;
+  return knd;
+}
+
+struct NodeKind* new_ND_NUM()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct NodeKind* knd = NULL;
+  knd = alloc(struct NodeKind);
+  knd->kind = 33;
+  return knd;
+}
+
+struct NodeKind* new_ND_RETURN()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct NodeKind* knd = NULL;
+  knd = alloc(struct NodeKind);
+  knd->kind = 25;
+  return knd;
+}
+
+struct NodeKind* new_ND_SHL()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct NodeKind* knd = NULL;
+  knd = alloc(struct NodeKind);
+  knd->kind = 11;
+  return knd;
+}
+
+struct NodeKind* new_ND_SHR()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct NodeKind* knd = NULL;
+  knd = alloc(struct NodeKind);
+  knd->kind = 12;
+  return knd;
+}
+
+struct NodeKind* new_ND_STMT_EXPR()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct NodeKind* knd = NULL;
+  knd = alloc(struct NodeKind);
+  knd->kind = 31;
+  return knd;
+}
+
+struct NodeKind* new_ND_SUB()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct NodeKind* knd = NULL;
+  knd = alloc(struct NodeKind);
+  knd->kind = 3;
+  return knd;
+}
+
+struct NodeKind* new_ND_VAR()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct NodeKind* knd = NULL;
+  knd = alloc(struct NodeKind);
+  knd->kind = 32;
+  return knd;
+}
+
+struct TokenKind* new_TK_EOF()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct TokenKind* tk = NULL;
+  tk = alloc(struct TokenKind);
+  tk->kind = 7;
+  return tk;
+}
+
+struct TokenKind* new_TK_IDENT()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct TokenKind* tk = NULL;
+  tk = alloc(struct TokenKind);
+  tk->kind = 1;
+  return tk;
+}
+
+struct TokenKind* new_TK_KEYWORD()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct TokenKind* tk = NULL;
+  tk = alloc(struct TokenKind);
+  tk->kind = 3;
+  return tk;
+}
+
+struct TokenKind* new_TK_NUM()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct TokenKind* tk = NULL;
+  tk = alloc(struct TokenKind);
+  tk->kind = 5;
+  return tk;
+}
+
+struct TokenKind* new_TK_PP_NUM()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct TokenKind* tk = NULL;
+  tk = alloc(struct TokenKind);
+  tk->kind = 6;
+  return tk;
+}
+
+struct TokenKind* new_TK_PUNCT()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct TokenKind* tk = NULL;
+  tk = alloc(struct TokenKind);
+  tk->kind = 2;
+  return tk;
+}
+
+struct TokenKind* new_TK_STR()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct TokenKind* tk = NULL;
+  tk = alloc(struct TokenKind);
+  tk->kind = 4;
+  return tk;
+}
+
+struct TypeKind* new_TY_BOOL()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct TypeKind* ty = NULL;
+  ty = alloc(struct TypeKind);
+  ty->kind = 2;
+  return ty;
+}
+
+struct TypeKind* new_TY_CHAR()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct TypeKind* ty = NULL;
+  ty = alloc(struct TypeKind);
+  ty->kind = 3;
+  return ty;
+}
+
+struct TypeKind* new_TY_DOUBLE()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct TypeKind* ty = NULL;
+  ty = alloc(struct TypeKind);
+  ty->kind = 8;
+  return ty;
+}
+
+struct TypeKind* new_TY_ENUM()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct TypeKind* ty = NULL;
+  ty = alloc(struct TypeKind);
+  ty->kind = 10;
+  return ty;
+}
+
+struct TypeKind* new_TY_FLOAT()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct TypeKind* ty = NULL;
+  ty = alloc(struct TypeKind);
+  ty->kind = 7;
+  return ty;
+}
+
+struct TypeKind* new_TY_FUNC()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct TypeKind* ty = NULL;
+  ty = alloc(struct TypeKind);
+  ty->kind = 12;
+  return ty;
+}
+
+struct TypeKind* new_TY_INT()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct TypeKind* ty = NULL;
+  ty = alloc(struct TypeKind);
+  ty->kind = 5;
+  return ty;
+}
+
+struct TypeKind* new_TY_LDOUBLE()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct TypeKind* ty = NULL;
+  ty = alloc(struct TypeKind);
+  ty->kind = 9;
+  return ty;
+}
+
+struct TypeKind* new_TY_LONG()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct TypeKind* ty = NULL;
+  ty = alloc(struct TypeKind);
+  ty->kind = 6;
+  return ty;
+}
+
+struct TypeKind* new_TY_PTR()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct TypeKind* ty = NULL;
+  ty = alloc(struct TypeKind);
+  ty->kind = 11;
+  return ty;
+}
+
+struct TypeKind* new_TY_SHORT()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct TypeKind* ty = NULL;
+  ty = alloc(struct TypeKind);
+  ty->kind = 4;
+  return ty;
+}
+
+struct TypeKind* new_TY_STRUCT()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct TypeKind* ty = NULL;
+  ty = alloc(struct TypeKind);
+  ty->kind = 13;
+  return ty;
+}
+
+struct TypeKind* new_TY_VOID()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct TypeKind* ty = NULL;
+  ty = alloc(struct TypeKind);
+  ty->kind = 1;
+  return ty;
+}
+
+struct ASTNode* new_add(struct ASTNode* lhsn, struct ASTNode* rhsn, struct Token* tok)
+  //@requires ?;
+  //@ensures ?;
+{
+  bool _ = false;
+  bool _1 = false;
+  struct NodeKind* _2 = NULL;
+  struct ASTNode* _3 = NULL;
+  add_type(lhsn);
+  add_type(rhsn);
+  _ = is_numeric(lhsn->ty);
+  if (_)
+  {
+    _1 = is_numeric(rhsn->ty);
+  }
+  if (_ && _1)
+  {
+    _2 = new_ND_ADD();
+    _3 = new_binary(_2, lhsn, rhsn, tok);
+    return _3;
+  }
+  else
+  {
+    num_op_error();
+    return NULL;
+  }
+}
+
+struct VarAttr* new_attr()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct VarAttr* attr = NULL;
+  attr = alloc(struct VarAttr);
+  attr->is_typedef = false;
+  attr->align = 0;
+  return attr;
+}
+
+struct ASTNode* new_binary(struct NodeKind* kind, struct ASTNode* lhsn, struct ASTNode* rhsn, struct Token* tok)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct ASTNode* node = NULL;
+  node = new_node(kind, tok);
+  node->lhs = lhsn;
+  node->rhs = rhsn;
+  return node;
+}
+
+struct Obj* new_gvar(struct Scope* scope, struct _ptr_struct_Obj_* globals, struct StringList* name, struct Type* ty)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct Obj* v = NULL;
+  v = new_var(scope, name, ty);
+  v->next = globals->value;
+  v->is_definition = true;
+  globals->value = v;
+  return v;
+}
+
+struct Obj* new_lvar(struct Scope* scope, struct _ptr_struct_Obj_* locals, struct StringList* name, struct Type* ty)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct Obj* v = NULL;
+  v = new_var(scope, name, ty);
+  v->is_local = true;
+  v->next = locals->value;
+  locals->value = v;
+  return v;
+}
+
+struct ASTNode* new_node(struct NodeKind* kind, struct Token* tok)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct ASTNode* node = NULL;
+  node = alloc(struct ASTNode);
+  node->kind = kind;
+  node->tok = tok;
+  return node;
+}
+
+struct Scope* new_scope()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct Scope* scope = NULL;
+  struct VarScopeMap* _ = NULL;
+  struct TagScopeMap* _1 = NULL;
+  scope = alloc(struct Scope);
+  scope->next = NULL;
+  _ = new_varscopemap();
+  scope->vars = _;
+  _1 = new_tagscopemap();
+  scope->tags = _1;
+  return scope;
+}
+
+struct StringList* new_stringlist()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* s = NULL;
+  struct CharNode* r = NULL;
+  s = alloc(struct StringList);
+  r = alloc(struct CharNode);
+  r->val = '\0';
+  r->next = NULL;
+  s->root = r;
+  s->len = 0;
+  return s;
+}
+
+struct ASTNode* new_sub(struct ASTNode* lhsn, struct ASTNode* rhsn, struct Token* tok)
+  //@requires ?;
+  //@ensures ?;
+{
+  bool _ = false;
+  bool _1 = false;
+  struct NodeKind* _2 = NULL;
+  struct ASTNode* _3 = NULL;
+  add_type(lhsn);
+  add_type(rhsn);
+  _ = is_numeric(lhsn->ty);
+  if (_)
+  {
+    _1 = is_numeric(rhsn->ty);
+  }
+  if (_ && _1)
+  {
+    _2 = new_ND_SUB();
+    _3 = new_binary(_2, lhsn, rhsn, tok);
+    return _3;
+  }
+  else
+  {
+    num_op_error();
+    return NULL;
+  }
+}
+
+struct TagScopeMap* new_tagscopemap()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct TagScopeMap* tsm = NULL;
+  tsm = alloc(struct TagScopeMap);
+  tsm->key = NULL;
+  tsm->val = NULL;
+  tsm->next = NULL;
+  return tsm;
+}
+
+struct Token* new_token(struct TokenKind* kind, struct StringList* contents)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct Token* tok = NULL;
+  tok = alloc(struct Token);
+  tok->kind = kind;
+  tok->str = contents;
+  return tok;
+}
+
+struct Type* new_ty_bool()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct TypeKind* _ = NULL;
+  struct Type* _1 = NULL;
+  _ = new_TY_BOOL();
+  _1 = new_type(_, 1, 1);
+  return _1;
+}
+
+struct Type* new_ty_char()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct TypeKind* _ = NULL;
+  struct Type* _1 = NULL;
+  _ = new_TY_CHAR();
+  _1 = new_type(_, 1, 1);
+  return _1;
+}
+
+struct Type* new_ty_double()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct TypeKind* _ = NULL;
+  struct Type* _1 = NULL;
+  _ = new_TY_DOUBLE();
+  _1 = new_type(_, 8, 8);
+  return _1;
+}
+
+struct Type* new_ty_float()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct TypeKind* _ = NULL;
+  struct Type* _1 = NULL;
+  _ = new_TY_FLOAT();
+  _1 = new_type(_, 4, 4);
+  return _1;
+}
+
+struct Type* new_ty_int()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct TypeKind* _ = NULL;
+  struct Type* _1 = NULL;
+  _ = new_TY_INT();
+  _1 = new_type(_, 4, 4);
+  return _1;
+}
+
+struct Type* new_ty_ldouble()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct TypeKind* _ = NULL;
+  struct Type* _1 = NULL;
+  _ = new_TY_LDOUBLE();
+  _1 = new_type(_, 16, 16);
+  return _1;
+}
+
+struct Type* new_ty_long()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct TypeKind* _ = NULL;
+  struct Type* _1 = NULL;
+  _ = new_TY_LONG();
+  _1 = new_type(_, 8, 8);
+  return _1;
+}
+
+struct Type* new_ty_short()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct TypeKind* _ = NULL;
+  struct Type* _1 = NULL;
+  _ = new_TY_SHORT();
+  _1 = new_type(_, 2, 2);
+  return _1;
+}
+
+struct Type* new_ty_uchar()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct Type* ty = NULL;
+  struct TypeKind* _ = NULL;
+  _ = new_TY_CHAR();
+  ty = new_type(_, 1, 1);
+  ty->is_unsigned = true;
+  return ty;
+}
+
+struct Type* new_ty_uint()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct Type* ty = NULL;
+  struct TypeKind* _ = NULL;
+  _ = new_TY_INT();
+  ty = new_type(_, 4, 4);
+  ty->is_unsigned = true;
+  return ty;
+}
+
+struct Type* new_ty_ulong()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct Type* ty = NULL;
+  struct TypeKind* _ = NULL;
+  _ = new_TY_LONG();
+  ty = new_type(_, 8, 8);
+  ty->is_unsigned = true;
+  return ty;
+}
+
+struct Type* new_ty_ushort()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct Type* ty = NULL;
+  struct TypeKind* _ = NULL;
+  _ = new_TY_SHORT();
+  ty = new_type(_, 2, 2);
+  ty->is_unsigned = true;
+  return ty;
+}
+
+struct Type* new_ty_void()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct TypeKind* _ = NULL;
+  struct Type* _1 = NULL;
+  _ = new_TY_VOID();
+  _1 = new_type(_, 1, 1);
+  return _1;
+}
+
+struct Type* new_type(struct TypeKind* kind, int size, int align)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct Type* ty = NULL;
+  ty = alloc(struct Type);
+  ty->kind = kind;
+  ty->size = size;
+  ty->align = align;
+  return ty;
+}
+
+struct ASTNode* new_unary(struct NodeKind* kind, struct ASTNode* e, struct Token* tok)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct ASTNode* node = NULL;
+  node = new_node(kind, tok);
+  node->lhs = e;
+  return node;
+}
+
+struct Obj* new_var(struct Scope* scope, struct StringList* name, struct Type* ty)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct Obj* v = NULL;
+  struct VarScope* tmp = NULL;
+  v = alloc(struct Obj);
+  v->name = name;
+  v->ty = ty;
+  v->align = ty->align;
+  tmp = push_scope(scope, name);
+  tmp->var = v;
+  return v;
+}
+
+struct VarScopeMap* new_varscopemap()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct VarScopeMap* vsm = NULL;
+  vsm = alloc(struct VarScopeMap);
+  vsm->key = NULL;
+  vsm->val = NULL;
+  vsm->next = NULL;
+  return vsm;
+}
+
+struct Token* nums(struct Token* tlist)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* n1 = NULL;
+  struct StringList* n2 = NULL;
+  struct StringList* f1 = NULL;
+  struct StringList* f2 = NULL;
+  struct Token* stmt1 = NULL;
+  struct Token* stmt2 = NULL;
+  struct Token* stmt3 = NULL;
+  struct Token* stmt4 = NULL;
+  struct Token* stmt5 = NULL;
+  struct Token* stmt6 = NULL;
+  struct Token* stmt7 = NULL;
+  struct Token* stmt8 = NULL;
+  struct Token* stmt9 = NULL;
+  struct Token* stmt10 = NULL;
+  struct Token* stmt11 = NULL;
+  struct Token* end = NULL;
+  struct TokenKind* _ = NULL;
+  struct StringList* _1 = NULL;
+  struct Token* _2 = NULL;
+  struct Token* _3 = NULL;
+  struct TokenKind* _4 = NULL;
+  struct StringList* _5 = NULL;
+  struct Token* _6 = NULL;
+  struct Token* _7 = NULL;
+  struct TokenKind* _8 = NULL;
+  struct StringList* _9 = NULL;
+  struct Token* _10 = NULL;
+  struct Token* _11 = NULL;
+  struct TokenKind* _12 = NULL;
+  struct StringList* _13 = NULL;
+  struct Token* _14 = NULL;
+  struct TokenKind* _15 = NULL;
+  struct Token* _16 = NULL;
+  struct Type* _17 = NULL;
+  struct TokenKind* _18 = NULL;
+  struct StringList* _19 = NULL;
+  struct Token* _20 = NULL;
+  struct Token* _21 = NULL;
+  struct TokenKind* _22 = NULL;
+  struct StringList* _23 = NULL;
+  struct Token* _24 = NULL;
+  struct Token* _25 = NULL;
+  struct TokenKind* _26 = NULL;
+  struct StringList* _27 = NULL;
+  struct Token* _28 = NULL;
+  struct Token* _29 = NULL;
+  struct TokenKind* _30 = NULL;
+  struct StringList* _31 = NULL;
+  struct Token* _32 = NULL;
+  struct TokenKind* _33 = NULL;
+  struct Token* _34 = NULL;
+  struct Type* _35 = NULL;
+  struct TokenKind* _36 = NULL;
+  struct StringList* _37 = NULL;
+  struct Token* _38 = NULL;
+  struct TokenKind* _39 = NULL;
+  struct Token* _40 = NULL;
+  struct Type* _41 = NULL;
+  struct TokenKind* _42 = NULL;
+  struct StringList* _43 = NULL;
+  struct Token* _44 = NULL;
+  struct Token* _45 = NULL;
+  struct TokenKind* _46 = NULL;
+  struct StringList* _47 = NULL;
+  struct Token* _48 = NULL;
+  struct Token* _49 = NULL;
+  struct TokenKind* _50 = NULL;
+  struct StringList* _51 = NULL;
+  struct Token* _52 = NULL;
+  struct TokenKind* _53 = NULL;
+  struct StringList* _54 = NULL;
+  struct Token* _55 = NULL;
+  struct Token* _56 = NULL;
+  struct TokenKind* _57 = NULL;
+  struct StringList* _58 = NULL;
+  struct Token* _59 = NULL;
+  struct Token* _60 = NULL;
+  struct TokenKind* _61 = NULL;
+  struct StringList* _62 = NULL;
+  struct Token* _63 = NULL;
+  struct Token* _64 = NULL;
+  struct TokenKind* _65 = NULL;
+  struct StringList* _66 = NULL;
+  struct Token* _67 = NULL;
+  struct TokenKind* _68 = NULL;
+  struct Token* _69 = NULL;
+  struct Type* _70 = NULL;
+  struct TokenKind* _71 = NULL;
+  struct StringList* _72 = NULL;
+  struct Token* _73 = NULL;
+  struct Token* _74 = NULL;
+  struct TokenKind* _75 = NULL;
+  struct StringList* _76 = NULL;
+  struct Token* _77 = NULL;
+  struct Token* _78 = NULL;
+  struct TokenKind* _79 = NULL;
+  struct StringList* _80 = NULL;
+  struct Token* _81 = NULL;
+  struct TokenKind* _82 = NULL;
+  struct StringList* _83 = NULL;
+  struct Token* _84 = NULL;
+  struct TokenKind* _85 = NULL;
+  struct Token* _86 = NULL;
+  struct Type* _87 = NULL;
+  struct TokenKind* _88 = NULL;
+  struct StringList* _89 = NULL;
+  struct Token* _90 = NULL;
+  struct Token* _91 = NULL;
+  struct TokenKind* _92 = NULL;
+  struct StringList* _93 = NULL;
+  struct Token* _94 = NULL;
+  struct TokenKind* _95 = NULL;
+  struct StringList* _96 = NULL;
+  struct Token* _97 = NULL;
+  struct TokenKind* _98 = NULL;
+  struct StringList* _99 = NULL;
+  struct Token* _100 = NULL;
+  struct Token* _101 = NULL;
+  struct TokenKind* _102 = NULL;
+  struct StringList* _103 = NULL;
+  struct Token* _104 = NULL;
+  struct Token* _105 = NULL;
+  struct TokenKind* _106 = NULL;
+  struct StringList* _107 = NULL;
+  struct Token* _108 = NULL;
+  struct TokenKind* _109 = NULL;
+  struct StringList* _110 = NULL;
+  struct Token* _111 = NULL;
+  struct TokenKind* _112 = NULL;
+  struct StringList* _113 = NULL;
+  struct Token* _114 = NULL;
+  struct Token* _115 = NULL;
+  struct TokenKind* _116 = NULL;
+  struct StringList* _117 = NULL;
+  struct Token* _118 = NULL;
+  struct Token* _119 = NULL;
+  struct TokenKind* _120 = NULL;
+  struct StringList* _121 = NULL;
+  struct Token* _122 = NULL;
+  struct Token* _123 = NULL;
+  struct TokenKind* _124 = NULL;
+  struct StringList* _125 = NULL;
+  struct Token* _126 = NULL;
+  struct Token* _127 = NULL;
+  struct TokenKind* _128 = NULL;
+  struct StringList* _129 = NULL;
+  struct Token* _130 = NULL;
+  struct TokenKind* _131 = NULL;
+  struct Token* _132 = NULL;
+  struct Type* _133 = NULL;
+  struct TokenKind* _134 = NULL;
+  struct StringList* _135 = NULL;
+  struct Token* _136 = NULL;
+  struct TokenKind* _137 = NULL;
+  struct Token* _138 = NULL;
+  struct Type* _139 = NULL;
+  struct TokenKind* _140 = NULL;
+  struct StringList* _141 = NULL;
+  struct Token* _142 = NULL;
+  struct Token* _143 = NULL;
+  struct TokenKind* _144 = NULL;
+  struct StringList* _145 = NULL;
+  struct Token* _146 = NULL;
+  struct TokenKind* _147 = NULL;
+  struct Token* _148 = NULL;
+  struct Type* _149 = NULL;
+  struct TokenKind* _150 = NULL;
+  struct StringList* _151 = NULL;
+  struct Token* _152 = NULL;
+  struct TokenKind* _153 = NULL;
+  struct Token* _154 = NULL;
+  struct Type* _155 = NULL;
+  struct TokenKind* _156 = NULL;
+  struct StringList* _157 = NULL;
+  struct Token* _158 = NULL;
+  struct Token* _159 = NULL;
+  struct TokenKind* _160 = NULL;
+  struct StringList* _161 = NULL;
+  struct Token* _162 = NULL;
+  struct Token* _163 = NULL;
+  struct TokenKind* _164 = NULL;
+  struct StringList* _165 = NULL;
+  struct Token* _166 = NULL;
+  struct Token* _167 = NULL;
+  struct TokenKind* _168 = NULL;
+  struct StringList* _169 = NULL;
+  struct Token* _170 = NULL;
+  n1 = new_stringlist();
+  add_char(n1, '4');
+  add_char(n1, '2');
+  n2 = new_stringlist();
+  add_char(n2, '2');
+  add_char(n2, '3');
+  add_char(n2, '9');
+  f1 = new_stringlist();
+  add_char(f1, '2');
+  add_char(f1, '.');
+  add_char(f1, '8');
+  add_char(f1, '4');
+  f2 = new_stringlist();
+  add_char(f2, '0');
+  add_char(f2, '.');
+  add_char(f2, '0');
+  add_char(f2, '0');
+  add_char(f2, '0');
+  _ = new_TK_KEYWORD();
+  _1 = str_int();
+  _2 = new_token(_, _1);
+  tlist->next = _2;
+  _3 = tok_ident('x');
+  tlist->next->next = _3;
+  _4 = new_TK_PUNCT();
+  _5 = str_comma();
+  _6 = new_token(_4, _5);
+  tlist->next->next->next = _6;
+  _7 = tok_ident('y');
+  tlist->next->next->next->next = _7;
+  _8 = new_TK_PUNCT();
+  _9 = str_semicolon();
+  _10 = new_token(_8, _9);
+  tlist->next->next->next->next->next = _10;
+  stmt1 = tlist->next->next->next->next->next;
+  _11 = tok_ident('y');
+  stmt1->next = _11;
+  _12 = new_TK_PUNCT();
+  _13 = str_eq();
+  _14 = new_token(_12, _13);
+  stmt1->next->next = _14;
+  _15 = new_TK_NUM();
+  _16 = new_token(_15, n1);
+  stmt1->next->next->next = _16;
+  _17 = new_ty_int();
+  stmt1->next->next->next->ty = _17;
+  _18 = new_TK_PUNCT();
+  _19 = str_semicolon();
+  _20 = new_token(_18, _19);
+  stmt1->next->next->next->next = _20;
+  stmt2 = stmt1->next->next->next->next;
+  _21 = tok_ident('x');
+  stmt2->next = _21;
+  _22 = new_TK_PUNCT();
+  _23 = str_eq();
+  _24 = new_token(_22, _23);
+  stmt2->next->next = _24;
+  _25 = tok_ident('y');
+  stmt2->next->next->next = _25;
+  _26 = new_TK_PUNCT();
+  _27 = str_semicolon();
+  _28 = new_token(_26, _27);
+  stmt2->next->next->next->next = _28;
+  stmt3 = stmt2->next->next->next->next;
+  _29 = tok_ident('x');
+  stmt3->next = _29;
+  _30 = new_TK_PUNCT();
+  _31 = str_eq();
+  _32 = new_token(_30, _31);
+  stmt3->next->next = _32;
+  _33 = new_TK_NUM();
+  _34 = new_token(_33, n1);
+  stmt3->next->next->next = _34;
+  _35 = new_ty_int();
+  stmt3->next->next->next->ty = _35;
+  _36 = new_TK_PUNCT();
+  _37 = str_add();
+  _38 = new_token(_36, _37);
+  stmt3->next->next->next->next = _38;
+  _39 = new_TK_NUM();
+  _40 = new_token(_39, n2);
+  stmt3->next->next->next->next->next = _40;
+  _41 = new_ty_int();
+  stmt3->next->next->next->next->next->ty = _41;
+  _42 = new_TK_PUNCT();
+  _43 = str_sub();
+  _44 = new_token(_42, _43);
+  stmt3->next->next->next->next->next->next = _44;
+  _45 = tok_ident('y');
+  stmt3->next->next->next->next->next->next->next = _45;
+  _46 = new_TK_PUNCT();
+  _47 = str_semicolon();
+  _48 = new_token(_46, _47);
+  stmt3->next->next->next->next->next->next->next->next = _48;
+  stmt4 = stmt3->next->next->next->next->next->next->next->next;
+  _49 = tok_ident('y');
+  stmt4->next = _49;
+  _50 = new_TK_PUNCT();
+  _51 = str_eq();
+  _52 = new_token(_50, _51);
+  stmt4->next->next = _52;
+  _53 = new_TK_PUNCT();
+  _54 = str_sub();
+  _55 = new_token(_53, _54);
+  stmt4->next->next->next = _55;
+  _56 = tok_ident('x');
+  stmt4->next->next->next->next = _56;
+  _57 = new_TK_PUNCT();
+  _58 = str_semicolon();
+  _59 = new_token(_57, _58);
+  stmt4->next->next->next->next->next = _59;
+  stmt5 = stmt4->next->next->next->next->next;
+  _60 = tok_ident('y');
+  stmt5->next = _60;
+  _61 = new_TK_PUNCT();
+  _62 = str_eq();
+  _63 = new_token(_61, _62);
+  stmt5->next->next = _63;
+  _64 = tok_ident('x');
+  stmt5->next->next->next = _64;
+  _65 = new_TK_PUNCT();
+  _66 = str_bitshl();
+  _67 = new_token(_65, _66);
+  stmt5->next->next->next->next = _67;
+  _68 = new_TK_NUM();
+  _69 = new_token(_68, n1);
+  stmt5->next->next->next->next->next = _69;
+  _70 = new_ty_int();
+  stmt5->next->next->next->next->next->ty = _70;
+  _71 = new_TK_PUNCT();
+  _72 = str_semicolon();
+  _73 = new_token(_71, _72);
+  stmt5->next->next->next->next->next->next = _73;
+  stmt6 = stmt5->next->next->next->next->next->next;
+  _74 = tok_ident('y');
+  stmt6->next = _74;
+  _75 = new_TK_PUNCT();
+  _76 = str_eq();
+  _77 = new_token(_75, _76);
+  stmt6->next->next = _77;
+  _78 = tok_ident('x');
+  stmt6->next->next->next = _78;
+  _79 = new_TK_PUNCT();
+  _80 = str_bitshr();
+  _81 = new_token(_79, _80);
+  stmt6->next->next->next->next = _81;
+  _82 = new_TK_PUNCT();
+  _83 = str_sub();
+  _84 = new_token(_82, _83);
+  stmt6->next->next->next->next->next = _84;
+  _85 = new_TK_NUM();
+  _86 = new_token(_85, n2);
+  stmt6->next->next->next->next->next->next = _86;
+  _87 = new_ty_int();
+  stmt6->next->next->next->next->next->next->ty = _87;
+  _88 = new_TK_PUNCT();
+  _89 = str_semicolon();
+  _90 = new_token(_88, _89);
+  stmt6->next->next->next->next->next->next->next = _90;
+  stmt7 = stmt6->next->next->next->next->next->next->next;
+  _91 = tok_ident('x');
+  stmt7->next = _91;
+  _92 = new_TK_PUNCT();
+  _93 = str_eq();
+  _94 = new_token(_92, _93);
+  stmt7->next->next = _94;
+  _95 = new_TK_PUNCT();
+  _96 = str_bitnot();
+  _97 = new_token(_95, _96);
+  stmt7->next->next->next = _97;
+  _98 = new_TK_PUNCT();
+  _99 = str_oparen();
+  _100 = new_token(_98, _99);
+  stmt7->next->next->next->next = _100;
+  _101 = tok_ident('y');
+  stmt7->next->next->next->next->next = _101;
+  _102 = new_TK_PUNCT();
+  _103 = str_bitand();
+  _104 = new_token(_102, _103);
+  stmt7->next->next->next->next->next->next = _104;
+  _105 = tok_ident('x');
+  stmt7->next->next->next->next->next->next->next = _105;
+  _106 = new_TK_PUNCT();
+  _107 = str_cparen();
+  _108 = new_token(_106, _107);
+  stmt7->next->next->next->next->next->next->next->next = _108;
+  _109 = new_TK_PUNCT();
+  _110 = str_semicolon();
+  _111 = new_token(_109, _110);
+  stmt7->next->next->next->next->next->next->next->next->next = _111;
+  stmt8 = stmt7->next->next->next->next->next->next->next->next->next;
+  _112 = new_TK_KEYWORD();
+  _113 = str_float();
+  _114 = new_token(_112, _113);
+  stmt8->next = _114;
+  _115 = tok_ident('a');
+  stmt8->next->next = _115;
+  _116 = new_TK_PUNCT();
+  _117 = str_comma();
+  _118 = new_token(_116, _117);
+  stmt8->next->next->next = _118;
+  _119 = tok_ident('b');
+  stmt8->next->next->next->next = _119;
+  _120 = new_TK_PUNCT();
+  _121 = str_comma();
+  _122 = new_token(_120, _121);
+  stmt8->next->next->next->next->next = _122;
+  _123 = tok_ident('c');
+  stmt8->next->next->next->next->next->next = _123;
+  _124 = new_TK_PUNCT();
+  _125 = str_semicolon();
+  _126 = new_token(_124, _125);
+  stmt8->next->next->next->next->next->next->next = _126;
+  stmt9 = stmt8->next->next->next->next->next->next->next;
+  _127 = tok_ident('b');
+  stmt9->next = _127;
+  _128 = new_TK_PUNCT();
+  _129 = str_eq();
+  _130 = new_token(_128, _129);
+  stmt9->next->next = _130;
+  _131 = new_TK_NUM();
+  _132 = new_token(_131, f1);
+  stmt9->next->next->next = _132;
+  _133 = new_ty_double();
+  stmt9->next->next->next->ty = _133;
+  _134 = new_TK_PUNCT();
+  _135 = str_mul();
+  _136 = new_token(_134, _135);
+  stmt9->next->next->next->next = _136;
+  _137 = new_TK_NUM();
+  _138 = new_token(_137, f2);
+  stmt9->next->next->next->next->next = _138;
+  _139 = new_ty_double();
+  stmt9->next->next->next->next->next->ty = _139;
+  _140 = new_TK_PUNCT();
+  _141 = str_semicolon();
+  _142 = new_token(_140, _141);
+  stmt9->next->next->next->next->next->next = _142;
+  stmt10 = stmt9->next->next->next->next->next->next;
+  _143 = tok_ident('c');
+  stmt10->next = _143;
+  _144 = new_TK_PUNCT();
+  _145 = str_eq();
+  _146 = new_token(_144, _145);
+  stmt10->next->next = _146;
+  _147 = new_TK_NUM();
+  _148 = new_token(_147, f1);
+  stmt10->next->next->next = _148;
+  _149 = new_ty_double();
+  stmt10->next->next->next->ty = _149;
+  _150 = new_TK_PUNCT();
+  _151 = str_mod();
+  _152 = new_token(_150, _151);
+  stmt10->next->next->next->next = _152;
+  _153 = new_TK_NUM();
+  _154 = new_token(_153, f2);
+  stmt10->next->next->next->next->next = _154;
+  _155 = new_ty_double();
+  stmt10->next->next->next->next->next->ty = _155;
+  _156 = new_TK_PUNCT();
+  _157 = str_semicolon();
+  _158 = new_token(_156, _157);
+  stmt10->next->next->next->next->next->next = _158;
+  stmt11 = stmt10->next->next->next->next->next->next;
+  _159 = tok_ident('a');
+  stmt11->next = _159;
+  _160 = new_TK_PUNCT();
+  _161 = str_eq();
+  _162 = new_token(_160, _161);
+  stmt11->next->next = _162;
+  _163 = tok_ident('b');
+  stmt11->next->next->next = _163;
+  _164 = new_TK_PUNCT();
+  _165 = str_div();
+  _166 = new_token(_164, _165);
+  stmt11->next->next->next->next = _166;
+  _167 = tok_ident('c');
+  stmt11->next->next->next->next->next = _167;
+  _168 = new_TK_PUNCT();
+  _169 = str_semicolon();
+  _170 = new_token(_168, _169);
+  stmt11->next->next->next->next->next->next = _170;
+  end = stmt11->next->next->next->next->next->next;
+  return end;
+}
+
+struct Obj* parse(struct Token* tok)
+  //@requires ? && tokenList(tok);
+  //@ensures ?;
+{
+  struct Scope* scope = NULL;
+  struct _ptr_struct_Scope_* scptr = NULL;
+  struct _ptr_struct_Obj_* gblsptr = NULL;
+  struct Token* gv_tok = NULL;
+  bool gv_beforeloop = false;
+  bool _ = false;
+  struct VarAttr* attr = NULL;
+  struct _ptr_struct_Token_* rest = NULL;
+  struct Type* basety = NULL;
+  bool _1 = false;
+  struct Token* tok1 = NULL;
+  struct Token* tok2 = NULL;
+  tok2 = tok;
+  scope = new_scope();
+  scptr = alloc(struct _ptr_struct_Scope_);
+  scptr->value = scope;
+  gblsptr = alloc(struct _ptr_struct_Obj_);
+  gblsptr->value = NULL;
+  //@unfold tokenList(tok2);
+  //@unfold tokenListSeg(tok2, NULL);
+  gv_tok = tok2;
+  gv_beforeloop = true;
+  //@fold tokenListSeg(gv_tok, tok2);
+  _ = is_EOF(tok2);
+  while (!_)
+    //@loop_invariant ? && acc(tok2->next) && tokenListSeg(tok2->next, NULL) && (tokenListSeg(gv_tok, tok2) && gv_beforeloop == true ? true : gv_tok != tok2);
+  {
+    gv_tok = tok2;
+    gv_beforeloop = false;
+    attr = new_attr();
+    rest = alloc(struct _ptr_struct_Token_);
+    rest->value = tok2;
+    basety = declspec(rest, tok2, attr, scptr->value);
+    tok2 = rest->value;
+    if (attr->is_typedef)
+    {
+      tok1 = parse_typedef(tok2, basety, scptr->value);
+    }
+    else
+    {
+      _1 = is_function(tok2, scptr->value);
+      if (_1)
+      {
+        tok1 = functionp(tok2, basety, attr, scptr, gblsptr);
+      }
+      else
+      {
+        tok1 = tok2;
+      }
+    }
+    _ = is_EOF(tok1);
+    tok2 = tok1;
+  }
+  //@assert endOfFile(tok2);
+  return gblsptr->value;
+}
+
+struct Token* parse_typedef(struct Token* tok, struct Type* basety, struct Scope* scope)
+  //@requires ?;
+  //@ensures ?;
+{
+  bool first = false;
+  struct _ptr_struct_Token_* rest = NULL;
+  struct StringList* _ = NULL;
+  bool _1 = false;
+  struct Type* ty = NULL;
+  struct VarScope* tmp = NULL;
+  struct StringList* _2 = NULL;
+  struct StringList* _3 = NULL;
+  struct StringList* _4 = NULL;
+  struct Token* tok1 = NULL;
+  struct Token* tok2 = NULL;
+  tok2 = tok;
+  first = true;
+  rest = alloc(struct _ptr_struct_Token_);
+  rest->value = tok2;
+  _ = str_semicolon();
+  _1 = consume(rest, tok2, _);
+  while (!_1)
+    //@loop_invariant ?;
+  {
+    tok2 = rest->value;
+    if (!first)
+    {
+      _2 = str_comma();
+      tok1 = skip(tok2, _2);
+    }
+    else
+    {
+      tok1 = tok2;
+    }
+    first = false;
+    rest->value = tok1;
+    ty = declarator(rest, tok1, basety, scope);
+    tok1 = rest->value;
+    _3 = ty_name(ty);
+    if (_3 == NULL)
+    {
+      tydef_name_error();
+    }
+    _4 = ty_name(ty);
+    tmp = push_scope(scope, _4);
+    tmp->type_def = ty;
+    _ = str_semicolon();
+    _1 = consume(rest, tok1, _);
+    tok2 = tok1;
+  }
+  tok2 = rest->value;
+  return tok2;
+}
+
+struct Type* pointer_to(struct Type* base)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct Type* ty = NULL;
+  struct TypeKind* _ = NULL;
+  _ = new_TY_PTR();
+  ty = new_type(_, 8, 8);
+  ty->base = base;
+  ty->is_unsigned = true;
+  return ty;
+}
+
+struct Type* pointers(struct _ptr_struct_Token_* rest, struct Token* tok, struct Type* ty)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct _ptr_struct_Token_* rst = NULL;
+  bool consume_b = false;
+  struct StringList* _ = NULL;
+  struct StringList* _1 = NULL;
+  bool _2 = false;
+  struct StringList* _3 = NULL;
+  bool _4 = false;
+  struct StringList* _5 = NULL;
+  bool _6 = false;
+  struct StringList* _7 = NULL;
+  struct Type* ty1 = NULL;
+  struct Token* tok1 = NULL;
+  struct Type* ty2 = NULL;
+  ty2 = ty;
+  tok1 = tok;
+  rst = alloc(struct _ptr_struct_Token_);
+  rst->value = tok1;
+  _ = str_star();
+  consume_b = consume(rst, tok1, _);
+  tok1 = rst->value;
+  while (consume_b)
+    //@loop_invariant ?;
+  {
+    ty1 = pointer_to(ty2);
+    _1 = str_const();
+    _2 = equal(tok1, _1);
+    if (!_2)
+    {
+      _3 = str_volatile();
+      _4 = equal(tok1, _3);
+    }
+    if (!(_2 || _4))
+    {
+      _5 = str_restrict();
+      _6 = equal(tok1, _5);
+    }
+    while (_2 || _4 || _6)
+      //@loop_invariant ?;
+    {
+      tok1 = tok1->next;
+      _1 = str_const();
+      _2 = equal(tok1, _1);
+      if (!_2)
+      {
+        _3 = str_volatile();
+        _4 = equal(tok1, _3);
+      }
+      if (!(_2 || _4))
+      {
+        _5 = str_restrict();
+        _6 = equal(tok1, _5);
+      }
+    }
+    rst->value = tok1;
+    _7 = str_star();
+    consume_b = consume(rst, tok1, _7);
+    tok1 = rst->value;
+    ty2 = ty1;
+  }
+  rest->value = tok1;
+  return ty2;
+}
+
+struct Token* pointerss(struct Token* tlist)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct Token* stmt1 = NULL;
+  struct Token* stmt2 = NULL;
+  struct Token* stmt3 = NULL;
+  struct Token* stmt4 = NULL;
+  struct Token* stmt5 = NULL;
+  struct Token* end = NULL;
+  struct TokenKind* _ = NULL;
+  struct StringList* _1 = NULL;
+  struct Token* _2 = NULL;
+  struct TokenKind* _3 = NULL;
+  struct StringList* _4 = NULL;
+  struct Token* _5 = NULL;
+  struct Token* _6 = NULL;
+  struct TokenKind* _7 = NULL;
+  struct StringList* _8 = NULL;
+  struct Token* _9 = NULL;
+  struct TokenKind* _10 = NULL;
+  struct StringList* _11 = NULL;
+  struct Token* _12 = NULL;
+  struct TokenKind* _13 = NULL;
+  struct StringList* _14 = NULL;
+  struct Token* _15 = NULL;
+  struct Token* _16 = NULL;
+  struct TokenKind* _17 = NULL;
+  struct StringList* _18 = NULL;
+  struct Token* _19 = NULL;
+  struct TokenKind* _20 = NULL;
+  struct StringList* _21 = NULL;
+  struct Token* _22 = NULL;
+  struct Token* _23 = NULL;
+  struct TokenKind* _24 = NULL;
+  struct StringList* _25 = NULL;
+  struct Token* _26 = NULL;
+  struct TokenKind* _27 = NULL;
+  struct StringList* _28 = NULL;
+  struct Token* _29 = NULL;
+  struct Token* _30 = NULL;
+  struct TokenKind* _31 = NULL;
+  struct StringList* _32 = NULL;
+  struct Token* _33 = NULL;
+  struct TokenKind* _34 = NULL;
+  struct StringList* _35 = NULL;
+  struct Token* _36 = NULL;
+  struct TokenKind* _37 = NULL;
+  struct StringList* _38 = NULL;
+  struct Token* _39 = NULL;
+  struct TokenKind* _40 = NULL;
+  struct StringList* _41 = NULL;
+  struct Token* _42 = NULL;
+  struct Token* _43 = NULL;
+  struct TokenKind* _44 = NULL;
+  struct StringList* _45 = NULL;
+  struct Token* _46 = NULL;
+  struct TokenKind* _47 = NULL;
+  struct StringList* _48 = NULL;
+  struct Token* _49 = NULL;
+  struct TokenKind* _50 = NULL;
+  struct StringList* _51 = NULL;
+  struct Token* _52 = NULL;
+  struct Token* _53 = NULL;
+  struct TokenKind* _54 = NULL;
+  struct StringList* _55 = NULL;
+  struct Token* _56 = NULL;
+  struct TokenKind* _57 = NULL;
+  struct StringList* _58 = NULL;
+  struct Token* _59 = NULL;
+  struct Token* _60 = NULL;
+  struct TokenKind* _61 = NULL;
+  struct StringList* _62 = NULL;
+  struct Token* _63 = NULL;
+  struct TokenKind* _64 = NULL;
+  struct StringList* _65 = NULL;
+  struct Token* _66 = NULL;
+  struct TokenKind* _67 = NULL;
+  struct StringList* _68 = NULL;
+  struct Token* _69 = NULL;
+  struct Token* _70 = NULL;
+  struct TokenKind* _71 = NULL;
+  struct StringList* _72 = NULL;
+  struct Token* _73 = NULL;
+  _ = new_TK_PUNCT();
+  _1 = str_mul();
+  _2 = new_token(_, _1);
+  tlist->next = _2;
+  _3 = new_TK_PUNCT();
+  _4 = str_bitand();
+  _5 = new_token(_3, _4);
+  tlist->next->next = _5;
+  _6 = tok_ident('x');
+  tlist->next->next->next = _6;
+  _7 = new_TK_PUNCT();
+  _8 = str_semicolon();
+  _9 = new_token(_7, _8);
+  tlist->next->next->next->next = _9;
+  stmt1 = tlist->next->next->next->next;
+  _10 = new_TK_KEYWORD();
+  _11 = str_int();
+  _12 = new_token(_10, _11);
+  stmt1->next = _12;
+  _13 = new_TK_PUNCT();
+  _14 = str_mul();
+  _15 = new_token(_13, _14);
+  stmt1->next->next = _15;
+  _16 = tok_ident('l');
+  stmt1->next->next->next = _16;
+  _17 = new_TK_PUNCT();
+  _18 = str_semicolon();
+  _19 = new_token(_17, _18);
+  stmt1->next->next->next->next = _19;
+  stmt2 = stmt1->next->next->next->next;
+  _20 = new_TK_PUNCT();
+  _21 = str_mul();
+  _22 = new_token(_20, _21);
+  stmt2->next = _22;
+  _23 = tok_ident('l');
+  stmt2->next->next = _23;
+  _24 = new_TK_PUNCT();
+  _25 = str_eq();
+  _26 = new_token(_24, _25);
+  stmt2->next->next->next = _26;
+  _27 = new_TK_PUNCT();
+  _28 = str_bitand();
+  _29 = new_token(_27, _28);
+  stmt2->next->next->next->next = _29;
+  _30 = tok_ident('x');
+  stmt2->next->next->next->next->next = _30;
+  _31 = new_TK_PUNCT();
+  _32 = str_semicolon();
+  _33 = new_token(_31, _32);
+  stmt2->next->next->next->next->next->next = _33;
+  stmt3 = stmt2->next->next->next->next->next->next;
+  _34 = new_TK_KEYWORD();
+  _35 = str_int();
+  _36 = new_token(_34, _35);
+  stmt3->next = _36;
+  _37 = new_TK_PUNCT();
+  _38 = str_mul();
+  _39 = new_token(_37, _38);
+  stmt3->next->next = _39;
+  _40 = new_TK_PUNCT();
+  _41 = str_mul();
+  _42 = new_token(_40, _41);
+  stmt3->next->next->next = _42;
+  _43 = tok_ident('z');
+  stmt3->next->next->next->next = _43;
+  _44 = new_TK_PUNCT();
+  _45 = str_semicolon();
+  _46 = new_token(_44, _45);
+  stmt3->next->next->next->next->next = _46;
+  stmt4 = stmt3->next->next->next->next->next;
+  _47 = new_TK_PUNCT();
+  _48 = str_mul();
+  _49 = new_token(_47, _48);
+  stmt4->next = _49;
+  _50 = new_TK_PUNCT();
+  _51 = str_mul();
+  _52 = new_token(_50, _51);
+  stmt4->next->next = _52;
+  _53 = tok_ident('z');
+  stmt4->next->next->next = _53;
+  _54 = new_TK_PUNCT();
+  _55 = str_eq();
+  _56 = new_token(_54, _55);
+  stmt4->next->next->next->next = _56;
+  _57 = new_TK_PUNCT();
+  _58 = str_bitand();
+  _59 = new_token(_57, _58);
+  stmt4->next->next->next->next->next = _59;
+  _60 = tok_ident('y');
+  stmt4->next->next->next->next->next->next = _60;
+  _61 = new_TK_PUNCT();
+  _62 = str_semicolon();
+  _63 = new_token(_61, _62);
+  stmt4->next->next->next->next->next->next->next = _63;
+  stmt5 = stmt4->next->next->next->next->next->next->next;
+  _64 = new_TK_PUNCT();
+  _65 = str_mul();
+  _66 = new_token(_64, _65);
+  stmt5->next = _66;
+  _67 = new_TK_PUNCT();
+  _68 = str_mul();
+  _69 = new_token(_67, _68);
+  stmt5->next->next = _69;
+  _70 = tok_ident('z');
+  stmt5->next->next->next = _70;
+  _71 = new_TK_PUNCT();
+  _72 = str_semicolon();
+  _73 = new_token(_71, _72);
+  stmt5->next->next->next->next = _73;
+  end = stmt5->next->next->next->next;
+  return end;
+}
+
+struct ASTNode* postfix(struct _ptr_struct_Token_* rest, struct Token* tok, struct Scope* scope)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct _ptr_struct_Token_* rst = NULL;
+  struct ASTNode* node = NULL;
+  bool break_loop = false;
+  struct StringList* _ = NULL;
+  bool _1 = false;
+  struct ASTNode* node1 = NULL;
+  struct Token* tok1 = NULL;
+  tok1 = tok;
+  rst = alloc(struct _ptr_struct_Token_);
+  rst->value = tok1;
+  node = primary(rst, tok1, scope);
+  tok1 = rst->value;
+  break_loop = false;
+  while (!break_loop)
+    //@loop_invariant ?;
+  {
+    _ = str_oparen();
+    _1 = equal(tok1, _);
+    if (_1)
+    {
+      rst->value = tok1;
+      node1 = funcall(rst, tok1->next, node, scope);
+      tok1 = rst->value;
+    }
+    else
+    {
+      rest->value = tok1;
+      break_loop = true;
+      node1 = node;
+    }
+    node = node1;
+  }
+  return node;
+}
+
+struct ASTNode* primary(struct _ptr_struct_Token_* rest, struct Token* tok, struct Scope* scope)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct Token* start = NULL;
+  struct _ptr_struct_Token_* rst = NULL;
+  struct StringList* _ = NULL;
+  bool _1 = false;
+  struct ASTNode* node = NULL;
+  struct StringList* _2 = NULL;
+  struct Token* _3 = NULL;
+  bool _4 = false;
+  struct VarScope* sc = NULL;
+  struct ASTNode* node1 = NULL;
+  struct NodeKind* _5 = NULL;
+  struct StringList* _6 = NULL;
+  bool _7 = false;
+  struct StringList* _8 = NULL;
+  bool _9 = false;
+  bool _10 = false;
+  struct ASTNode* node2 = NULL;
+  struct NodeKind* _11 = NULL;
+  struct StringList* _12 = NULL;
+  struct Token* tok1 = NULL;
+  tok1 = tok;
+  start = tok1;
+  rst = alloc(struct _ptr_struct_Token_);
+  rst->value = tok1;
+  _ = str_oparen();
+  _1 = equal(tok1, _);
+  if (_1)
+  {
+    node = expr(rst, tok1->next, scope);
+    tok1 = rst->value;
+    _2 = str_cparen();
+    _3 = skip(tok1, _2);
+    rest->value = _3;
+    return node;
+  }
+  else
+  {
+    _4 = is_IDENT(tok1);
+    if (_4)
+    {
+      sc = find_var(tok1, scope);
+      rest->value = tok1->next;
+      if (sc != NULL)
+      {
+        if (sc->var != NULL)
+        {
+          _5 = new_ND_VAR();
+          node1 = new_node(_5, tok1);
+          node1->var = sc->var;
+          return node1;
+        }
+        else
+        {
+          _6 = str_oparen();
+          _7 = equal(tok1->next, _6);
+          if (_7)
+          {
+            func_impdecl_error();
+            return NULL;
+          }
+          else
+          {
+            undef_variable_error();
+            return NULL;
+          }
+        }
+      }
+      else
+      {
+        _8 = str_oparen();
+        _9 = equal(tok1->next, _8);
+        if (_9)
+        {
+          func_impdecl_error();
+          return NULL;
+        }
+        else
+        {
+          undef_variable_error();
+          return NULL;
+        }
+      }
+    }
+    else
+    {
+      _10 = is_NUM(tok1);
+      if (_10)
+      {
+        _11 = new_ND_NUM();
+        node2 = new_node(_11, tok1);
+        _12 = tok_name(tok1);
+        node2->val = _12;
+        node2->ty = tok1->ty;
+        rest->value = tok1->next;
+        return node2;
+      }
+      else
+      {
+        expr_error();
+        return NULL;
+      }
+    }
+  }
+}
+
+void print_nodes(struct ASTNode* nlist, bool rep)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct ASTNode* cur = NULL;
+  struct StringList* _ = NULL;
+  struct ASTNode* n = NULL;
+  struct ASTNode* n1 = NULL;
+  struct StringList* _1 = NULL;
+  struct StringList* _2 = NULL;
+  struct StringList* _3 = NULL;
+  bool _4 = false;
+  struct ASTNode* n2 = NULL;
+  struct ASTNode* n3 = NULL;
+  cur = nlist;
+  if (cur == NULL)
+  {
+  }
+  else
+  {
+    if (rep)
+    {
+      while (cur != NULL)
+        //@loop_invariant ?;
+      {
+        printchar('r');
+        printchar('e');
+        printchar('p');
+        printchar(':');
+        printchar(' ');
+        _ = tok_name(cur->tok);
+        print_str_list(_);
+        printchar('\n');
+        print_nodes(cur->lhs, false);
+        print_nodes(cur->rhs, false);
+        print_nodes(cur->cond, false);
+        print_nodes(cur->then, false);
+        print_nodes(cur->els, false);
+        print_nodes(cur->init, false);
+        print_nodes(cur->inc, false);
+        n = cur->body;
+        while (n != NULL)
+          //@loop_invariant ?;
+        {
+          print_nodes(n, false);
+          n = n->next;
+        }
+        n1 = cur->args;
+        while (n1 != NULL)
+          //@loop_invariant ?;
+        {
+          print_nodes(n1, false);
+          n1 = n1->next;
+        }
+        cur = cur->next;
+      }
+    }
+    else
+    {
+      _1 = tok_name(cur->tok);
+      print_str_list(_1);
+      _2 = tok_name(cur->tok);
+      _3 = str_semicolon();
+      _4 = equals(_2, _3);
+      if (_4)
+      {
+        printchar('\n');
+      }
+      else
+      {
+        printchar(' ');
+      }
+      print_nodes(cur->lhs, false);
+      print_nodes(cur->rhs, false);
+      print_nodes(cur->cond, false);
+      print_nodes(cur->then, false);
+      print_nodes(cur->els, false);
+      print_nodes(cur->init, false);
+      print_nodes(cur->inc, false);
+      n2 = cur->body;
+      while (n2 != NULL)
+        //@loop_invariant ?;
+      {
+        print_nodes(n2, false);
+        n2 = n2->next;
+      }
+      n3 = cur->args;
+      while (n3 != NULL)
+        //@loop_invariant ?;
+      {
+        print_nodes(n3, false);
+        n3 = n3->next;
+      }
+    }
+  }
+}
+
+void print_str_list(struct StringList* str)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct CharNode* cur = NULL;
+  int i = 0;
+  int _ = 0;
+  if (str != NULL)
+  {
+    cur = str->root;
+    i = 0;
+    _ = get_len(str);
+    while (i < _)
+      //@loop_invariant ?;
+    {
+      printchar(cur->val);
+      cur = cur->next;
+      i = i + 1;
+      _ = get_len(str);
+    }
+    printchar(cur->val);
+  }
+}
+
+void print_tokens(struct Token* tlist)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct Token* cur = NULL;
+  struct StringList* _ = NULL;
+  struct StringList* _1 = NULL;
+  struct StringList* _2 = NULL;
+  bool _3 = false;
+  struct StringList* _4 = NULL;
+  struct StringList* _5 = NULL;
+  bool _6 = false;
+  struct StringList* _7 = NULL;
+  struct StringList* _8 = NULL;
+  bool _9 = false;
+  cur = tlist;
+  while (cur != NULL)
+    //@loop_invariant ?;
+  {
+    _ = tok_name(cur);
+    print_str_list(_);
+    _1 = tok_name(cur);
+    _2 = str_semicolon();
+    _3 = equals(_1, _2);
+    if (!_3)
+    {
+      _4 = tok_name(cur);
+      _5 = str_obracket();
+      _6 = equals(_4, _5);
+    }
+    if (!(_3 || _6))
+    {
+      _7 = tok_name(cur);
+      _8 = str_cbracket();
+      _9 = equals(_7, _8);
+    }
+    if (_3 || _6 || _9)
+    {
+      printchar('\n');
+    }
+    else
+    {
+      printchar(' ');
+    }
+    cur = cur->next;
+  }
+}
+
+struct VarScope* push_scope(struct Scope* scope, struct StringList* name)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct VarScope* sc = NULL;
+  sc = alloc(struct VarScope);
+  varscopemap_put(scope->vars, name, sc);
+  return sc;
+}
+
+void push_tag_scope(struct Scope* scope, struct StringList* name, struct Type* ty)
+  //@requires ?;
+  //@ensures ?;
+{
+  tagscopemap_put(scope->tags, name, ty);
+}
+
+struct ASTNode* relational(struct _ptr_struct_Token_* rest, struct Token* tok, struct Scope* scope)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct _ptr_struct_Token_* rst = NULL;
+  struct ASTNode* node = NULL;
+  bool break_loop = false;
+  struct Token* start = NULL;
+  struct StringList* _ = NULL;
+  bool _1 = false;
+  struct NodeKind* _2 = NULL;
+  struct ASTNode* _3 = NULL;
+  struct StringList* _4 = NULL;
+  bool _5 = false;
+  struct NodeKind* _6 = NULL;
+  struct ASTNode* _7 = NULL;
+  struct StringList* _8 = NULL;
+  bool _9 = false;
+  struct NodeKind* _10 = NULL;
+  struct ASTNode* _11 = NULL;
+  struct StringList* _12 = NULL;
+  bool _13 = false;
+  struct NodeKind* _14 = NULL;
+  struct ASTNode* _15 = NULL;
+  struct ASTNode* node1 = NULL;
+  struct Token* tok1 = NULL;
+  tok1 = tok;
+  rst = alloc(struct _ptr_struct_Token_);
+  rst->value = tok1;
+  node = shift(rst, tok1, scope);
+  tok1 = rst->value;
+  break_loop = false;
+  while (!break_loop)
+    //@loop_invariant ?;
+  {
+    start = tok1;
+    _ = str_lt();
+    _1 = equal(tok1, _);
+    if (_1)
+    {
+      rst->value = tok1;
+      _2 = new_ND_LT();
+      _3 = shift(rst, tok1->next, scope);
+      node1 = new_binary(_2, node, _3, start);
+      tok1 = rst->value;
+    }
+    else
+    {
+      _4 = str_le();
+      _5 = equal(tok1, _4);
+      if (_5)
+      {
+        rst->value = tok1;
+        _6 = new_ND_LE();
+        _7 = shift(rst, tok1->next, scope);
+        node1 = new_binary(_6, node, _7, start);
+        tok1 = rst->value;
+      }
+      else
+      {
+        _8 = str_gt();
+        _9 = equal(tok1, _8);
+        if (_9)
+        {
+          rst->value = tok1;
+          _10 = new_ND_LT();
+          _11 = shift(rst, tok1->next, scope);
+          node1 = new_binary(_10, _11, node, start);
+          tok1 = rst->value;
+        }
+        else
+        {
+          _12 = str_ge();
+          _13 = equal(tok1, _12);
+          if (_13)
+          {
+            rst->value = tok1;
+            _14 = new_ND_LE();
+            _15 = shift(rst, tok1->next, scope);
+            node1 = new_binary(_14, _15, node, start);
+            tok1 = rst->value;
+          }
+          else
+          {
+            rest->value = tok1;
+            break_loop = true;
+            node1 = node;
+          }
+        }
+      }
+    }
+    node = node1;
+  }
+  return node;
+}
+
+bool same_typekind(struct Type* ty1, struct Type* ty2)
+  //@requires ?;
+  //@ensures ?;
+{
+  if (ty1 == NULL || ty2 == NULL || ty1->kind == NULL || ty2->kind == NULL)
+  {
+    return false;
+  }
+  else
+  {
+    return ty1->kind->kind == ty2->kind->kind;
+  }
+}
+
+struct ASTNode* shift(struct _ptr_struct_Token_* rest, struct Token* tok, struct Scope* scope)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct _ptr_struct_Token_* rst = NULL;
+  struct ASTNode* node = NULL;
+  bool break_loop = false;
+  struct Token* start = NULL;
+  struct StringList* _ = NULL;
+  bool _1 = false;
+  struct NodeKind* _2 = NULL;
+  struct ASTNode* _3 = NULL;
+  struct StringList* _4 = NULL;
+  bool _5 = false;
+  struct NodeKind* _6 = NULL;
+  struct ASTNode* _7 = NULL;
+  struct ASTNode* node1 = NULL;
+  struct Token* tok1 = NULL;
+  tok1 = tok;
+  rst = alloc(struct _ptr_struct_Token_);
+  rst->value = tok1;
+  node = add(rst, tok1, scope);
+  tok1 = rst->value;
+  break_loop = false;
+  while (!break_loop)
+    //@loop_invariant ?;
+  {
+    start = tok1;
+    _ = str_bitshl();
+    _1 = equal(tok1, _);
+    if (_1)
+    {
+      rst->value = tok1;
+      _2 = new_ND_SHL();
+      _3 = add(rst, tok1->next, scope);
+      node1 = new_binary(_2, node, _3, start);
+      tok1 = rst->value;
+    }
+    else
+    {
+      _4 = str_bitshr();
+      _5 = equal(tok1, _4);
+      if (_5)
+      {
+        rst->value = tok1;
+        _6 = new_ND_SHR();
+        _7 = add(rst, tok1->next, scope);
+        node1 = new_binary(_6, node, _7, start);
+        tok1 = rst->value;
+      }
+      else
+      {
+        rest->value = tok1;
+        break_loop = true;
+        node1 = node;
+      }
+    }
+    node = node1;
+  }
+  return node;
+}
+
+struct Token* skip(struct Token* tok, struct StringList* op)
+  //@requires ?;
+  //@ensures ?;
+{
+  bool _ = false;
+  _ = equal(tok, op);
+  if (!_)
+  {
+    token_match_error();
+  }
+  return tok->next;
+}
+
+struct ASTNode* stmt(struct _ptr_struct_Token_* rest, struct Token* tok, struct _ptr_struct_Scope_* scope, struct _ptr_struct_Obj_* globals, struct _ptr_struct_Obj_* locals)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct _ptr_struct_Token_* rst = NULL;
+  struct StringList* _ = NULL;
+  bool _1 = false;
+  struct ASTNode* node = NULL;
+  struct NodeKind* _2 = NULL;
+  struct StringList* _3 = NULL;
+  bool _4 = false;
+  struct ASTNode* exp = NULL;
+  struct StringList* _5 = NULL;
+  struct Token* _6 = NULL;
+  struct StringList* _7 = NULL;
+  bool _8 = false;
+  struct ASTNode* node1 = NULL;
+  struct NodeKind* _9 = NULL;
+  struct StringList* _10 = NULL;
+  struct ASTNode* _11 = NULL;
+  struct StringList* _12 = NULL;
+  struct ASTNode* _13 = NULL;
+  struct StringList* _14 = NULL;
+  bool _15 = false;
+  struct ASTNode* _16 = NULL;
+  struct StringList* _17 = NULL;
+  bool _18 = false;
+  struct ASTNode* node2 = NULL;
+  struct NodeKind* _19 = NULL;
+  struct StringList* _20 = NULL;
+  struct ASTNode* _21 = NULL;
+  struct StringList* _22 = NULL;
+  struct ASTNode* _23 = NULL;
+  struct StringList* _24 = NULL;
+  bool _25 = false;
+  struct ASTNode* _26 = NULL;
+  struct ASTNode* _27 = NULL;
+  struct Token* tok1 = NULL;
+  struct Token* tok11 = NULL;
+  struct Token* tok111 = NULL;
+  struct Token* tok2 = NULL;
+  tok2 = tok;
+  rst = alloc(struct _ptr_struct_Token_);
+  _ = str_return();
+  _1 = equal(tok2, _);
+  if (_1)
+  {
+    _2 = new_ND_RETURN();
+    node = new_node(_2, tok2);
+    _3 = str_semicolon();
+    _4 = consume(rest, tok2->next, _3);
+    if (_4)
+    {
+      return node;
+    }
+    else
+    {
+      rst->value = tok2;
+      exp = expr(rst, tok2->next, scope->value);
+      tok2 = rst->value;
+      _5 = str_semicolon();
+      _6 = skip(tok2, _5);
+      rest->value = _6;
+      add_type(exp);
+      node->lhs = exp;
+      return node;
+    }
+    tok1 = tok2;
+    tok11 = tok1;
+    tok111 = tok11;
+  }
+  else
+  {
+    _7 = str_if();
+    _8 = equal(tok2, _7);
+    if (_8)
+    {
+      _9 = new_ND_IF();
+      node1 = new_node(_9, tok2);
+      _10 = str_oparen();
+      tok1 = skip(tok2->next, _10);
+      rst->value = tok1;
+      _11 = expr(rst, tok1, scope->value);
+      node1->cond = _11;
+      tok1 = rst->value;
+      _12 = str_cparen();
+      tok11 = skip(tok1, _12);
+      rst->value = tok11;
+      _13 = stmt(rst, tok11, scope, globals, locals);
+      node1->then = _13;
+      tok11 = rst->value;
+      _14 = str_else();
+      _15 = equal(tok11, _14);
+      if (_15)
+      {
+        rst->value = tok11;
+        _16 = stmt(rst, tok11->next, scope, globals, locals);
+        node1->els = _16;
+        tok11 = rst->value;
+      }
+      rest->value = tok11;
+      return node1;
+      tok111 = tok11;
+    }
+    else
+    {
+      _17 = str_while();
+      _18 = equal(tok2, _17);
+      if (_18)
+      {
+        _19 = new_ND_FOR();
+        node2 = new_node(_19, tok2);
+        _20 = str_oparen();
+        tok1 = skip(tok2->next, _20);
+        rst->value = tok1;
+        _21 = expr(rst, tok1, scope->value);
+        node2->cond = _21;
+        tok11 = rst->value;
+        _22 = str_cparen();
+        tok111 = skip(tok11, _22);
+        _23 = stmt(rest, tok111, scope, globals, locals);
+        node2->then = _23;
+        return node2;
+      }
+      else
+      {
+        _24 = str_obracket();
+        _25 = equal(tok2, _24);
+        if (_25)
+        {
+          _26 = compound_stmt(rest, tok2->next, scope, globals, locals);
+          return _26;
+        }
+        else
+        {
+          _27 = expr_stmt(rest, tok2, scope->value);
+          return _27;
+        }
+        tok1 = tok2;
+        tok11 = tok1;
+        tok111 = tok11;
+      }
+    }
+  }
+}
+
+struct StringList* str_add()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, '+');
+  return str;
+}
+
+struct StringList* str_auto()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, 'a');
+  add_char(str, 'u');
+  add_char(str, 't');
+  add_char(str, 'o');
+  return str;
+}
+
+struct StringList* str_bitand()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, '&');
+  return str;
+}
+
+struct StringList* str_bitnot()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, '~');
+  return str;
+}
+
+struct StringList* str_bitor()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, '|');
+  return str;
+}
+
+struct StringList* str_bitshl()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, '<');
+  add_char(str, '<');
+  return str;
+}
+
+struct StringList* str_bitshr()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, '>');
+  add_char(str, '>');
+  return str;
+}
+
+struct StringList* str_bitxor()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, '^');
+  return str;
+}
+
+struct StringList* str_bool()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, '_');
+  add_char(str, 'B');
+  add_char(str, 'o');
+  add_char(str, 'o');
+  add_char(str, 'l');
+  return str;
+}
+
+struct StringList* str_cbracket()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, '}');
+  return str;
+}
+
+struct StringList* str_char()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, 'c');
+  add_char(str, 'h');
+  add_char(str, 'a');
+  add_char(str, 'r');
+  return str;
+}
+
+struct StringList* str_colon()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, ':');
+  return str;
+}
+
+struct StringList* str_comma()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, ',');
+  return str;
+}
+
+struct StringList* str_const()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, 'c');
+  add_char(str, 'o');
+  add_char(str, 'n');
+  add_char(str, 's');
+  add_char(str, 't');
+  return str;
+}
+
+struct StringList* str_cparen()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, ')');
+  return str;
+}
+
+struct StringList* str_div()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, '/');
+  return str;
+}
+
+struct StringList* str_double()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, 'd');
+  add_char(str, 'o');
+  add_char(str, 'u');
+  add_char(str, 'b');
+  add_char(str, 'l');
+  add_char(str, 'e');
+  return str;
+}
+
+struct StringList* str_else()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, 'e');
+  add_char(str, 'l');
+  add_char(str, 's');
+  add_char(str, 'e');
+  return str;
+}
+
+struct StringList* str_enum()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, 'e');
+  add_char(str, 'n');
+  add_char(str, 'u');
+  add_char(str, 'm');
+  return str;
+}
+
+struct StringList* str_eq()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, '=');
+  return str;
+}
+
+struct StringList* str_extern()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, 'e');
+  add_char(str, 'x');
+  add_char(str, 't');
+  add_char(str, 'e');
+  add_char(str, 'r');
+  add_char(str, 'n');
+  return str;
+}
+
+struct StringList* str_float()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, 'f');
+  add_char(str, 'l');
+  add_char(str, 'o');
+  add_char(str, 'a');
+  add_char(str, 't');
+  return str;
+}
+
+struct StringList* str_ge()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, '>');
+  add_char(str, '=');
+  return str;
+}
+
+struct StringList* str_gt()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, '>');
+  return str;
+}
+
+struct StringList* str_if()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, 'i');
+  add_char(str, 'f');
+  return str;
+}
+
+struct StringList* str_inline()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, 'i');
+  add_char(str, 'n');
+  add_char(str, 'l');
+  add_char(str, 'i');
+  add_char(str, 'n');
+  add_char(str, 'e');
+  return str;
+}
+
+struct StringList* str_int()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, 'i');
+  add_char(str, 'n');
+  add_char(str, 't');
+  return str;
+}
+
+struct StringList* str_le()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, '<');
+  add_char(str, '=');
+  return str;
+}
+
+struct StringList* str_logand()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, '&');
+  add_char(str, '&');
+  return str;
+}
+
+struct StringList* str_logeq()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, '=');
+  add_char(str, '=');
+  return str;
+}
+
+struct StringList* str_logneq()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, '!');
+  add_char(str, '=');
+  return str;
+}
+
+struct StringList* str_lognot()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, '!');
+  return str;
+}
+
+struct StringList* str_logor()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, '|');
+  add_char(str, '|');
+  return str;
+}
+
+struct StringList* str_long()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, 'l');
+  add_char(str, 'o');
+  add_char(str, 'n');
+  add_char(str, 'g');
+  return str;
+}
+
+struct StringList* str_lt()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, '<');
+  return str;
+}
+
+struct StringList* str_mod()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, '%');
+  return str;
+}
+
+struct StringList* str_mul()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, '*');
+  return str;
+}
+
+struct StringList* str_obracket()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, '{');
+  return str;
+}
+
+struct StringList* str_oparen()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, '(');
+  return str;
+}
+
+struct StringList* str_register()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, 'r');
+  add_char(str, 'e');
+  add_char(str, 'g');
+  add_char(str, 'i');
+  add_char(str, 's');
+  add_char(str, 't');
+  add_char(str, 'e');
+  add_char(str, 'r');
+  return str;
+}
+
+struct StringList* str_restrict()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, 'r');
+  add_char(str, 'e');
+  add_char(str, 's');
+  add_char(str, 't');
+  add_char(str, 'r');
+  add_char(str, 'i');
+  add_char(str, 'c');
+  add_char(str, 't');
+  return str;
+}
+
+struct StringList* str_return()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, 'r');
+  add_char(str, 'e');
+  add_char(str, 't');
+  add_char(str, 'u');
+  add_char(str, 'r');
+  add_char(str, 'n');
+  return str;
+}
+
+struct StringList* str_semicolon()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, ';');
+  return str;
+}
+
+struct StringList* str_short()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, 's');
+  add_char(str, 'h');
+  add_char(str, 'o');
+  add_char(str, 'r');
+  add_char(str, 't');
+  return str;
+}
+
+struct StringList* str_signed()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, 's');
+  add_char(str, 'i');
+  add_char(str, 'g');
+  add_char(str, 'n');
+  add_char(str, 'e');
+  add_char(str, 'd');
+  return str;
+}
+
+struct StringList* str_star()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, '*');
+  return str;
+}
+
+struct StringList* str_static()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, 's');
+  add_char(str, 't');
+  add_char(str, 'a');
+  add_char(str, 't');
+  add_char(str, 'i');
+  add_char(str, 'c');
+  return str;
+}
+
+struct StringList* str_struct()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, 's');
+  add_char(str, 't');
+  add_char(str, 'r');
+  add_char(str, 'u');
+  add_char(str, 'c');
+  add_char(str, 't');
+  return str;
+}
+
+struct StringList* str_sub()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, '-');
+  return str;
+}
+
+struct StringList* str_typedef()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, 't');
+  add_char(str, 'y');
+  add_char(str, 'p');
+  add_char(str, 'e');
+  add_char(str, 'd');
+  add_char(str, 'e');
+  add_char(str, 'f');
+  return str;
+}
+
+struct StringList* str_unsigned()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, 'u');
+  add_char(str, 'n');
+  add_char(str, 's');
+  add_char(str, 'i');
+  add_char(str, 'g');
+  add_char(str, 'n');
+  add_char(str, 'e');
+  add_char(str, 'd');
+  return str;
+}
+
+struct StringList* str_void()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, 'v');
+  add_char(str, 'o');
+  add_char(str, 'i');
+  add_char(str, 'd');
+  return str;
+}
+
+struct StringList* str_volatile()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, 'v');
+  add_char(str, 'o');
+  add_char(str, 'l');
+  add_char(str, 'a');
+  add_char(str, 't');
+  add_char(str, 'i');
+  add_char(str, 'l');
+  add_char(str, 'e');
+  return str;
+}
+
+struct StringList* str_while()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* str = NULL;
+  str = new_stringlist();
+  add_char(str, 'w');
+  add_char(str, 'h');
+  add_char(str, 'i');
+  add_char(str, 'l');
+  add_char(str, 'e');
+  return str;
+}
+
+struct Type* struct_type()
+  //@requires ?;
+  //@ensures ?;
+{
+  struct TypeKind* _ = NULL;
+  struct Type* _1 = NULL;
+  _ = new_TY_STRUCT();
+  _1 = new_type(_, 0, 1);
+  return _1;
+}
+
+struct Type* tagscopemap_get(struct TagScopeMap* map, struct StringList* key)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct TagScopeMap* curr = NULL;
+  struct Type* res = NULL;
+  bool _ = false;
+  if (map != NULL)
+  {
+    curr = map;
+    res = NULL;
+    while (curr != NULL && res == NULL)
+      //@loop_invariant ?;
+    {
+      _ = equals(curr->key, key);
+      if (_)
+      {
+        res = curr->val;
+      }
+      curr = curr->next;
+    }
+    return res;
+  }
+  else
+  {
+    return NULL;
+  }
+}
+
+struct Type* tagscopemap_put(struct TagScopeMap* map, struct StringList* key, struct Type* val)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct TagScopeMap* curr = NULL;
+  struct TagScopeMap* prev = NULL;
+  struct Type* res = NULL;
+  bool _ = false;
+  struct TagScopeMap* newtsm = NULL;
+  if (map != NULL)
+  {
+    curr = map;
+    prev = map;
+    res = NULL;
+    while (curr != NULL && res == NULL)
+      //@loop_invariant ?;
+    {
+      _ = equals(curr->key, key);
+      if (_)
+      {
+        res = curr->val;
+        curr->val = val;
+      }
+      prev = curr;
+      curr = curr->next;
+    }
+    if (res == NULL)
+    {
+      newtsm = new_tagscopemap();
+      newtsm->key = key;
+      newtsm->val = val;
+      newtsm->next = NULL;
+      prev->next = newtsm;
+    }
+    return res;
+  }
+  else
+  {
+    scope_error();
+    return NULL;
+  }
+}
+
+struct Token* tok_ident(char c)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* id_str = NULL;
+  struct TokenKind* _ = NULL;
+  struct Token* _1 = NULL;
+  id_str = new_stringlist();
+  add_char(id_str, c);
+  _ = new_TK_IDENT();
+  _1 = new_token(_, id_str);
+  return _1;
+}
+
+struct StringList* tok_name(struct Token* tok)
+  //@requires ?;
+  //@ensures ?;
+{
+  if (tok == NULL)
+  {
+    return NULL;
+  }
+  else
+  {
+    return tok->str;
+  }
+}
+
+struct StringList* ty_name(struct Type* ty)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* _ = NULL;
+  if (ty != NULL)
+  {
+    _ = tok_name(ty->name);
+    return _;
+  }
+  else
+  {
+    return NULL;
+  }
+}
+
+struct Type* type_suffix(struct _ptr_struct_Token_* rest, struct Token* tok, struct Type* ty, struct Scope* scope)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* _ = NULL;
+  bool _1 = false;
+  struct Type* _2 = NULL;
+  _ = str_oparen();
+  _1 = equal(tok, _);
+  if (_1)
+  {
+    _2 = func_params(rest, tok->next, ty, scope);
+    return _2;
+  }
+  rest->value = tok;
+  return ty;
+}
+
+struct ASTNode* unary(struct _ptr_struct_Token_* rest, struct Token* tok, struct Scope* scope)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* _ = NULL;
+  bool _1 = false;
+  struct ASTNode* _2 = NULL;
+  struct StringList* _3 = NULL;
+  bool _4 = false;
+  struct NodeKind* _5 = NULL;
+  struct ASTNode* _6 = NULL;
+  struct ASTNode* _7 = NULL;
+  struct StringList* _8 = NULL;
+  bool _9 = false;
+  struct ASTNode* lhsn = NULL;
+  struct NodeKind* _10 = NULL;
+  struct ASTNode* _11 = NULL;
+  struct StringList* _12 = NULL;
+  bool _13 = false;
+  struct ASTNode* node = NULL;
+  bool _14 = false;
+  struct NodeKind* _15 = NULL;
+  struct ASTNode* _16 = NULL;
+  struct StringList* _17 = NULL;
+  bool _18 = false;
+  struct NodeKind* _19 = NULL;
+  struct ASTNode* _20 = NULL;
+  struct ASTNode* _21 = NULL;
+  struct StringList* _22 = NULL;
+  bool _23 = false;
+  struct NodeKind* _24 = NULL;
+  struct ASTNode* _25 = NULL;
+  struct ASTNode* _26 = NULL;
+  struct ASTNode* _27 = NULL;
+  _ = str_add();
+  _1 = equal(tok, _);
+  if (_1)
+  {
+    _2 = unary(rest, tok->next, scope);
+    return _2;
+  }
+  else
+  {
+    _3 = str_sub();
+    _4 = equal(tok, _3);
+    if (_4)
+    {
+      _5 = new_ND_NEG();
+      _6 = unary(rest, tok->next, scope);
+      _7 = new_unary(_5, _6, tok);
+      return _7;
+    }
+    else
+    {
+      _8 = str_bitand();
+      _9 = equal(tok, _8);
+      if (_9)
+      {
+        lhsn = unary(rest, tok->next, scope);
+        add_type(lhsn);
+        _10 = new_ND_ADDR();
+        _11 = new_unary(_10, lhsn, tok);
+        return _11;
+      }
+      else
+      {
+        _12 = str_mul();
+        _13 = equal(tok, _12);
+        if (_13)
+        {
+          node = unary(rest, tok->next, scope);
+          add_type(node);
+          _14 = is_FUNC(node->ty);
+          if (_14)
+          {
+            return node;
+          }
+          else
+          {
+            _15 = new_ND_DEREF();
+            _16 = new_unary(_15, node, tok);
+            return _16;
+          }
+        }
+        else
+        {
+          _17 = str_lognot();
+          _18 = equal(tok, _17);
+          if (_18)
+          {
+            _19 = new_ND_NOT();
+            _20 = unary(rest, tok->next, scope);
+            _21 = new_unary(_19, _20, tok);
+            return _21;
+          }
+          else
+          {
+            _22 = str_bitnot();
+            _23 = equal(tok, _22);
+            if (_23)
+            {
+              _24 = new_ND_BITNOT();
+              _25 = unary(rest, tok->next, scope);
+              _26 = new_unary(_24, _25, tok);
+              return _26;
+            }
+            else
+            {
+              _27 = postfix(rest, tok, scope);
+              return _27;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+void unreachable()
+  //@requires ?;
+  //@ensures ?;
+{
+  parser_error();
+}
+
+struct VarScope* varscopemap_get(struct VarScopeMap* map, struct StringList* key)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct VarScopeMap* curr = NULL;
+  struct VarScope* res = NULL;
+  bool _ = false;
+  if (map != NULL)
+  {
+    curr = map;
+    res = NULL;
+    while (curr != NULL && res == NULL)
+      //@loop_invariant ?;
+    {
+      _ = equals(curr->key, key);
+      if (_)
+      {
+        res = curr->val;
+      }
+      curr = curr->next;
+    }
+    return res;
+  }
+  else
+  {
+    return NULL;
+  }
+}
+
+struct VarScope* varscopemap_put(struct VarScopeMap* map, struct StringList* key, struct VarScope* val)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct VarScopeMap* curr = NULL;
+  struct VarScopeMap* prev = NULL;
+  struct VarScope* res = NULL;
+  bool _ = false;
+  struct VarScopeMap* newvsm = NULL;
+  if (map != NULL)
+  {
+    curr = map;
+    prev = map;
+    res = NULL;
+    while (curr != NULL && res == NULL)
+      //@loop_invariant ?;
+    {
+      _ = equals(curr->key, key);
+      if (_)
+      {
+        res = curr->val;
+        curr->val = val;
+      }
+      prev = curr;
+      curr = curr->next;
+    }
+    if (res == NULL)
+    {
+      newvsm = new_varscopemap();
+      newvsm->key = key;
+      newvsm->val = val;
+      newvsm->next = NULL;
+      prev->next = newvsm;
+    }
+    return res;
+  }
+  else
+  {
+    scope_error();
+    return NULL;
+  }
+}
+
+struct Token* whiles(struct Token* tlist)
+  //@requires ?;
+  //@ensures ?;
+{
+  struct StringList* one = NULL;
+  struct Token* tmp = NULL;
+  struct TokenKind* _ = NULL;
+  struct StringList* _1 = NULL;
+  struct Token* _2 = NULL;
+  struct TokenKind* _3 = NULL;
+  struct StringList* _4 = NULL;
+  struct Token* _5 = NULL;
+  struct Token* _6 = NULL;
+  struct TokenKind* _7 = NULL;
+  struct StringList* _8 = NULL;
+  struct Token* _9 = NULL;
+  struct TokenKind* _10 = NULL;
+  struct Token* _11 = NULL;
+  struct Type* _12 = NULL;
+  struct TokenKind* _13 = NULL;
+  struct StringList* _14 = NULL;
+  struct Token* _15 = NULL;
+  struct TokenKind* _16 = NULL;
+  struct StringList* _17 = NULL;
+  struct Token* _18 = NULL;
+  struct TokenKind* _19 = NULL;
+  struct StringList* _20 = NULL;
+  struct Token* _21 = NULL;
+  struct Token* tmp1 = NULL;
+  one = new_stringlist();
+  add_char(one, '1');
+  _ = new_TK_KEYWORD();
+  _1 = str_while();
+  _2 = new_token(_, _1);
+  tlist->next = _2;
+  _3 = new_TK_PUNCT();
+  _4 = str_oparen();
+  _5 = new_token(_3, _4);
+  tlist->next->next = _5;
+  _6 = tok_ident('p');
+  tlist->next->next->next = _6;
+  _7 = new_TK_PUNCT();
+  _8 = str_gt();
+  _9 = new_token(_7, _8);
+  tlist->next->next->next->next = _9;
+  _10 = new_TK_NUM();
+  _11 = new_token(_10, one);
+  tlist->next->next->next->next->next = _11;
+  _12 = new_ty_int();
+  tlist->next->next->next->next->next->ty = _12;
+  _13 = new_TK_PUNCT();
+  _14 = str_cparen();
+  _15 = new_token(_13, _14);
+  tlist->next->next->next->next->next->next = _15;
+  _16 = new_TK_PUNCT();
+  _17 = str_obracket();
+  _18 = new_token(_16, _17);
+  tlist->next->next->next->next->next->next->next = _18;
+  tmp = tlist->next->next->next->next->next->next->next;
+  tmp1 = bools(tmp);
+  _19 = new_TK_PUNCT();
+  _20 = str_cbracket();
+  _21 = new_token(_19, _20);
+  tmp1->next = _21;
+  return tmp1->next;
+}

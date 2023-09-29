@@ -1,0 +1,33 @@
+jenna@ubuntu-2023:~/Desktop/silicon-gv$ sbt "testOnly -- -n cparser.vpr -Dsilicon:includeMethods=parse"
+[info] welcome to sbt 1.6.2 (Ubuntu Java 11.0.20.1)
+[info] loading settings for project silicon-gv-build from metals.sbt,plugins.sbt ...
+[info] loading project definition from /home/jenna/Desktop/silicon-gv/project
+[info] loading settings for project silicon from build.sbt ...
+[info] loading settings for project silver from build.sbt ...
+[info] set current project to Silicon (in build file:/home/jenna/Desktop/silicon-gv/)
+[warn] javaOptions will be ignored, fork is set to false
+[info] Passed: Total 0, Failed 0, Errors 0, Passed 0
+[info] No tests to run for common / Test / testOnly
+[info] SimpleArithmeticTermSolverTests:
+[info] SiliconTests:
+[info] - gradual/cparser.vpr [Silicon-Silver] *** FAILED *** (4 seconds, 851 milliseconds)
+[info]   1 errors
+[info]   
+[info]   The following output occurred during testing, but should not have according to the test annotations:
+[info]     [consistency.error] Consistency error: acc(tokenListSeg(gv_tok, tok2), write) && gv_beforeloop == true is non pure and appears where only pure expressions are allowed. (cparser.vpr@4255.103) (AnnotationBasedTestSuite.scala:63)
+[info]   + Verifier used: Silicon 1.1-SNAPSHOT (4445a121+). 
+[info]   + Time required: 2.84 sec (Parsing), 828 msec (Semantic Analysis), 483 msec (Translation), 405 msec (Consistency Check), 0 msec (Verification). 
+[info] TriggerRewriterTests:
+[info] TriggerGeneratorTests:
+[info] NodeBacktranslationTests:
+[info] ConcurrentInstantiationTests:
+[info] MemoryTests:
+[info] Run completed in 8 seconds, 472 milliseconds.
+[info] Total number of tests run: 1
+[info] Suites: completed 7, aborted 0
+[info] Tests: succeeded 0, failed 1, canceled 0, ignored 0, pending 0
+[info] *** 1 TEST FAILED ***
+[error] Failed tests:
+[error]         viper.silicon.tests.SiliconTests
+[error] (Test / testOnly) sbt.TestsFailedException: Tests unsuccessful
+[error] Total time: 12 s, completed Sep 28, 2023, 7:03:53 PM
