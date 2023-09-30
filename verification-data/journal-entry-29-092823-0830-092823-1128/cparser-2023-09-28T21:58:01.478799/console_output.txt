@@ -1,0 +1,21 @@
+[info] welcome to sbt 1.5.3 (Ubuntu Java 11.0.20.1)
+[info] loading settings for project gvc0-build from plugins.sbt ...
+[info] loading project definition from /home/jenna/Desktop/gvc0/project
+[info] loading settings for project gvc from build.sbt ...
+[info] loading settings for project silicon from build.sbt ...
+[info] loading settings for project silver from build.sbt ...
+[info] set current project to gvc0 (in build file:/home/jenna/Desktop/gvc0/)
+[info] running (fork) gvc.Main -c src/test/resources/case-study-2023/cparser.c0
+[info] Verifying 'src/test/resources/case-study-2023/cparser.c0' and gathering data.
+[info] Outputting collected data to /home/jenna/Desktop/gvc0/cparser-2023-09-28T21:58:01.478799/
+[info] [*] — Thu Sep 28 21:58:01 EDT 2023
+[info] [*] — Thu Sep 28 22:00:56 EDT 2023
+[info] [*] — Time elapsed: 2 min
+[info] [*] — Specification component counts: 
+[info] [*] — Folds: 1
+[info] [*] — Unfolds: 2
+[info] [*] — Preconditions: 1/2/0/229
+[info] [*] — Postconditions: 1/1/0/229
+[info] [*] — Loop Invariants: 1/2/2/41
+[info] [*] — Predicate bodies: 9/3/2/4
+[success] Total time: 178 s (02:58), completed Sep 28, 2023, 10:00:57 PM
