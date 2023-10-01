@@ -1,0 +1,29 @@
+[info] welcome to sbt 1.5.3 (Ubuntu Java 11.0.20.1)
+[info] loading settings for project gvc0-build from plugins.sbt ...
+[info] loading project definition from /home/jenna/Desktop/gvc0/project
+[info] loading settings for project gvc from build.sbt ...
+[info] loading settings for project silicon from build.sbt ...
+[info] loading settings for project silver from build.sbt ...
+[info] set current project to gvc0 (in build file:/home/jenna/Desktop/gvc0/)
+[info] running (fork) gvc.Main -c src/test/resources/case-study-2023/cparser.c0
+[info] Verifying 'src/test/resources/case-study-2023/cparser.c0' and gathering data.
+[info] Outputting collected data to /home/jenna/Desktop/gvc0/cparser-2023-09-30T19:57:48.785901/
+[info] [*] — Sat Sep 30 19:57:48 EDT 2023
+[error] Exception in thread "main" gvc.VerificationException: The precondition of method gv_tokenlistseg_lemma might not hold. There might be insufficient permission to access tokenListSeg(a, a.Token$next). (<no position>)
+[error] 	at gvc.Main$.verifySiliconProvided(main.scala:401)
+[error] 	at gvc.Main$.verify(main.scala:359)
+[error] 	at gvc.Main$.run(main.scala:200)
+[error] 	at gvc.Main$.delayedEndpoint$gvc$Main$1(main.scala:77)
+[error] 	at gvc.Main$delayedInit$body.apply(main.scala:44)
+[error] 	at scala.Function0.apply$mcV$sp(Function0.scala:39)
+[error] 	at scala.Function0.apply$mcV$sp$(Function0.scala:39)
+[error] 	at scala.runtime.AbstractFunction0.apply$mcV$sp(AbstractFunction0.scala:17)
+[error] 	at scala.App.$anonfun$main$1$adapted(App.scala:80)
+[error] 	at scala.collection.immutable.List.foreach(List.scala:431)
+[error] 	at scala.App.main(App.scala:80)
+[error] 	at scala.App.main$(App.scala:78)
+[error] 	at gvc.Main$.main(main.scala:44)
+[error] 	at gvc.Main.main(main.scala)
+[error] Nonzero exit code returned from runner: 1
+[error] (Compile / run) Nonzero exit code returned from runner: 1
+[error] Total time: 59 s, completed Sep 30, 2023, 7:58:45 PM

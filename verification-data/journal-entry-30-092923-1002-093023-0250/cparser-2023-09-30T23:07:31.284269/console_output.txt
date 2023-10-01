@@ -1,0 +1,36 @@
+jenna@ubuntu-2023:~/Desktop/gvc0$ sbt "run -c src/test/resources/case-study-2023/cparser.c0" | tee console_output.txt
+[info] welcome to sbt 1.5.3 (Ubuntu Java 11.0.20.1)
+[info] loading settings for project gvc0-build from plugins.sbt ...
+[info] loading project definition from /home/jenna/Desktop/gvc0/project
+[info] loading settings for project gvc from build.sbt ...
+[info] loading settings for project silicon from build.sbt ...
+[info] loading settings for project silver from build.sbt ...
+[info] set current project to gvc0 (in build file:/home/jenna/Desktop/gvc0/)
+[info] running (fork) gvc.Main -c src/test/resources/case-study-2023/cparser.c0
+[info] Verifying 'src/test/resources/case-study-2023/cparser.c0' and gathering data.
+[info] Outputting collected data to /home/jenna/Desktop/gvc0/cparser-2023-09-30T23:07:31.284269/
+[info] [*] — Sat Sep 30 23:07:31 EDT 2023
+[error] Exception in thread "main" gvc.benchmarking.Timing$CC0ExecutionException: typedef int t ;c0rt: /home/jenna/Desktop/gvc0/cparser-2023-09-30T23:07:31.284269/cparser.verified.c0: 2567.7-2567.40: assert failedint x , y ;y = 42 ;x = y ;x = 42 + 239 - y ;y = - x ;y = x << 42 ;y = x >> - 239 ;x = ~ ( y & x ) ;float a , b , c ;b = 2.84 * 0.000 ;c = 2.84 % 0.000 ;a = b / c ;* & x ;int * l ;* l = & x ;int * * z ;* * z = & y ;* * z ;if ( p <= 1 ) {while ( p > 1 ) {_Bool b ;_Bool c ;_Bool d ;b = c == d ;b = c <= d ;b = c < d ;b = c >= d ;b = c > d ;b = c && d ;b = ! c ;b = c != d ;}return 1 ;}else {return f ( p - 1 ) + f ( p - 2 ) ;}} 
+[error]         at gvc.benchmarking.Timing$.execNonzero$1(Timing.scala:158)
+[error]         at gvc.benchmarking.Timing$.$anonfun$execTimed$1(Timing.scala:163)
+[error]         at gvc.benchmarking.Timing$.$anonfun$execTimed$1$adapted(Timing.scala:163)
+[error]         at gvc.benchmarking.Timing$.$anonfun$runTimedCommand$3(Timing.scala:126)
+[error]         at gvc.benchmarking.Timing$.$anonfun$runTimedCommand$3$adapted(Timing.scala:115)
+[error]         at scala.collection.immutable.Range.foreach(Range.scala:158)
+[error]         at gvc.benchmarking.Timing$.runTimedCommand(Timing.scala:115)
+[error]         at gvc.benchmarking.Timing$.execTimed(Timing.scala:165)
+[error]         at gvc.Main$.run(main.scala:211)
+[error]         at gvc.Main$.delayedEndpoint$gvc$Main$1(main.scala:77)
+[error]         at gvc.Main$delayedInit$body.apply(main.scala:44)
+[error]         at scala.Function0.apply$mcV$sp(Function0.scala:39)
+[error]         at scala.Function0.apply$mcV$sp$(Function0.scala:39)
+[error]         at scala.runtime.AbstractFunction0.apply$mcV$sp(AbstractFunction0.scala:17)
+[error]         at scala.App.$anonfun$main$1$adapted(App.scala:80)
+[error]         at scala.collection.immutable.List.foreach(List.scala:431)
+[error]         at scala.App.main(App.scala:80)
+[error]         at scala.App.main$(App.scala:78)
+[error]         at gvc.Main$.main(main.scala:44)
+[error]         at gvc.Main.main(main.scala)
+[error] Nonzero exit code returned from runner: 1
+[error] (Compile / run) Nonzero exit code returned from runner: 1
+[error] Total time: 88 s (01:28), completed Sep 30, 2023, 11:08:54 PM
