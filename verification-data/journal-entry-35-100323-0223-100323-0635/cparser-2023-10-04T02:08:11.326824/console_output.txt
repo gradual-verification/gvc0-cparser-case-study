@@ -1,0 +1,18 @@
+[info] welcome to sbt 1.5.3 (Ubuntu Java 11.0.20.1)
+[info] loading settings for project gvc0-build from plugins.sbt ...
+[info] loading project definition from /home/jenna/Desktop/gvc0/project
+[info] loading settings for project gvc from build.sbt ...
+[info] loading settings for project silicon from build.sbt ...
+[info] loading settings for project silver from build.sbt ...
+[info] set current project to gvc0 (in build file:/home/jenna/Desktop/gvc0/)
+[info] running (fork) gvc.Main -c src/test/resources/case-study-2023/cparser.c0
+[info] Verifying 'src/test/resources/case-study-2023/cparser.c0' and gathering data.
+[info] Outputting collected data to /home/jenna/Desktop/gvc0/cparser-2023-10-04T02:08:11.326824/
+[info] [*] — Wed Oct 04 02:08:11 EDT 2023
+[info] [x] — Errors:
+[info] 2606:3 - Cannot assign to variable 'tok' used in @ensures annotation
+[info] 2611:7 - Cannot assign to variable 'tok' used in @ensures annotation
+[info] 2615:5 - Cannot assign to variable 'tok' used in @ensures annotation
+[error] Nonzero exit code returned from runner: 1
+[error] (Compile / run) Nonzero exit code returned from runner: 1
+[error] Total time: 5 s, completed Oct 4, 2023, 2:08:13 AM

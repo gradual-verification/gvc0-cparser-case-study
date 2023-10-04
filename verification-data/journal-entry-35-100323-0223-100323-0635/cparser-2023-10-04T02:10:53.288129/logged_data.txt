@@ -1,0 +1,11 @@
+
+        Conjuncts Statically Eliminated: 34323
+        Total Conjuncts: 48185
+        Parse into IR & Translate into Silver Time: 1141265949 nsec
+        Static Verification Time: 215002170446 nsec
+        Weaver Time: 878437214 nsec
+        Compile Time in cc0: 17244748557 nsec
+        Run Time: 163029604754 nsec
+        Total Time: 398923 msec
+        Time Stamp: 2023-10-04T02:10:53.288129
+        
