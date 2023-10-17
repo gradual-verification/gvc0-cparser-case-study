@@ -1,0 +1,468 @@
+jenna@ubuntu-2023:~/Desktop/gvc0-cparser-case-study/verification-data$ diff journal-entry-23-092623-0730-092623-0930/cparser-2023-09-26T19\:49\:56.098954/cparser.c0 journal-entry-35-100323-0223-100323-0635/cparser-2023-10-04T02\:10\:53.288129/cparser.c0
+112a113,191
+> //@ predicate tokenListSeg(Token *strt, Token *end);
+> //@ predicate tokenList(Token *tok) = tokenListSeg(tok, NULL);
+> //@ predicate tokenKind(TokenKind *knd);
+> /*@ predicate tokenListSeg(Token *strt, Token *end) =
+>   (strt == end) ?
+>     true
+>     :
+>     acc(strt->kind) && tokenKind(strt->kind) && acc(strt->ty) && acc(strt->str) &&
+>     acc(strt->next) && tokenListSeg(strt->next, end);
+> @*/
+> 
+> // ? should contain some predicate for the EOF comparison with str
+> // StringList lib needs to have/supply this predicate, but it doesn't
+> // ? should also contain some predicate for permissions to kind and checking the kind of EOF
+> // and probably that ty == null
+> /*@ predicate endOfFile(Token *tok) = 
+>   ? && acc(tok->kind) && acc(tok->ty) && acc(tok->str) &&
+>   acc(tok->next) && tok->next == NULL;
+> @*/
+> 
+> void gv_tokenlistseg_lemma(Token *a, Token *b, Token *c) 
+> //@ requires tokenListSeg(a,b) && tokenListSeg(b,c) && tokenListSeg(c,NULL) && b != c;
+> //@ ensures tokenListSeg(a,b) && tokenListSeg(b,c) && tokenListSeg(c,NULL) && a != c;
+> {
+>   if (a == b) {
+>   } else {
+>     //@ unfold tokenListSeg(a,b);
+>     gv_tokenlistseg_lemma(a->next,b,c);
+>     if (c == NULL) {
+>       //@ fold tokenListSeg(a,b);
+>     } else {
+>       //@ unfold tokenListSeg(c,NULL);
+>       //@ assert a != c;
+>       //@ fold tokenListSeg(c,NULL);
+>       //@ fold tokenListSeg(a,b);
+>     }
+>   }
+> }
+> 
+> void gv_tokenlistseg_lemma2(Token *a, Token *b, Token *c) 
+> //@ requires tokenListSeg(a,b) && tokenListSeg(b,c) && tokenListSeg(c,NULL) && a != b;
+> //@ ensures tokenListSeg(a,c) && tokenListSeg(c,NULL) && a != c;
+> {
+>   //@ unfold tokenListSeg(a,b);
+>   // have tokenListSeg(a->next,b)
+>   if (a->next == b) {
+>     if (c == NULL) {
+>       //@ fold tokenListSeg(a,c);
+>     } else {
+>       //@ unfold tokenListSeg(c,NULL);
+>       //@ assert a != c;
+>       //@ fold tokenListSeg(c,NULL);
+>       //@ fold tokenListSeg(a,c);
+>     }
+>   } else {
+>     gv_tokenlistseg_lemma2(a->next,b,c);
+>     if (c == NULL) {
+>       //@ fold tokenListSeg(a,c);
+>     } else {
+>       //@ unfold tokenListSeg(c,NULL);
+>       //@ assert a != c;
+>       //@ fold tokenListSeg(c,NULL);
+>       //@ fold tokenListSeg(a,c);
+>     }
+>   }
+> }
+> 
+> void gv_tokenlistseg_append_lemma(Token *a, Token *b, Token *c) 
+> //@ requires tokenListSeg(a,b) && tokenListSeg(b,c);
+> //@ ensures tokenListSeg(a,c);
+> {
+>   if (a == b) {
+>   } else {
+>     //@ unfold tokenListSeg(a,b);
+>     gv_tokenlistseg_append_lemma(a->next,b,c);
+>     //@ fold tokenListSeg(a,c);
+>   }
+> }
+> 
+138a218,225
+> //@ predicate tokenKind(TokenKind *knd) = acc(knd->kind);
+> //@ predicate tfalse() = false;
+> void gv_tok_unreachable() 
+> //@ requires ?;
+> //@ ensures false;
+> {
+>   //@ unfold tfalse();
+> }
+226c313,316
+< bool equal(Token *tok, StringList *op) {
+---
+> bool equal(Token *tok, StringList *op)
+> //@ requires ? && tok != NULL;
+> //@ ensures ? && tok != NULL;
+> {
+230,231c320,324
+< Token *skip(Token *tok, StringList *op) {
+<   if (!equal(tok, op))
+---
+> Token *skip(Token *tok, StringList *op) 
+> //@ requires ? ;//&& tokenListSeg(tok,NULL);
+> //@ ensures ? && tokenListSeg(tok,\result) && tokenListSeg(\result,NULL) && tok != \result;
+> {
+>   if (!equal(tok, op)) {
+233c326,340
+<   return tok->next;
+---
+>     gv_tok_unreachable();
+>   }
+>   //@ unfold tokenListSeg(tok,NULL);
+>   Token *tokres = tok->next;
+>   //@ unfold tokenListSeg(tokres,NULL);
+>   //@ assert tok != tokres;
+>   //@ fold tokenListSeg(tokres,NULL);
+>   if (tokres == NULL) {
+>     //@ fold tokenListSeg(tok,tokres);
+>     //@ fold tokenListSeg(tokres,tokres);
+>   } else {
+>     //@ fold tokenListSeg(tokres,tokres);
+>     //@ fold tokenListSeg(tok,tokres);
+>   }
+>   return tokres;
+1001d1107
+< 
+1010c1116
+< Type *declspec(Token **rest, Token *tok, VarAttr *attr, Scope *scope);
+---
+> Type *declspec(Token **rest, Token *tok, Token *gv_tok, VarAttr *attr, Scope *scope);
+1012c1118
+< Type *declarator(Token **rest, Token *tok, Type *ty, Scope *scope);
+---
+> Type *declarator(Token **rest, Token *tok, Token *gv_tok, Type *ty, Scope *scope);
+1039a1146,1153
+> //@ predicate ffalse() = false;
+> void gv_unreachable() 
+> //@ requires ?;
+> //@ ensures false;
+> {
+>   //@ unfold ffalse();
+> }
+> 
+1624c1738,1739
+< VarScope *find_var(Token *tok, Scope *scope) {
+---
+> VarScope *find_var(Token *tok, Scope *scope)
+> {
+2134c2249
+<       Type *basety = declspec(rst, tok, attr, *scope);
+---
+>       Type *basety = declspec(rst, tok, tok, attr, *scope);
+2177c2292
+<     Type *ty = declarator(rst, tok, basety, *scope);
+---
+>     Type *ty = declarator(rst, tok, tok, basety, *scope);
+2210c2325,2326
+< bool is_typename(Token *tok, Scope *scope) {
+---
+> bool is_typename(Token *tok, Scope *scope) 
+> {
+2227c2343,2346
+< Type *declspec(Token **rest, Token *tok, VarAttr *attr, Scope *scope) {
+---
+> Type *declspec(Token **rest, Token *tok, Token *gv_tok, VarAttr *attr, Scope *scope) 
+> //@ requires ? && acc(*rest) && tokenListSeg(tok, NULL) && tok == gv_tok;
+> //@ ensures ? && acc(*rest) && tokenListSeg(gv_tok, *rest) && tokenListSeg(*rest, NULL);
+> {
+2244c2363,2373
+<   while (!break_loop && is_typename(tok, scope)) {
+---
+>   bool gv_beforeloop = true;
+>   Token *gv_tok_prev = tok;
+>   //@ fold tokenListSeg(gv_tok, gv_tok_prev);
+>   //@ fold tokenListSeg(gv_tok_prev, tok);
+>   while (!break_loop && is_typename(tok, scope))
+>   //@ loop_invariant ? && tokenListSeg(gv_tok, gv_tok_prev) && tokenListSeg(gv_tok_prev, tok) && tokenListSeg(tok, NULL);
+>   //@ loop_invariant (gv_beforeloop == true ? gv_tok == tok && counter == 0 : (break_loop == true ? counter > 0 && gv_tok != tok : gv_tok_prev != tok));
+>   {
+>     gv_beforeloop = false;
+>     gv_tok_prev = tok;
+> 
+2247c2376
+<       if (attr == NULL)
+---
+>       if (attr == NULL) {
+2248a2378,2379
+>         gv_unreachable();
+>       }
+2250c2381
+<       if (equal(tok, str_typedef()))
+---
+>       if (equal(tok, str_typedef())) {
+2252c2383
+<       else if (equal(tok, str_static()))
+---
+>       } else if (equal(tok, str_static())) {
+2254c2385,2386
+<       else if (equal(tok, str_extern()))
+---
+>         gv_unreachable();
+>       } else if (equal(tok, str_extern())) {
+2256c2388,2389
+<       else
+---
+>         gv_unreachable();
+>       } else {
+2257a2391,2392
+>         gv_unreachable();
+>       }
+2258a2394,2397
+>       //@ unfold tokenListSeg(tok, NULL);
+>       //@ unfold tokenListSeg(tok->next, NULL);
+>       //@ assert tok != tok->next;
+>       //@ fold tokenListSeg(tok->next,NULL);
+2259a2399,2401
+>       //@ assert gv_tok_prev != tok;
+>       //@ fold tokenListSeg(gv_tok_prev->next,tok);
+>       //@ fold tokenListSeg(gv_tok_prev, tok); // too expensive to statically specify anything else
+2264c2406,2410
+<         
+---
+> 
+>       //@ unfold tokenListSeg(tok, NULL);
+>       //@ unfold tokenListSeg(tok->next, NULL);
+>       //@ assert tok != tok->next;
+>       //@ fold tokenListSeg(tok->next,NULL);  
+2265a2412,2413
+>       //@ fold tokenListSeg(gv_tok_prev->next,tok);
+>       //@ fold tokenListSeg(gv_tok_prev, tok);
+2272a2421
+>           gv_tokenlistseg_lemma(gv_tok, gv_tok_prev, tok);
+2278a2428
+>             gv_unreachable();
+2280a2431
+>             gv_unreachable();
+2282a2434,2437
+>             //@ unfold tokenListSeg(tok, NULL);
+>             //@ unfold tokenListSeg(tok->next, NULL);
+>             //@ assert tok != tok->next;
+>             //@ fold tokenListSeg(tok->next,NULL);
+2283a2439,2440
+>             //@ fold tokenListSeg(gv_tok_prev->next,tok);
+>             //@ fold tokenListSeg(gv_tok_prev, tok);
+2320a2478
+>           gv_unreachable();
+2373a2532
+>           gv_unreachable();
+2375a2535,2538
+>         //@ unfold tokenListSeg(tok, NULL);
+>         //@ unfold tokenListSeg(tok->next, NULL);
+>         //@ assert tok != tok->next;
+>         //@ fold tokenListSeg(tok->next,NULL);
+2377c2540,2541
+< 
+---
+>         //@ fold tokenListSeg(gv_tok_prev->next,tok);
+>         //@ fold tokenListSeg(gv_tok_prev, tok);
+2386c2550,2553
+< Type *func_params(Token **rest, Token *tok, Type *ty, Scope *scope) {
+---
+> Type *func_params(Token **rest, Token *tok, Token *gv_tok, Type *ty, Scope *scope) 
+> //@ requires ? && acc(*rest) && tokenListSeg(tok, NULL) && gv_tok == tok;
+> //@ ensures ? && acc(*rest) && tokenListSeg(gv_tok, *rest) && tokenListSeg(*rest, NULL);
+> {
+2401c2568
+<     Type *ty2 = declspec(rst, tok, NULL, scope);
+---
+>     Type *ty2 = declspec(rst, tok, tok, NULL, scope);
+2403c2570
+<     ty2 = declarator(rst, tok, ty2, scope);
+---
+>     ty2 = declarator(rst, tok, tok, ty2, scope);
+2420c2587,2590
+< Type *type_suffix(Token **rest, Token *tok, Type *ty, Scope *scope) {
+---
+> Type *type_suffix(Token **rest, Token *tok, Type *ty, Scope *scope) 
+> //@ requires ? && acc(*rest) && tokenListSeg(tok, NULL);
+> //@ ensures ? && acc(*rest) && tokenListSeg(tok, *rest) && tokenListSeg(*rest, NULL);
+> {
+2422c2592,2593
+<     return func_params(rest, tok->next, ty, scope);
+---
+>     //@ unfold tokenListSeg(tok,NULL);
+>     return func_params(rest, tok->next, tok->next, ty, scope);
+2428c2599,2602
+< Type *pointers(Token **rest, Token *tok, Type *ty) {
+---
+> Type *pointers(Token **rest, Token *tok, Token *gv_tok, Type *ty) 
+> //@ requires ? && acc(*rest) && tokenListSeg(tok, NULL) && gv_tok == tok;
+> //@ ensures ? && acc(*rest) && tokenListSeg(gv_tok, *rest) && tokenListSeg(*rest, NULL);
+> {
+2447c2621,2625
+< Type *declarator(Token **rest, Token *tok, Type *ty, Scope *scope) {
+---
+> Type *declarator(Token **rest, Token *tok, Token *gv_tok, Type *ty, Scope *scope) 
+> //@ requires ? && acc(*rest) && tokenListSeg(tok, *rest) && tokenListSeg(*rest, NULL) && gv_tok == tok;
+> //@ ensures ? && acc(*rest) && tokenListSeg(gv_tok, *rest) && tokenListSeg(*rest, NULL);
+> //@ ensures acc(\result->name) && (\result->name == NULL ? true : *rest != gv_tok);
+> {
+2450c2628,2629
+<   ty = pointers(rst, tok, ty);
+---
+>   gv_tokenlistseg_append_lemma(tok,*rest,NULL);
+>   ty = pointers(rst, tok, tok, ty);
+2452c2631,2632
+< 
+---
+>   // tokenListSeg(tok,*rst) && tokenListSeg(*rst, NULL) && gv_tok == tok ==> relation
+>   // lost before call to declarator tho; doesn't need to tho
+2456c2636,2643
+<     declarator(rst, start->next, dummy, scope);
+---
+>     //@ unfold tokenListSeg(start, NULL);
+>     //@ fold tokenListSeg(start->next, start->next);
+>     // need tokenListSeg(start->next, start->next), tokenListSeg(start->next, NULL) and acc(*rst)
+>     *rst = start->next;
+>     declarator(rst, start->next, start->next, dummy, scope);
+>     // get acc(*rst), tokenListSeg(start->next, *rst), tokenListSeg(*rst, NULL)
+>     // acc(tmp->name), ... 
+>     // should have (but don't thanks to ?): tokenListSeg(gv_tok, start)
+2457a2645,2655
+>     // can prove tok != start
+>     if (tok == NULL) {
+>       //@ assert start != tok;
+>       //@ fold tokenListSeg(start, tok);
+>     } else {
+>       //@ unfold tokenListSeg(tok,NULL);
+>       //@ assert start != tok;
+>       //@ fold tokenListSeg(start,tok);
+>     }
+>     
+>     // ultimately only need tokenListSeg(tok, NULL)
+2458a2657,2659
+>     // have tokenListSeg(tok',tok), tokenListSeg(tok, NULL), tok' != tok 
+>     // should have but don't: tokenListSeg(gv_tok, start), tokenListSeg(start, tok')
+>     // no run time check for tok, but yes for acc(*rest) <-- unavoidable
+2460,2461c2661,2676
+<     *rst = tok;
+<     Type *res_ty = declarator(rst, start->next, ty, scope);
+---
+>     // have acc(*rest), tokenListSeg(tok, *rest), tokenListSeg(*rest,NULL), tok' != tok
+>     // should have but don't: tokenListSeg(gv_tok, start), tokenListSeg(start, tok'), tokenListSeg(tok',tok)
+>     gv_tokenlistseg_lemma2(*rst,tok,*rest);
+>     // tokenListSeg(gv_tok, start), tokenListSeg(start, tok'), tokenListSeg(tok',*rest), tokenListSeg(*rest, NULL)
+>     // need start != *rst == tok'
+>     gv_tokenlistseg_lemma2(start,*rst,*rest);
+>     // tokenListSeg(gv_tok, start), tokenListSeg(start,*rest), tokenListSeg(*rest, NULL), start != *rest
+>     gv_tokenlistseg_lemma(gv_tok,start,*rest);
+>     *rst = *rest;
+>     
+>     //@ unfold tokenListSeg(start,*rest);
+>     
+>     // need acc(*rst), tokenListSeg(start->next, *rest), tokenListSeg(*rest, NULL)
+>     Type *res_ty = declarator(rst, start->next, start->next, ty, scope);
+>     // have acc(*rst), tokenListSeg(start->next, *rst), tokenListSeg(*rst, NULL)
+>     // acc(res_ty->name), (res_ty->name ? true : start->next != *rst)
+2464c2679,2682
+<   }
+---
+>   
+>   } else {
+>     Token *name = NULL;
+>     Token *name_pos = tok;
+2466,2467c2684,2687
+<   Token *name = NULL;
+<   Token *name_pos = tok;
+---
+>     if (is_IDENT(tok)) {
+>       name = tok;
+>       tok = tok->next;
+>     }
+2469,2471c2689,2692
+<   if (is_IDENT(tok)) {
+<     name = tok;
+<     tok = tok->next;
+---
+>     ty = type_suffix(rest, tok, ty, scope);
+>     ty->name = name;
+>     ty->name_pos = name_pos;
+>     return ty;
+2473,2477d2693
+< 
+<   ty = type_suffix(rest, tok, ty, scope);
+<   ty->name = name;
+<   ty->name_pos = name_pos;
+<   return ty;
+2480c2696,2699
+< Token *parse_typedef(Token *tok, Type *basety, Scope *scope) {
+---
+> Token *parse_typedef(Token *tok, Type *basety, Scope *scope) 
+> //@ requires ? && tokenListSeg(tok, NULL);
+> //@ ensures ? && tokenListSeg(\result, NULL);
+> {
+2485c2704,2710
+<   while (!consume(rest, tok, str_semicolon())) {
+---
+>   Token *gv_tok_prev = tok;
+>   bool gv_consume = consume(rest, tok, str_semicolon());
+>   bool gv_beforeloop = true;
+>   while (!gv_consume) 
+>   //@ loop_invariant ? && tokenListSeg(gv_tok_prev, tok) && tokenListSeg(tok, NULL);
+>   //@ loop_invariant (gv_consume == true ? true : (gv_beforeloop == true ? gv_tok_prev == tok : gv_tok_prev != tok));
+>   {
+2486a2712,2714
+>     gv_tok_prev = tok;
+>     gv_beforeloop = false;
+> 
+2492c2720
+<     Type *ty = declarator(rest, tok, basety, scope);
+---
+>     Type *ty = declarator(rest, tok, tok, basety, scope);
+2494c2722
+<     if (ty_name(ty) == NULL)
+---
+>     if (ty_name(ty) == NULL) {
+2495a2724,2725
+>       gv_unreachable();
+>     }
+2497a2728,2729
+>     
+>     gv_consume = consume(rest, tok, str_semicolon());
+2526c2758
+<   Type *ty = declarator(rst, tok, basety, *scope);
+---
+>   Type *ty = declarator(rst, tok, tok, basety, *scope);
+2578c2810
+<   Type *ty = declarator(rest, tok, dummy, scope);
+---
+>   Type *ty = declarator(rest, tok, tok, dummy, scope);
+2582c2814,2817
+< Obj *parse(Token *tok) {
+---
+> Obj *parse(Token *tok) 
+> //@ requires ? && tokenList(tok); // ? for missing perms from sub-fields in token list, like StringList/Type
+> //@ ensures ?; // ? for missing AST predicate
+> {
+2590c2825,2836
+<   while (!is_EOF(tok)) {
+---
+>   //@ unfold tokenList(tok);
+>   //@ unfold tokenListSeg(tok, NULL);
+>   Token *gv_tok = tok;
+>   bool gv_beforeloop = true;
+>   //@ fold tokenListSeg(gv_tok, tok);
+>   while (!is_EOF(tok)) 
+>   //@ loop_invariant ? && acc(tok->next) && tokenListSeg(tok->next, NULL);
+>   //@ loop_invariant tokenListSeg(gv_tok, tok) && (gv_beforeloop == true ? true : gv_tok != tok); 
+>   {
+>     gv_tok = tok;
+>     gv_beforeloop = false;
+> 
+2592a2839
+>     Token *prev_tok = tok;
+2596c2843,2844
+<     Type *basety = declspec(rest, tok, attr, *scptr);
+---
+>     //@ fold tokenListSeg(tok,NULL);
+>     Type *basety = declspec(rest, tok, tok, attr, *scptr);
+2602a2851,2855
+> 
+>     if (prev_tok == tok) {
+>       no_progress_error();
+>       gv_unreachable();
+>     }
+2603a2857,2858
+> 
+>   //@ assert endOfFile(tok);
